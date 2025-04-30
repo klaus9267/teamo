@@ -1,0 +1,115 @@
+/* 프로젝트 대표 색상: 파랑과 초록 사이의 청록색(teal) */
+:root {
+  --primary-color: #3cb4ac; /* 청록색 */
+  --primary-hover: #2a9d8f; /* 클릭/호버 시 더 어두운 청록색 */
+  --text-dark: #1b3a4b; /* 어두운 테마 텍스트 색상 */
+  --text-light: #ffffff; /* 밝은 테마 텍스트 색상 */
+  --background-light: #f5f9f9; /* 연한 배경색 */
+  --border-color: #e5e7eb; /* 경계선 색상 */
+}
+
+.header {
+  background-color: #ffffff;
+  border-bottom: 1px solid var(--border-color);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.header-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0.75rem 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+}
+
+.logo {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.logo a {
+  color: var(--primary-color);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.logo a:hover {
+  color: var(--primary-hover);
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 2rem; /* 요소 간 간격 */
+}
+
+.main-nav {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.nav-link {
+  font-size: 1rem;
+  color: var(--text-dark);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s;
+  padding: 0.5rem 0;
+  position: relative;
+}
+
+.nav-link:hover {
+  color: var(--primary-color);
+}
+
+.nav-link::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background-color: var(--primary-color);
+  transition: width 0.3s;
+}
+
+.nav-link:hover::after {
+  width: 100%;
+}
+
+.login-btn {
+  background-color: var(--primary-color);
+  color: var(--text-light);
+  font-size: 1rem;
+  font-weight: 500;
+  padding: 0.5rem 1.25rem;
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.login-btn:hover {
+  background-color: var(--primary-hover);
+}
+
+/* 반응형 스타일 */
+@media (max-width: 768px) {
+  .header-right {
+    gap: 1rem;
+  }
+
+  .main-nav {
+    gap: 1rem;
+  }
+}
