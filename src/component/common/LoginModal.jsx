@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import "../../styles/common/LoginModal.css";
 
 const LoginModal = ({ onClose }) => {
@@ -6,21 +6,20 @@ const LoginModal = ({ onClose }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
-  const [phone, setPhone] = useState("");
-  const [job, setJob] = useState("");
-  const [agreeTerms, setAgreeTerms] = useState(false);
-  const [agreeMarketing, setAgreeMarketing] = useState(false);
 
   // 모달 컨테이너에 대한 ref 생성
   const modalRef = useRef(null);
 
-  // 모달 바깥 영역 클릭 처리 함수
-  const handleOutsideClick = (e) => {
-    // 클릭된 요소가 모달 컨테이너 외부인 경우에만 닫기
-    if (modalRef.current && !modalRef.current.contains(e.target)) {
-      onClose();
-    }
-  };
+  // 모달 바깥 영역 클릭 처리 함수 - useCallback으로 메모이제이션
+  const handleOutsideClick = useCallback(
+    (e) => {
+      // 클릭된 요소가 모달 컨테이너 외부인 경우에만 닫기
+      if (modalRef.current && !modalRef.current.contains(e.target)) {
+        onClose();
+      }
+    },
+    [onClose]
+  ); // onClose를 의존성으로 추가
 
   // 컴포넌트가 마운트될 때 이벤트 리스너 등록, 언마운트될 때 제거
   useEffect(() => {
@@ -31,7 +30,7 @@ const LoginModal = ({ onClose }) => {
     return () => {
       document.removeEventListener("mousedown", handleOutsideClick);
     };
-  }, []);
+  }, [handleOutsideClick]); // handleOutsideClick을 의존성으로 추가
 
   const handleSwitchToSignup = () => {
     setIsLoginMode(false);
