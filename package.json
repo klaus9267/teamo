@@ -21,10 +21,6 @@
     "predeploy": "npm run build",
     "deploy": "gh-pages -d build"
   },
-<<<<<<< HEAD
-=======
-  "homepage": "https://teamo.kro.kr/",
->>>>>>> 13570881114a4f0c03b721944015031b44e7c5d0
   "eslintConfig": {
     "extends": [
       "react-app",
