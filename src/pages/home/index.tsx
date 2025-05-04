@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import "../../styles/main/Main.css";
 
 // 배너 데이터
@@ -26,43 +27,49 @@ const bannerData = [
   },
 ];
 
-// 모집 글 더미 데이터
-const recruitmentPosts = [
+// 모집 글 더미 데이터 (상세 페이지와 일치)
+const recruitmentPostsData = [
   {
     id: 1,
-    title: "아이디어는 있지만 참여자가 없다구요?",
+    title: "[서울] Kettodze - 일본 가챠 매장",
     category: "프로젝트",
-    techStack: ["React", "TypeScript", "Node.js"],
-    status: {
-      current: 2,
-      total: 4,
-    },
-  },
-  {
-    id: 2,
-    title: "투표와 기술대회 사업화전략 플랫폼",
-    category: "공모전",
-    techStack: ["Spring", "Java", "MySQL"],
+    techStack: [
+      "React",
+      "TypeScript",
+      "Styled-Components",
+      "NodeJS",
+      "MongoDB",
+    ],
     status: {
       current: 3,
       total: 5,
     },
   },
   {
-    id: 3,
-    title: "[서울] kettodaze - 일본 거주 매칭",
-    category: "해커톤",
-    techStack: ["Flutter", "Firebase", "Python"],
+    id: 2,
+    title: "투표와 기술대회 사업화전략 플랫폼",
+    category: "공모전",
+    techStack: ["Spring", "Java", "MySQL", "React", "AWS"],
     status: {
-      current: 1,
-      total: 3,
+      current: 2,
+      total: 5,
+    },
+  },
+  {
+    id: 3,
+    title: "AI 기반 추천 시스템 개발",
+    category: "해커톤",
+    techStack: ["Python", "TensorFlow", "MongoDB", "Flask", "AWS"],
+    status: {
+      current: 2,
+      total: 4,
     },
   },
   {
     id: 4,
-    title: "[서울] kettodaze - 일본 거주 매칭",
+    title: "UX/UI 개선 프로젝트 팀원 모집",
     category: "스터디",
-    techStack: ["Flutter", "Firebase", "Python"],
+    techStack: ["Figma", "Adobe XD", "Sketch"],
     status: {
       current: 2,
       total: 6,
@@ -70,12 +77,162 @@ const recruitmentPosts = [
   },
   {
     id: 5,
-    title: "[서울] kettodaze - 일본 거주 매칭",
+    title: "쇼핑몰 마케팅 전략 기획 스터디",
     category: "스터디",
-    techStack: ["Flutter", "Firebase", "Python"],
+    techStack: ["Google Analytics", "SEO", "Marketing"],
+    status: {
+      current: 4,
+      total: 8,
+    },
+  },
+  {
+    id: 6,
+    title: "블록체인 기반 NFT 마켓플레이스",
+    category: "프로젝트",
+    techStack: ["Solidity", "Web3.js", "React"],
+    status: {
+      current: 3,
+      total: 5,
+    },
+  },
+  {
+    id: 7,
+    title: "클라우드 환경 CI/CD 파이프라인 구축",
+    category: "프로젝트",
+    techStack: ["AWS", "Docker", "Jenkins"],
     status: {
       current: 2,
+      total: 4,
+    },
+  },
+  {
+    id: 8,
+    title: "AI 기반 추천 시스템 개발",
+    category: "해커톤",
+    techStack: ["Python", "TensorFlow", "MongoDB"],
+    status: {
+      current: 3,
       total: 6,
+    },
+  },
+  {
+    id: 9,
+    title: "모바일 앱 UX 개선 프로젝트",
+    category: "프로젝트",
+    techStack: ["Swift", "Kotlin", "Figma"],
+    status: {
+      current: 2,
+      total: 5,
+    },
+  },
+  {
+    id: 10,
+    title: "웹 성능 최적화 스터디",
+    category: "스터디",
+    techStack: ["JavaScript", "Webpack", "Lighthouse"],
+    status: {
+      current: 4,
+      total: 8,
+    },
+  },
+  {
+    id: 11,
+    title: "오픈소스 프로젝트 기여 모임",
+    category: "스터디",
+    techStack: ["Git", "GitHub", "JavaScript"],
+    status: {
+      current: 5,
+      total: 10,
+    },
+  },
+  {
+    id: 12,
+    title: "데이터 시각화 대시보드",
+    category: "프로젝트",
+    techStack: ["D3.js", "React", "Python"],
+    status: {
+      current: 2,
+      total: 4,
+    },
+  },
+  {
+    id: 13,
+    title: "크로스 플랫폼 모바일 앱 개발",
+    category: "해커톤",
+    techStack: ["React Native", "Firebase", "Redux"],
+    status: {
+      current: 3,
+      total: 6,
+    },
+  },
+  {
+    id: 14,
+    title: "마이크로서비스 아키텍처 스터디",
+    category: "스터디",
+    techStack: ["Docker", "Kubernetes", "Spring Boot"],
+    status: {
+      current: 4,
+      total: 8,
+    },
+  },
+  {
+    id: 15,
+    title: "IoT 스마트홈 프로젝트",
+    category: "프로젝트",
+    techStack: ["Arduino", "Raspberry Pi", "MQTT"],
+    status: {
+      current: 2,
+      total: 5,
+    },
+  },
+  {
+    id: 16,
+    title: "AI 이미지 생성 웹 서비스",
+    category: "프로젝트",
+    techStack: ["Python", "PyTorch", "React"],
+    status: {
+      current: 3,
+      total: 6,
+    },
+  },
+  {
+    id: 17,
+    title: "블록체인 기반 투표 시스템",
+    category: "공모전",
+    techStack: ["Ethereum", "Solidity", "Web3.js"],
+    status: {
+      current: 2,
+      total: 4,
+    },
+  },
+  {
+    id: 18,
+    title: "AR/VR 게임 개발 프로젝트",
+    category: "프로젝트",
+    techStack: ["Unity", "C#", "ARKit"],
+    status: {
+      current: 3,
+      total: 6,
+    },
+  },
+  {
+    id: 19,
+    title: "프로그래밍 언어 스터디",
+    category: "스터디",
+    techStack: ["Go", "Rust", "TypeScript"],
+    status: {
+      current: 5,
+      total: 10,
+    },
+  },
+  {
+    id: 20,
+    title: "보안 취약점 분석 프로젝트",
+    category: "해커톤",
+    techStack: ["Python", "Burp Suite", "Metasploit"],
+    status: {
+      current: 2,
+      total: 5,
     },
   },
 ];
@@ -85,20 +242,172 @@ export default function HomePage() {
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("전체");
   const [selectedStatus, setSelectedStatus] = useState("");
+  const [isPaused, setIsPaused] = useState(false);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const lastPausedTimeRef = useRef<number | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const postPerPage = 16;
+  const navigate = useNavigate();
+
+  // 배너 전환 함수
+  const rotateBanner = () => {
+    setIsTransitioning(true);
+    setTimeout(() => {
+      setCurrentBannerIndex((prevIndex) =>
+        prevIndex === bannerData.length - 1 ? 0 : prevIndex + 1
+      );
+      setIsTransitioning(false);
+    }, 200);
+  };
+
+  // 마우스를 뗐을 때 즉시 슬라이더 업데이트
+  const handleMouseLeave = () => {
+    setIsPaused(false);
+
+    // 마지막으로 일시정지된 시간을 확인하고 일정 시간이 지났으면 즉시 전환
+    const now = Date.now();
+    if (lastPausedTimeRef.current && now - lastPausedTimeRef.current > 2000) {
+      rotateBanner();
+    }
+  };
+
+  // 마우스를 올렸을 때 마지막 일시정지 시간 저장
+  const handleMouseEnter = () => {
+    setIsPaused(true);
+    lastPausedTimeRef.current = Date.now();
+  };
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setIsTransitioning(true);
-      setTimeout(() => {
-        setCurrentBannerIndex((prevIndex) =>
-          prevIndex === bannerData.length - 1 ? 0 : prevIndex + 1
-        );
-        setIsTransitioning(false);
-      }, 200);
-    }, 4000);
+    // 일시정지 상태가 아닐 때만 인터벌 설정
+    if (!isPaused) {
+      intervalRef.current = setInterval(rotateBanner, 4000);
+    }
 
-    return () => clearInterval(interval);
-  }, []);
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
+  }, [isPaused]);
+
+  // 필터링된 모집글 게시물 가져오기
+  const getFilteredPosts = () => {
+    let filteredPosts = [...recruitmentPostsData];
+    if (selectedCategory !== "전체") {
+      filteredPosts = filteredPosts.filter(
+        (post) => post.category === selectedCategory
+      );
+    }
+
+    if (selectedStatus) {
+      // 진행 방식 필터링 로직 (실제 데이터에 맞게 추가)
+    }
+
+    return filteredPosts;
+  };
+
+  // 현재 페이지에 표시할 게시물
+  const getCurrentPagePosts = () => {
+    const filteredPosts = getFilteredPosts();
+    const indexOfLastPost = currentPage * postPerPage;
+    const indexOfFirstPost = indexOfLastPost - postPerPage;
+    return filteredPosts.slice(indexOfFirstPost, indexOfLastPost);
+  };
+
+  // 페이지 변경 처리
+  const handlePageChange = (pageNumber: number) => {
+    setCurrentPage(pageNumber);
+    // 페이지 변경 시 상단으로 스크롤
+    const recruitmentSection = document.querySelector(".recruitment-section");
+    if (recruitmentSection) {
+      window.scrollTo({
+        top: (recruitmentSection as HTMLElement).offsetTop || 0,
+        behavior: "smooth",
+      });
+    }
+  };
+
+  // 페이지네이션 컴포넌트
+  const Pagination = () => {
+    const filteredPosts = getFilteredPosts();
+    const totalPages = Math.ceil(filteredPosts.length / postPerPage);
+
+    if (totalPages <= 1) return null;
+
+    // 표시할 페이지 번호 계산 (최대 5개)
+    let startPage = Math.max(1, currentPage - 2);
+    let endPage = Math.min(totalPages, startPage + 4);
+
+    // 마지막 페이지가 totalPages보다 작으면 startPage 조정
+    if (endPage < totalPages) {
+      startPage = Math.max(1, endPage - 4);
+    }
+
+    return (
+      <div className="pagination">
+        <button
+          className={`pagination-btn ${currentPage === 1 ? "disabled" : ""}`}
+          onClick={() => handlePageChange(currentPage - 1)}
+          disabled={currentPage === 1}
+        >
+          이전
+        </button>
+
+        <div className="pagination-numbers">
+          {startPage > 1 && (
+            <>
+              <button
+                className="pagination-number"
+                onClick={() => handlePageChange(1)}
+              >
+                1
+              </button>
+              {startPage > 2 && (
+                <span className="pagination-ellipsis">...</span>
+              )}
+            </>
+          )}
+
+          {Array.from({ length: endPage - startPage + 1 }, (_, i) => (
+            <button
+              key={startPage + i}
+              className={`pagination-number ${
+                currentPage === startPage + i ? "active" : ""
+              }`}
+              onClick={() => handlePageChange(startPage + i)}
+            >
+              {startPage + i}
+            </button>
+          ))}
+
+          {endPage < totalPages && (
+            <>
+              {endPage < totalPages - 1 && (
+                <span className="pagination-ellipsis">...</span>
+              )}
+              <button
+                className="pagination-number"
+                onClick={() => handlePageChange(totalPages)}
+              >
+                {totalPages}
+              </button>
+            </>
+          )}
+        </div>
+
+        <button
+          className={`pagination-btn ${
+            currentPage === totalPages ? "disabled" : ""
+          }`}
+          onClick={() => handlePageChange(currentPage + 1)}
+          disabled={currentPage === totalPages}
+        >
+          다음
+        </button>
+      </div>
+    );
+  };
 
   const changeBanner = (index) => {
     if (isTransitioning) return;
@@ -121,6 +430,18 @@ export default function HomePage() {
     return orderedBanners;
   };
 
+  // 카테고리 변경 시 페이지 초기화
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedCategory, selectedStatus]);
+
+  const currentPosts = getCurrentPagePosts();
+
+  // 게시글 클릭 핸들러
+  const handlePostClick = (postId: number) => {
+    navigate(`/post/${postId}`);
+  };
+
   return (
     <div className="home-container">
       <section className="banner-section">
@@ -131,7 +452,11 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div className="banner-stack">
+        <div
+          className="banner-stack"
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+        >
           {getOrderedBanners().map((banner, index) => (
             <div
               key={banner.id}
@@ -210,8 +535,13 @@ export default function HomePage() {
         </div>
 
         <div className="recruitment-list">
-          {recruitmentPosts.map((post) => (
-            <div key={post.id} className="recruitment-card">
+          {currentPosts.map((post) => (
+            <div
+              key={post.id}
+              className="recruitment-card"
+              onClick={() => handlePostClick(post.id)}
+              style={{ cursor: "pointer" }}
+            >
               <div className="recruitment-image">
                 <span className="recruitment-category">{post.category}</span>
               </div>
@@ -236,6 +566,9 @@ export default function HomePage() {
             </div>
           ))}
         </div>
+
+        {/* 페이지네이션 */}
+        <Pagination />
       </section>
     </div>
   );
