@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import "../../styles/main/Main.css";
 
 // 배너 데이터
@@ -26,36 +27,42 @@ const bannerData = [
   },
 ];
 
-// 모집 글 더미 데이터 (확장된 버전)
+// 모집 글 더미 데이터 (상세 페이지와 일치)
 const recruitmentPostsData = [
   {
     id: 1,
-    title: "아이디어는 있지만 참여자가 없다구요?",
+    title: "[서울] Kettodze - 일본 가챠 매장",
     category: "프로젝트",
-    techStack: ["React", "TypeScript", "Node.js"],
-    status: {
-      current: 2,
-      total: 4,
-    },
-  },
-  {
-    id: 2,
-    title: "투표와 기술대회 사업화전략 플랫폼",
-    category: "공모전",
-    techStack: ["Spring", "Java", "MySQL"],
+    techStack: [
+      "React",
+      "TypeScript",
+      "Styled-Components",
+      "NodeJS",
+      "MongoDB",
+    ],
     status: {
       current: 3,
       total: 5,
     },
   },
   {
-    id: 3,
-    title: "[서울] kettodaze - 일본 거주 매칭",
-    category: "해커톤",
-    techStack: ["Flutter", "Firebase", "Python"],
+    id: 2,
+    title: "투표와 기술대회 사업화전략 플랫폼",
+    category: "공모전",
+    techStack: ["Spring", "Java", "MySQL", "React", "AWS"],
     status: {
-      current: 1,
-      total: 3,
+      current: 2,
+      total: 5,
+    },
+  },
+  {
+    id: 3,
+    title: "AI 기반 추천 시스템 개발",
+    category: "해커톤",
+    techStack: ["Python", "TensorFlow", "MongoDB", "Flask", "AWS"],
+    status: {
+      current: 2,
+      total: 4,
     },
   },
   {
@@ -240,6 +247,7 @@ export default function HomePage() {
   const lastPausedTimeRef = useRef<number | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const postPerPage = 16;
+  const navigate = useNavigate();
 
   // 배너 전환 함수
   const rotateBanner = () => {
@@ -429,6 +437,11 @@ export default function HomePage() {
 
   const currentPosts = getCurrentPagePosts();
 
+  // 게시글 클릭 핸들러
+  const handlePostClick = (postId: number) => {
+    navigate(`/post/${postId}`);
+  };
+
   return (
     <div className="home-container">
       <section className="banner-section">
@@ -523,7 +536,12 @@ export default function HomePage() {
 
         <div className="recruitment-list">
           {currentPosts.map((post) => (
-            <div key={post.id} className="recruitment-card">
+            <div
+              key={post.id}
+              className="recruitment-card"
+              onClick={() => handlePostClick(post.id)}
+              style={{ cursor: "pointer" }}
+            >
               <div className="recruitment-image">
                 <span className="recruitment-category">{post.category}</span>
               </div>

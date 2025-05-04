@@ -1,243 +1,427 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 import "../../styles/post/PostDetailPage.css";
 import TechStack from "../../component/post/TechStack.tsx";
 import TeamMembers from "../../component/post/TeamMembers.tsx";
 import Comment from "../../component/post/Comment.tsx";
 
-export default function PostDetail() {
-  // 더미 데이터
-  const leader = {
-    id: 1,
-    name: "눌엉이",
-    avatar: "https://via.placeholder.com/48x48.png?text=User",
-    email: "nool@sample.com",
-    isLeader: true,
+// 인터페이스 정의
+interface PostData {
+  id: number;
+  title: string;
+  category: string;
+  content: {
+    motivation: string;
+    product: string;
+    target: string;
+    meeting: string;
+    meetingType: string;
+    experience: string;
+    etc: string;
   };
+  leader: {
+    id: number;
+    name: string;
+    avatar: string;
+    email: string;
+    isLeader: boolean;
+    skills?: string[];
+  };
+  members: Array<{
+    id: number;
+    name: string;
+    avatar: string;
+    skills?: string[];
+  }>;
+  techStacks: string[];
+  applyStatus: {
+    current: number;
+    total: number;
+  };
+  meetingType: string;
+  endDate: string;
+  comments?: Array<{
+    id: number;
+    author: {
+      id: number;
+      name: string;
+      avatar: string;
+    };
+    content: string;
+    createdAt: string;
+    replies?: any[];
+  }>;
+}
 
-  const members = [
-    {
-      id: 2,
-      name: "니누느",
-      avatar: "https://via.placeholder.com/48x48.png?text=Member1",
-      skills: ["Node.js", "Express", "MongoDB", "AWS"],
+// 더미 데이터 - 실제로는 API 호출로 대체
+const postsData: PostData[] = [
+  {
+    id: 1,
+    title: "[서울] Kettodze - 일본 가챠 매장",
+    category: "프로젝트",
+    content: {
+      motivation: `안녕하세요. 가챠 매장 찾기 앱 Kettodze를 개발 중인 눌엉이입니다.
+저는 n년 차 오타쿠로, 강남이나 국전 근처를 방문할 때마다 가챠를 즐기곤 합니다.
+하지만 매번 "오늘은 어떤 가챠가 있을까?" 하는 기대감으로 방문하면서도, 정작 원하는 가챠를 찾는 데 어려움을 겪곤 했습니다.
+이런 불편함을 해결하고자, 가챠 매장 정보를 손쉽게 찾을 수 있는 앱, Kettodze를 개발하게 되었습니다.`,
+      product: `현재는 수익성보다는 개인 토이 프로젝트로 혼자 진행하고 있습니다.
+갓챠를 판매하는 사이트의 개념보다는, 근처에 어떤 갓챠 매장이 있는지 알려주는 앱입니다. (중개앱)`,
+      target: "가챠 좋아하는 사람들",
+      meeting: "1주일에 1회 정도 정기적으로 회의",
+      meetingType: "논의 후에 결정할게요",
+      experience: `그동안 주로 개발과 기획, UI/UX 기본 작업을 담당해왔습니다.
+연차가 많지는 않지만(4년차), 누구보다 열심히 개발하고 성장해나갈 각오로 임하고 있습니다.
+지원해주시는 분들께는 높은 개발 역량보다는, 이 프로젝트에 대한 애정과 긍정적인 태도(덕량)를 더 중요하게 생각하고 있습니다.`,
+      etc: `현재 약 4년 차 개발자로, 이번 프로젝트의 초기 작업을 진행하고 있습니다.
+함께 하게 된다면, 자신의 전문 분야에 한정되지 않고 다양한 업무를 경험할 수 있습니다.
+때로는 맨땅에서 시작하는 일도 있을 수 있습니다.
+단순히 포트폴리오에 한 줄 추가하는 것을 목표로 하기보다는,
+정말로 이 앱이 우리 같은 갓챠맨들에게 실질적인 도움이 되었으면 하는 마음으로 함께 해주셨으면 합니다.
+현재 총 3명의 팀원을 모집하고 있으며, 프로젝트 진행 상황과 팀 논의에 따라 추후 확장될 가능성도 있습니다.`,
     },
-    {
-      id: 3,
-      name: "이수수",
-      avatar: "https://via.placeholder.com/48x48.png?text=Member2",
-      skills: ["Figma", "Adobe XD", "Photoshop", "반응형 웹"],
-    },
-  ];
-
-  const endDate = "2025-10-29";
-  const techStacks = [
-    "React",
-    "TypeScript",
-    "Styled-Components",
-    "NodeJS",
-    "MongoDB",
-    "Figma",
-  ];
-  const applyStatus = { current: 3, total: 5 };
-  const meetingType = "온라인";
-
-  const dummyComments = [
-    {
+    leader: {
       id: 1,
-      author: {
-        id: 5,
-        name: "참여자1",
-        avatar: "https://via.placeholder.com/40",
+      name: "눌엉이",
+      avatar: "https://via.placeholder.com/48x48.png?text=User",
+      email: "nool@sample.com",
+      isLeader: true,
+      skills: ["React", "TypeScript", "Node.js"],
+    },
+    members: [
+      {
+        id: 2,
+        name: "니누느",
+        avatar: "https://via.placeholder.com/48x48.png?text=Member1",
+        skills: ["Node.js", "Express", "MongoDB", "AWS"],
       },
-      content:
-        "프로젝트에 관심이 있습니다. 지원하고 싶은데 어떻게 해야 할까요?",
-      createdAt: "2023-04-15T09:24:00",
-      replies: [
-        {
-          id: 2,
-          author: {
-            id: 1,
-            name: "눌엉이",
-            avatar: "https://via.placeholder.com/40",
-          },
-          content:
-            "안녕하세요! 오른쪽 상단의 '지원하기' 버튼을 통해 지원해주시면 됩니다.",
-          createdAt: "2023-04-15T10:30:00",
+      {
+        id: 3,
+        name: "이수수",
+        avatar: "https://via.placeholder.com/48x48.png?text=Member2",
+        skills: ["Figma", "Adobe XD", "Photoshop", "반응형 웹"],
+      },
+    ],
+    techStacks: [
+      "React",
+      "TypeScript",
+      "Styled-Components",
+      "NodeJS",
+      "MongoDB",
+      "Figma",
+    ],
+    applyStatus: { current: 3, total: 5 },
+    meetingType: "온라인",
+    endDate: "2025-10-29",
+    comments: [
+      {
+        id: 1,
+        author: {
+          id: 5,
+          name: "참여자1",
+          avatar: "https://via.placeholder.com/40",
         },
-      ],
-    },
-    {
-      id: 3,
-      author: {
-        id: 6,
-        name: "관심있는사람",
-        avatar: "https://via.placeholder.com/40",
+        content:
+          "프로젝트에 관심이 있습니다. 지원하고 싶은데 어떻게 해야 할까요?",
+        createdAt: "2023-04-15T09:24:00",
+        replies: [
+          {
+            id: 2,
+            author: {
+              id: 1,
+              name: "눌엉이",
+              avatar: "https://via.placeholder.com/40",
+            },
+            content:
+              "안녕하세요! 오른쪽 상단의 '지원하기' 버튼을 통해 지원해주시면 됩니다.",
+            createdAt: "2023-04-15T10:30:00",
+          },
+        ],
       },
-      content: "프로젝트 일정이 어떻게 되나요? 주 몇회 정도 미팅이 있을까요?",
-      createdAt: "2023-04-16T14:05:00",
+      {
+        id: 3,
+        author: {
+          id: 6,
+          name: "관심있는사람",
+          avatar: "https://via.placeholder.com/40",
+        },
+        content: "프로젝트 일정이 어떻게 되나요? 주 몇회 정도 미팅이 있을까요?",
+        createdAt: "2023-04-16T14:05:00",
+      },
+    ],
+  },
+  {
+    id: 2,
+    title: "투표와 기술대회 사업화전략 플랫폼",
+    category: "공모전",
+    content: {
+      motivation:
+        "기술 스타트업을 위한 효과적인 투표 시스템과 전략 플랫폼이 필요합니다.",
+      product: "스타트업 사업화 전략을 투표로 결정하고 공유하는 플랫폼입니다.",
+      target: "테크 스타트업 창업자, 투자자, 기획자",
+      meeting: "주 2회 온라인 미팅",
+      meetingType: "온라인 위주, 월 1회 오프라인",
+      experience:
+        "다양한 투표 시스템 개발 경험이 있으며 스타트업 생태계에 관심이 많습니다.",
+      etc: "함께 좋은 서비스를 만들어나갈 열정 있는 분들을 찾고 있습니다.",
     },
-  ];
+    leader: {
+      id: 10,
+      name: "김창업",
+      avatar: "https://via.placeholder.com/48x48.png?text=Kim",
+      email: "startup@example.com",
+      isLeader: true,
+      skills: ["Spring", "Java", "MySQL"],
+    },
+    members: [],
+    techStacks: ["Spring", "Java", "MySQL", "React", "AWS"],
+    applyStatus: { current: 2, total: 5 },
+    meetingType: "혼합",
+    endDate: "2025-08-15",
+    comments: [],
+  },
+  {
+    id: 3,
+    title: "AI 기반 추천 시스템 개발",
+    category: "해커톤",
+    content: {
+      motivation:
+        "사용자 행동 데이터를 바탕으로 정확한 추천을 제공하는 시스템을 만들고 싶습니다.",
+      product: "머신러닝 기반 맞춤형 콘텐츠 추천 알고리즘 개발",
+      target: "콘텐츠 플랫폼 운영자, 데이터 과학자",
+      meeting: "주 3회 온라인 스크럼",
+      meetingType: "온라인",
+      experience: "머신러닝과 데이터 분석 분야에서 5년간 일해왔습니다.",
+      etc: "열정적이고 도전을 즐기는 팀원을 모집합니다.",
+    },
+    leader: {
+      id: 15,
+      name: "박데이터",
+      avatar: "https://via.placeholder.com/48x48.png?text=Park",
+      email: "data@example.com",
+      isLeader: true,
+      skills: ["Python", "TensorFlow", "MongoDB"],
+    },
+    members: [
+      {
+        id: 16,
+        name: "이분석",
+        avatar: "https://via.placeholder.com/48x48.png?text=Lee",
+        skills: ["Python", "Pandas", "Data Analysis"],
+      },
+    ],
+    techStacks: ["Python", "TensorFlow", "MongoDB", "Flask", "AWS"],
+    applyStatus: { current: 2, total: 4 },
+    meetingType: "온라인",
+    endDate: "2024-12-20",
+    comments: [],
+  },
+];
+
+export default function PostDetail() {
+  const { id } = useParams<{ id: string }>();
+  const [post, setPost] = useState<PostData | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    // ID를 이용해 해당 게시글 찾기
+    const postId = Number(id);
+    try {
+      // 실제 환경에서는 API 호출 대신 더미 데이터에서 찾기
+      const foundPost = postsData.find((post) => post.id === postId);
+
+      if (foundPost) {
+        setPost(foundPost);
+      } else {
+        setError("게시글을 찾을 수 없습니다.");
+      }
+    } catch (err) {
+      setError("데이터를 불러오는 중 오류가 발생했습니다.");
+      console.error("Error fetching post data:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, [id]);
+
+  if (loading) {
+    return <div className="post-detail-loading">로딩 중...</div>;
+  }
+
+  if (error || !post) {
+    return (
+      <div className="post-detail-error">
+        {error || "게시글을 찾을 수 없습니다."}
+      </div>
+    );
+  }
 
   return (
     <div className="post-detail-outer">
       <div className="post-detail-container">
         <div className="post-detail-main">
-          <h1>[서울] Kettodze - 일본 가챠 매장</h1>
+          <h1 style={{ textAlign: "left" }}>{post.title}</h1>
 
           <section style={{ margin: "32px 0 0 0" }}>
-            <h2 style={{ fontSize: 20, marginBottom: 12 }}>
+            <h2 style={{ fontSize: 20, marginBottom: 12, textAlign: "left" }}>
               1. 프로젝트의 시작 동기
             </h2>
             <div style={{ marginBottom: 10, color: "#444" }}>
-              <b>- Q. 왜 이 프로덕트를 만드시고 싶은지 적어주세요</b>
-              <p style={{ margin: 0 }}>
-                안녕하세요. 가챠 매장 찾기 앱 <b>Kettodze</b>를 개발 중인
-                눌엉이입니다.
-                <br />
-                저는 n년 차 오타쿠로, 강남이나 국전 근처를 방문할 때마다 가챠를
-                즐기곤 합니다.
-                <br />
-                하지만 매번 "오늘은 어떤 가챠가 있을까?" 하는 기대감으로
-                방문하면서도, 정작 원하는 가챠를 찾는 데 어려움을 겪곤 했습니다.
-                <br />
-                이런 불편함을 해결하고자, 가챠 매장 정보를 손쉽게 찾을 수 있는
-                앱, <b>Kettodze</b>를 개발하게 되었습니다.
+              <b style={{ textAlign: "left", display: "block" }}>
+                - Q. 왜 이 프로덕트를 만드시고 싶은지 적어주세요
+              </b>
+              <p
+                style={{ margin: 0, whiteSpace: "pre-line", textAlign: "left" }}
+              >
+                {post.content.motivation}
               </p>
             </div>
             <div style={{ marginBottom: 10, color: "#444" }}>
-              <b>- Q. 만들고자 하는 프로덕트에 대해 알려주세요</b>
-              <p style={{ margin: 0 }}>
-                현재는 수익성보다는 개인 토이 프로젝트로 혼자 진행하고 있습니다.
-                <br />
-                갓챠를 판매하는 사이트의 개념보다는, 근처에 어떤 갓챠 매장이
-                있는지 알려주는 앱입니다. (중개앱)
+              <b style={{ textAlign: "left", display: "block" }}>
+                - Q. 만들고자 하는 프로덕트에 대해 알려주세요
+              </b>
+              <p
+                style={{ margin: 0, whiteSpace: "pre-line", textAlign: "left" }}
+              >
+                {post.content.product}
               </p>
-              <div style={{ margin: "8px 0" }}>
-                <b>기술 스택:</b> React, TypeScript, Styled-Components
+              <div style={{ margin: "8px 0", textAlign: "left" }}>
+                <b>기술 스택:</b> {post.techStacks.join(", ")}
                 <br />
                 <b>현재 상태:</b> 개발 진행 중<br />
-                <b>목표:</b> 사용자 친화적인 UI/UX를 통해 가챠 매장 정보를 쉽고
-                편리하게 제공하는 앱 개발
+                <b>목표:</b> 사용자 친화적인 UI/UX를 통해 정보를 쉽고 편리하게
+                제공하는 앱 개발
               </div>
             </div>
             <div style={{ marginBottom: 10, color: "#444" }}>
-              <b>- Q. 어떤 사용자들을 타겟하고 있는지 적어주세요</b>
-              <p style={{ margin: 0 }}>가챠 좋아하는 사람들</p>
+              <b style={{ textAlign: "left", display: "block" }}>
+                - Q. 어떤 사용자들을 타겟하고 있는지 적어주세요
+              </b>
+              <p style={{ margin: 0, textAlign: "left" }}>
+                {post.content.target}
+              </p>
             </div>
           </section>
           <section style={{ margin: "32px 0 0 0" }}>
-            <h2 style={{ fontSize: 20, marginBottom: 12 }}>
+            <h2 style={{ fontSize: 20, marginBottom: 12, textAlign: "left" }}>
               2. 회의 진행/모임 방식
             </h2>
             <div style={{ marginBottom: 10, color: "#444" }}>
-              <b>- Q. 1주에 몇번정도 회의나 모임을 진행할 계획인가요?</b>
-              <p style={{ margin: 0 }}>1주일에 1회 정도 정기적으로 회의</p>
+              <b style={{ textAlign: "left", display: "block" }}>
+                - Q. 1주에 몇번정도 회의나 모임을 진행할 계획인가요?
+              </b>
+              <p style={{ margin: 0, textAlign: "left" }}>
+                {post.content.meeting}
+              </p>
             </div>
             <div style={{ marginBottom: 10, color: "#444" }}>
-              <b>- Q. 온/오프라인 회의 진행시 진행방식을 적어주세요</b>
-              <p style={{ margin: 0 }}>논의 후에 결정할게요</p>
+              <b style={{ textAlign: "left", display: "block" }}>
+                - Q. 온/오프라인 회의 진행시 진행방식을 적어주세요
+              </b>
+              <p style={{ margin: 0, textAlign: "left" }}>
+                {post.content.meetingType}
+              </p>
             </div>
           </section>
           <section style={{ margin: "32px 0 0 0" }}>
-            <h2 style={{ fontSize: 20, marginBottom: 12 }}>
+            <h2 style={{ fontSize: 20, marginBottom: 12, textAlign: "left" }}>
               3. 저의 경험 및 역할
             </h2>
             <div style={{ marginBottom: 10, color: "#444" }}>
-              <b>
+              <b style={{ textAlign: "left", display: "block" }}>
                 - Q. 재직시 전문적으로 담당한 업무나, 별도로 진행하신 팀
                 프로젝트가 있으시다면 적어주세요
               </b>
-              <p style={{ margin: 0 }}>
-                그동안 주로 개발과 기획, UI/UX 기본 작업을 담당해왔습니다.
-                <br />
-                연차가 많지는 않지만(4년차), 누구보다 열심히 개발하고 성장해나갈
-                각오로 임하고 있습니다.
-                <br />
-                지원해주시는 분들께는 높은 개발 역량보다는, 이 프로젝트에 대한
-                애정과 긍정적인 태도(덕량)를 더 중요하게 생각하고 있습니다.
+              <p
+                style={{ margin: 0, whiteSpace: "pre-line", textAlign: "left" }}
+              >
+                {post.content.experience}
               </p>
-              <div style={{ margin: "8px 0" }}>
+              <div style={{ margin: "8px 0", textAlign: "left" }}>
                 <b>개발자 (1명)</b>
-                <ul style={{ margin: 0, paddingLeft: 18 }}>
-                  <li>서버 및 API 개발 경험</li>
-                  <li>데이터베이스 설계 및 관리 능력</li>
-                  <li>Node.js, Express, MongoDB/PostgreSQL 등 경험 (자유)</li>
+                <ul style={{ margin: 0, paddingLeft: 18, textAlign: "left" }}>
+                  <li style={{ textAlign: "left" }}>서버 및 API 개발 경험</li>
+                  <li style={{ textAlign: "left" }}>
+                    데이터베이스 설계 및 관리 능력
+                  </li>
+                  <li style={{ textAlign: "left" }}>
+                    Node.js, Express, MongoDB/PostgreSQL 등 경험 (자유)
+                  </li>
                 </ul>
                 <b>디자이너 (1명)</b>
-                <ul style={{ margin: 0, paddingLeft: 18 }}>
-                  <li>웹/앱 디자인 경험</li>
-                  <li>Figma, Adobe XD 등 디자인 툴 활용 능력</li>
-                  <li>반응형 웹 디자인 경험</li>
+                <ul style={{ margin: 0, paddingLeft: 18, textAlign: "left" }}>
+                  <li style={{ textAlign: "left" }}>웹/앱 디자인 경험</li>
+                  <li style={{ textAlign: "left" }}>
+                    Figma, Adobe XD 등 디자인 툴 활용 능력
+                  </li>
+                  <li style={{ textAlign: "left" }}>반응형 웹 디자인 경험</li>
                 </ul>
                 <b>기획자 (1명)</b>
-                <ul style={{ margin: 0, paddingLeft: 18 }}>
-                  <li>서비스 기획 및 프로젝트 관리 경험</li>
-                  <li>사용자 중심 사고방식</li>
-                  <li>마케팅 경험</li>
+                <ul style={{ margin: 0, paddingLeft: 18, textAlign: "left" }}>
+                  <li style={{ textAlign: "left" }}>
+                    서비스 기획 및 프로젝트 관리 경험
+                  </li>
+                  <li style={{ textAlign: "left" }}>사용자 중심 사고방식</li>
+                  <li style={{ textAlign: "left" }}>마케팅 경험</li>
                 </ul>
               </div>
             </div>
           </section>
           <section style={{ margin: "32px 0 0 0" }}>
-            <h2 style={{ fontSize: 20, marginBottom: 12 }}>4. 기타</h2>
-            <div style={{ color: "#444" }}>
-              현재 약 4년 차 개발자로, 이번 프로젝트의 초기 작업을 진행하고
-              있습니다.
-              <br />
-              함께 하게 된다면, 자신의 전문 분야에 한정되지 않고 다양한 업무를
-              경험할 수 있습니다.
-              <br />
-              때로는 맨땅에서 시작하는 일도 있을 수 있습니다.
-              <br />
-              단순히 포트폴리오에 한 줄 추가하는 것을 목표로 하기보다는,
-              <br />
-              정말로 이 앱이 우리 같은 갓챠맨들에게 실질적인 도움이 되었으면
-              하는 마음으로 함께 해주셨으면 합니다.
-              <br />
-              현재 총 3명의 팀원을 모집하고 있으며, 프로젝트 진행 상황과 팀
-              논의에 따라 추후 확장될 가능성도 있습니다.
+            <h2 style={{ fontSize: 20, marginBottom: 12, textAlign: "left" }}>
+              4. 기타
+            </h2>
+            <div
+              style={{
+                color: "#444",
+                whiteSpace: "pre-line",
+                textAlign: "left",
+              }}
+            >
+              {post.content.etc}
             </div>
           </section>
 
           {/* 기술 스택 컴포넌트 */}
-          <TechStack technologies={techStacks} />
+          <TechStack technologies={post.techStacks} />
 
           {/* 팀 멤버 컴포넌트 */}
-          <TeamMembers leader={leader} members={members} />
+          <TeamMembers leader={post.leader} members={post.members} />
 
           {/* 댓글 컴포넌트 */}
-          <Comment comments={dummyComments} postId={1} />
+          <Comment comments={post.comments || []} postId={post.id} />
         </div>
       </div>
 
-      {/* 오른쪽 배너 복원 */}
+      {/* 오른쪽 배너 */}
       <aside className="post-detail-aside">
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <img
-            src={leader.avatar}
+            src={post.leader.avatar}
             alt="리더 프로필"
             style={{ width: 48, height: 48, borderRadius: "50%" }}
           />
           <div>
-            <div style={{ fontWeight: 600 }}>{leader.name}</div>
-            <div style={{ fontSize: 13, color: "#888" }}>{leader.email}</div>
+            <div style={{ fontWeight: 600 }}>{post.leader.name}</div>
+            <div style={{ fontSize: 13, color: "#888" }}>
+              {post.leader.email}
+            </div>
           </div>
         </div>
         <div className="aside-divider" />
         <div>
           <div style={{ fontSize: 14, color: "#888" }}>모집 마감일</div>
-          <div style={{ fontWeight: 600 }}>{endDate}</div>
+          <div style={{ fontWeight: 600 }}>{post.endDate}</div>
         </div>
         <div className="aside-divider" />
         <div>
           <div style={{ fontSize: 14, color: "#888" }}>진행 방식</div>
-          <div style={{ fontWeight: 600 }}>{meetingType}</div>
+          <div style={{ fontWeight: 600 }}>{post.meetingType}</div>
         </div>
         <div className="aside-divider" />
         <div>
           <div style={{ fontSize: 14, color: "#888" }}>모집 완료</div>
           <div style={{ fontWeight: 600 }}>
-            {applyStatus.current} / {applyStatus.total}
+            {post.applyStatus.current} / {post.applyStatus.total}
           </div>
         </div>
         <div className="aside-divider" />
@@ -246,7 +430,7 @@ export default function PostDetail() {
           <div
             style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 6 }}
           >
-            {techStacks.map((tech) => (
+            {post.techStacks.map((tech) => (
               <span className="tech-tag" key={tech}>
                 {tech}
               </span>
