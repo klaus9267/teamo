@@ -1,0 +1,98 @@
+.team-members-section {
+  margin: 40px 0;
+  padding: 20px 0;
+  border-top: 1px solid #e5e7eb;
+}
+
+.team-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.member-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 16px;
+  background-color: #f9fafb;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.leader-card {
+  background-color: #edf2f7;
+  border-left: 4px solid #3cb4ac;
+}
+
+.member-avatar-container {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.member-avatar {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.member-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+
+.member-name {
+  font-weight: 600;
+  color: #1a202c;
+  margin-bottom: 2px;
+}
+
+.member-skills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.skill-tag {
+  font-size: 0.75rem;
+  padding: 3px 8px;
+  background-color: rgba(60, 180, 172, 0.1);
+  color: #3cb4ac;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.members-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+@media (max-width: 640px) {
+  .member-card {
+    padding: 12px;
+  }
+
+  .member-avatar-container {
+    width: 40px;
+    height: 40px;
+  }
+
+  .member-skills {
+    gap: 4px;
+  }
+
+  .skill-tag {
+    font-size: 0.7rem;
+    padding: 2px 6px;
+  }
+}

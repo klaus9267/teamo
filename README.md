@@ -21,6 +21,7 @@
 ## 🛠️ 기술 스택
 
 ### 프론트엔드
+
 - **언어 및 프레임워크**: React, JavaScript
 - **상태 관리**: Redux / Context API
 - **스타일링**: CSS / Styled-components
@@ -29,6 +30,7 @@
 ## 🚀 시작하기
 
 ### 사전 요구사항
+
 - Node.js (v14 이상)
 - npm 또는 yarn
 
