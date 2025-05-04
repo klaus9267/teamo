@@ -29,6 +29,15 @@ const TeamMembers: React.FC<TeamMembersProps> = ({ leader, members }) => {
         </div>
         <div className="member-info">
           <div className="member-name">{leader.name}</div>
+          {leader.skills && (
+            <div className="member-skills">
+              {leader.skills.map((skill, index) => (
+                <span key={index} className="skill-tag">
+                  {skill}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 

@@ -57,8 +57,7 @@ body {
   width: 100%;
   height: 100%;
   border-radius: 15px;
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  cursor: pointer;
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
   color: white;
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
   will-change: transform;
@@ -66,23 +65,22 @@ body {
 }
 
 .banner-card.transitioning {
-  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .banner-card.front {
   transform: translateY(0) scale(1) !important;
+  z-index: 3;
 }
 
 .banner-card.middle {
   transform: translateY(-20px) scale(0.95) !important;
+  z-index: 2;
 }
 
 .banner-card.back {
   transform: translateY(-40px) scale(0.9) !important;
-}
-
-.banner-card:hover {
-  transform: translateY(-5px) scale(1.02) !important;
+  z-index: 1;
 }
 
 .banner-card-content {
@@ -696,5 +694,98 @@ body {
     top: unset;
     left: unset;
     display: block;
+  }
+}
+
+/* 페이지네이션 스타일 */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 40px;
+  gap: 10px;
+}
+
+.pagination-numbers {
+  display: flex;
+  gap: 6px;
+}
+
+.pagination-number {
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 0.9rem;
+  cursor: pointer;
+  border: 1px solid #e5e7eb;
+  background-color: white;
+  transition: all 0.2s;
+}
+
+.pagination-number:hover {
+  background-color: #f3f4f6;
+}
+
+.pagination-number.active {
+  background-color: #3cb4ac;
+  color: white;
+  border-color: #3cb4ac;
+}
+
+.pagination-btn {
+  padding: 0 12px;
+  height: 36px;
+  border-radius: 6px;
+  border: 1px solid #e5e7eb;
+  background-color: white;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.pagination-btn:hover:not(.disabled) {
+  background-color: #f3f4f6;
+}
+
+.pagination-btn.disabled {
+  color: #a0aec0;
+  cursor: not-allowed;
+}
+
+.pagination-ellipsis {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  font-size: 0.9rem;
+  color: #718096;
+}
+
+@media (max-width: 640px) {
+  .pagination {
+    gap: 6px;
+  }
+
+  .pagination-numbers {
+    gap: 4px;
+  }
+
+  .pagination-number,
+  .pagination-btn {
+    width: 32px;
+    height: 32px;
+    font-size: 0.8rem;
+  }
+
+  .pagination-btn {
+    padding: 0 8px;
+  }
+
+  .pagination-ellipsis {
+    width: 24px;
   }
 }

@@ -41,9 +41,9 @@ body {
 /* 사이드바 고정 레이아웃 */
 .post-detail-aside {
   position: fixed;
-  width: 280px; /* 사이드바 너비 약간 증가 */
-  right: calc(50% - 580px); /* 본문과 겹치지 않도록 오른쪽으로 더 이동 */
-  top: 120px; /* 상단에서 약간 여백 */
+  width: 280px; /* 사이드바 너비 */
+  right: calc(50% - 580px); /* 계산된 위치에 고정 */
+  top: 120px; /* 상단에서 여백 */
   background: #fff;
   border: 1px solid #e5e7eb;
   border-radius: 12px;
@@ -53,7 +53,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  max-height: calc(100vh - 140px); /* 높이 제한, 위아래 여백 확보 */
+  max-height: calc(100vh - 140px); /* 높이 제한, 여백 확보 */
   overflow-y: auto;
   transition: all 0.2s ease-in-out;
   box-sizing: border-box;
@@ -108,26 +108,25 @@ body {
 
   .post-detail-container {
     margin-right: 0;
-    margin-bottom: 340px; /* 아래에 배치될 사이드바 높이만큼 여백 */
+    margin-bottom: 32px;
     max-width: 100%;
     padding: 0 16px;
   }
 
   .post-detail-aside {
     position: static;
-    margin: 32px auto;
+    margin: 0 auto 32px auto;
     width: 100%;
     max-width: 760px;
     right: auto;
     top: auto;
-    transform: none;
   }
 }
 
 @media (max-width: 800px) {
   .post-detail-container {
-    margin-bottom: 0;
     padding: 0 12px;
+    margin-bottom: 24px;
   }
 
   .post-detail-main {

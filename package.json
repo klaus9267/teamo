@@ -21,7 +21,7 @@
     "predeploy": "npm run build",
     "deploy": "gh-pages -d build"
   },
-  "homepage": "https://prgrms-aibe-devcourse.github.io/AIBE1-Project2-Team03-frontend/",
+  "homepage": "https://teamo.kro.kr/",
   "eslintConfig": {
     "extends": [
       "react-app",
