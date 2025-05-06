@@ -5,6 +5,7 @@ import PostDetail from "../pages/post/detail.tsx";
 import HubPage from "../pages/hub/index.tsx";
 import ProfilePage from "../pages/profile/index.tsx";
 import ResumeForm from "../pages/resume/index.tsx";
+import ResumeDetail from "../pages/resume/detail.tsx";
 
 function Router() {
   return (
@@ -15,6 +16,7 @@ function Router() {
       <Route path="/profile" element={<ProfilePage />} />
       <Route path="/profile/resume/new" element={<ResumeForm />} />
       <Route path="/profile/resume/edit/:id" element={<ResumeForm />} />
+      <Route path="/profile/resume/:id" element={<ResumeDetail />} />
     </Routes>
   );
 }

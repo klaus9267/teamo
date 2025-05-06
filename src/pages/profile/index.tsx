@@ -283,7 +283,11 @@ const ProfilePage = () => {
             {userData.resumeList.length > 0 ? (
               <div className="resume-container">
                 {userData.resumeList.map((resume) => (
-                  <div className="resume-card" key={resume.id}>
+                  <div
+                    className="resume-card"
+                    key={resume.id}
+                    onClick={() => navigate(`/profile/resume/${resume.id}`)}
+                  >
                     <div className="resume-header">
                       <h4>{resume.title}</h4>
                       <span className="resume-date">{resume.date}</span>
@@ -296,7 +300,10 @@ const ProfilePage = () => {
                     <div className="word-count">
                       {resume.content.length}/3000
                     </div>
-                    <div className="resume-actions">
+                    <div
+                      className="resume-actions"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <button
                         className="edit-btn"
                         onClick={() =>
