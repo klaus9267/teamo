@@ -101,6 +101,7 @@ body {
 .banner-card-content p {
   font-size: 1.2rem;
   line-height: 1.5;
+  text-align: left;
 }
 
 .banner-text {
@@ -112,6 +113,7 @@ body {
   font-weight: bold;
   margin-bottom: 16px;
   color: var(--text-dark);
+  text-align: left;
 }
 
 .banner-text h2 {
@@ -119,6 +121,7 @@ body {
   font-weight: normal;
   margin-bottom: 40px;
   color: #555;
+  text-align: left;
 }
 
 /* 배너 네비게이션 점 스타일 */
@@ -165,263 +168,22 @@ body {
 
   .banner-text h1 {
     font-size: 2rem;
+    text-align: left;
   }
 
   .banner-text h2 {
     font-size: 1.3rem;
+    text-align: left;
   }
 
   .banner-card-content h3 {
     font-size: 1.8rem;
+    text-align: left;
   }
 
   .banner-card-content p {
     font-size: 1.1rem;
-  }
-}
-
-/* 모집 글 섹션 스타일 */
-.recruitment-section {
-  margin-top: 60px;
-  padding: 20px 0;
-}
-
-/* 카테고리-필터 행 스타일 */
-.category-filter-row {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: 0;
-  margin-bottom: 30px;
-  border-bottom: 1px solid var(--border-color);
-  padding-bottom: 0;
-}
-
-.category-filters {
-  display: flex;
-  gap: 20px;
-  padding-bottom: 0;
-  border-bottom: none;
-  align-items: center;
-}
-
-.category-divider {
-  margin: 0 16px 0 16px;
-  color: #ccc;
-  font-size: 1.3rem;
-  font-weight: 300;
-  user-select: none;
-  display: flex;
-  align-items: flex-end;
-  height: 100%;
-  line-height: 1;
-}
-
-.right-filters {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  font-size: 1.05rem;
-  height: 32px;
-}
-
-.filter-group select,
-.filter-group label {
-  font-size: 1rem;
-  height: 32px;
-  display: flex;
-  align-items: center;
-}
-
-.checkbox-label {
-  height: 32px;
-  display: flex;
-  align-items: center;
-  margin-bottom: 0;
-}
-
-.category-btn {
-  padding: 8px 16px;
-  border: none;
-  background: none;
-  font-size: 1.1rem;
-  color: #666;
-  cursor: pointer;
-  position: relative;
-}
-
-.category-btn.active {
-  color: var(--primary-color);
-  font-weight: bold;
-  position: relative;
-  z-index: 2;
-}
-
-.category-btn.active::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: -1px;
-  height: 3px;
-  background-color: var(--primary-color);
-  z-index: 2;
-}
-
-/* 하위 필터 */
-.sub-filters {
-  display: flex;
-  gap: 20px;
-  margin-bottom: 30px;
-  align-items: center;
-}
-
-.filter-group select {
-  padding: 8px 16px;
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  font-size: 0.9rem;
-  color: #333;
-  background-color: white;
-  cursor: pointer;
-  min-width: 120px;
-}
-
-.checkbox-label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  font-size: 0.9rem;
-  color: #333;
-}
-
-/* 모집 글 목록 */
-.recruitment-list {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 20px;
-}
-
-.recruitment-card {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  overflow: hidden;
-  transition: transform 0.2s, box-shadow 0.2s;
-  background: white;
-}
-
-.recruitment-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.recruitment-image {
-  height: 160px;
-  background-color: #f5f5f5;
-  border-bottom: 1px solid var(--border-color);
-  position: relative;
-}
-
-.recruitment-category {
-  position: absolute;
-  top: 12px;
-  left: 12px;
-  padding: 6px 12px;
-  background-color: var(--primary-color);
-  color: white;
-  border-radius: 4px;
-  font-size: 0.85rem;
-  font-weight: 500;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.recruitment-content {
-  flex: 1 1 auto;
-  display: flex;
-  flex-direction: column;
-  padding: 16px;
-}
-
-.recruitment-content h3 {
-  font-size: 1.1rem;
-  margin-bottom: 12px;
-  color: #333;
-  font-weight: bold;
-  line-height: 1.4;
-}
-
-.recruitment-meta {
-  margin-bottom: 12px;
-}
-
-.category {
-  display: inline-block;
-  padding: 4px 8px;
-  background-color: #f0f0f0;
-  border-radius: 4px;
-  font-size: 0.8rem;
-  color: #666;
-  margin-right: 8px;
-}
-
-.tech-stack {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.tech-tag {
-  padding: 4px 8px;
-  background-color: var(--background-light);
-  border-radius: 4px;
-  font-size: 0.8rem;
-  color: var(--primary-color);
-}
-
-.recruitment-stats {
-  margin-top: auto;
-  align-self: flex-end;
-  font-size: 0.85rem;
-}
-
-.status {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-weight: 500;
-  color: #e85d5d;
-}
-
-.status-text {
-  color: #666;
-  font-weight: normal;
-}
-
-/* 반응형 스타일 */
-@media (max-width: 768px) {
-  .category-filters {
-    overflow-x: auto;
-    padding-bottom: 10px;
-    margin-bottom: 15px;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  .sub-filters {
-    flex-wrap: wrap;
-    gap: 10px;
-  }
-
-  .filter-group {
-    flex: 1 1 calc(50% - 10px);
-    min-width: 150px;
-  }
-
-  .recruitment-list {
-    grid-template-columns: 1fr;
+    text-align: left;
   }
 }
 
@@ -455,28 +217,6 @@ body {
   background-color: white;
   font-size: 14px;
   width: 200px;
-}
-
-/* 기술 스택 태그 스타일 */
-.tech-tag {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 8px;
-  margin: 2px;
-  border-radius: 4px;
-  background-color: var(--background-light);
-  font-size: 12px;
-  color: var(--text-dark);
-}
-
-.tech-tag::before {
-  content: "";
-  display: inline-block;
-  width: 16px;
-  height: 16px;
-  background-color: #ddd; /* 임시 이미지 플레이스홀더 */
-  border-radius: 4px;
 }
 
 /* 진행 방식 셀렉트 박스 스타일 - 범위 확장 */
@@ -787,5 +527,293 @@ body {
 
   .pagination-ellipsis {
     width: 24px;
+  }
+}
+
+/* 모집 글 섹션 스타일 */
+.recruitment-section {
+  margin-top: 60px;
+  padding: 20px 0;
+  text-align: left;
+}
+
+/* 카테고리-필터 행 스타일 */
+.category-filter-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin-bottom: 30px;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 0;
+}
+
+.category-filters {
+  display: flex;
+  gap: 20px;
+  padding-bottom: 0;
+  border-bottom: none;
+  align-items: center;
+}
+
+.category-divider {
+  margin: 0 16px 0 16px;
+  color: #ccc;
+  font-size: 1.3rem;
+  font-weight: 300;
+  user-select: none;
+  display: flex;
+  align-items: flex-end;
+  height: 100%;
+  line-height: 1;
+}
+
+.right-filters {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 1.05rem;
+  height: 32px;
+}
+
+.filter-group select,
+.filter-group label {
+  font-size: 1rem;
+  height: 32px;
+  display: flex;
+  align-items: center;
+}
+
+.checkbox-label {
+  height: 32px;
+  display: flex;
+  align-items: center;
+  margin-bottom: 0;
+}
+
+.category-btn {
+  padding: 8px 16px;
+  border: none;
+  background: none;
+  font-size: 1.1rem;
+  color: #666;
+  cursor: pointer;
+  position: relative;
+}
+
+.category-btn.active {
+  color: var(--primary-color);
+  font-weight: bold;
+  position: relative;
+  z-index: 2;
+}
+
+.category-btn.active::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 3px;
+  background-color: var(--primary-color);
+  z-index: 2;
+}
+
+/* 하위 필터 */
+.sub-filters {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 30px;
+  align-items: center;
+}
+
+.filter-group select {
+  padding: 8px 16px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  color: #333;
+  background-color: white;
+  cursor: pointer;
+  min-width: 120px;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: #333;
+}
+
+/* 모집 글 목록 */
+.recruitment-list {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+.recruitment-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.2s;
+  background: white;
+}
+
+.recruitment-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.recruitment-image {
+  height: 160px;
+  background-color: #f5f5f5;
+  border-bottom: 1px solid var(--border-color);
+  position: relative;
+}
+
+.recruitment-category {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  padding: 6px 12px;
+  background-color: var(--primary-color);
+  color: white;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.recruitment-content {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+}
+
+.recruitment-content h3 {
+  font-size: 1.1rem;
+  margin-bottom: 12px;
+  color: #333;
+  font-weight: bold;
+  line-height: 1.4;
+}
+
+.recruitment-meta {
+  margin-bottom: 12px;
+}
+
+.category {
+  display: inline-block;
+  padding: 4px 8px;
+  background-color: #f0f0f0;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  color: #666;
+  margin-right: 8px;
+}
+
+.tech-stack {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tech-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  margin: 2px;
+  border-radius: 4px;
+  background-color: var(--background-light);
+  font-size: 12px;
+  color: var(--text-dark);
+}
+
+.recruitment-stats {
+  margin-top: auto;
+  align-self: flex-end;
+  font-size: 0.85rem;
+  width: 100%;
+}
+
+.recruitment-status-container {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+
+.status,
+.deadline {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+}
+
+.status {
+  color: #e85d5d;
+  font-weight: 500;
+}
+
+.status-text,
+.deadline-text {
+  color: #666;
+  font-size: 0.75rem;
+  font-weight: normal;
+}
+
+.deadline-date {
+  font-weight: 500;
+  color: #333;
+}
+
+/* 반응형 스타일 */
+@media (max-width: 768px) {
+  .category-filters {
+    overflow-x: auto;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .sub-filters {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .filter-group {
+    flex: 1 1 calc(50% - 10px);
+    min-width: 150px;
+  }
+
+  .recruitment-list {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 1200px) {
+  .recruitment-list {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 900px) {
+  .recruitment-list {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .recruitment-list {
+    grid-template-columns: 1fr;
   }
 }

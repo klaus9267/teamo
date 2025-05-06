@@ -27,8 +27,21 @@ const bannerData = [
   },
 ];
 
+// 데이터 타입 정의
+interface PostData {
+  id: number;
+  title: string;
+  category: string;
+  techStack: string[];
+  status: {
+    current: number;
+    total: number;
+  };
+  endDate: string;
+}
+
 // 모집 글 더미 데이터 (상세 페이지와 일치)
-const recruitmentPostsData = [
+const recruitmentPostsData: PostData[] = [
   {
     id: 1,
     title: "[서울] Kettodze - 일본 가챠 매장",
@@ -44,6 +57,7 @@ const recruitmentPostsData = [
       current: 3,
       total: 5,
     },
+    endDate: "2024.06.30",
   },
   {
     id: 2,
@@ -54,6 +68,7 @@ const recruitmentPostsData = [
       current: 2,
       total: 5,
     },
+    endDate: "2024.07.15",
   },
   {
     id: 3,
@@ -64,6 +79,7 @@ const recruitmentPostsData = [
       current: 2,
       total: 4,
     },
+    endDate: "2024.06.25",
   },
   {
     id: 4,
@@ -74,6 +90,7 @@ const recruitmentPostsData = [
       current: 2,
       total: 6,
     },
+    endDate: "2024.07.05",
   },
   {
     id: 5,
@@ -84,6 +101,7 @@ const recruitmentPostsData = [
       current: 4,
       total: 8,
     },
+    endDate: "2024.07.20",
   },
   {
     id: 6,
@@ -94,6 +112,7 @@ const recruitmentPostsData = [
       current: 3,
       total: 5,
     },
+    endDate: "2024.08.10",
   },
   {
     id: 7,
@@ -104,6 +123,7 @@ const recruitmentPostsData = [
       current: 2,
       total: 4,
     },
+    endDate: "2024.07.30",
   },
   {
     id: 8,
@@ -114,6 +134,7 @@ const recruitmentPostsData = [
       current: 3,
       total: 6,
     },
+    endDate: "2024.08.05",
   },
   {
     id: 9,
@@ -124,6 +145,7 @@ const recruitmentPostsData = [
       current: 2,
       total: 5,
     },
+    endDate: "2024.08.15",
   },
   {
     id: 10,
@@ -134,6 +156,7 @@ const recruitmentPostsData = [
       current: 4,
       total: 8,
     },
+    endDate: "2024.07.25",
   },
   {
     id: 11,
@@ -144,6 +167,7 @@ const recruitmentPostsData = [
       current: 5,
       total: 10,
     },
+    endDate: "2024.08.20",
   },
   {
     id: 12,
@@ -154,6 +178,7 @@ const recruitmentPostsData = [
       current: 2,
       total: 4,
     },
+    endDate: "2024.07.10",
   },
   {
     id: 13,
@@ -164,6 +189,7 @@ const recruitmentPostsData = [
       current: 3,
       total: 6,
     },
+    endDate: "2024.06.28",
   },
   {
     id: 14,
@@ -174,6 +200,7 @@ const recruitmentPostsData = [
       current: 4,
       total: 8,
     },
+    endDate: "2024.07.12",
   },
   {
     id: 15,
@@ -184,6 +211,7 @@ const recruitmentPostsData = [
       current: 2,
       total: 5,
     },
+    endDate: "2024.08.25",
   },
   {
     id: 16,
@@ -194,6 +222,7 @@ const recruitmentPostsData = [
       current: 3,
       total: 6,
     },
+    endDate: "2024.07.20",
   },
   {
     id: 17,
@@ -204,6 +233,7 @@ const recruitmentPostsData = [
       current: 2,
       total: 4,
     },
+    endDate: "2024.08.30",
   },
   {
     id: 18,
@@ -214,6 +244,7 @@ const recruitmentPostsData = [
       current: 3,
       total: 6,
     },
+    endDate: "2024.07.18",
   },
   {
     id: 19,
@@ -224,6 +255,7 @@ const recruitmentPostsData = [
       current: 5,
       total: 10,
     },
+    endDate: "2024.08.15",
   },
   {
     id: 20,
@@ -234,6 +266,7 @@ const recruitmentPostsData = [
       current: 2,
       total: 5,
     },
+    endDate: "2024.07.30",
   },
 ];
 
@@ -243,8 +276,8 @@ export default function HomePage() {
   const [selectedCategory, setSelectedCategory] = useState("전체");
   const [selectedStatus, setSelectedStatus] = useState("");
   const [isPaused, setIsPaused] = useState(false);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  const lastPausedTimeRef = useRef<number | null>(null);
+  const intervalRef = useRef(null);
+  const lastPausedTimeRef = useRef(null);
   const [currentPage, setCurrentPage] = useState(1);
   const postPerPage = 16;
   const navigate = useNavigate();
@@ -557,10 +590,18 @@ export default function HomePage() {
                   </div>
                 </div>
                 <div className="recruitment-stats">
-                  <span className="status">
-                    <span className="status-text">모집 완료</span>
-                    {post.status.current}/{post.status.total}
-                  </span>
+                  <div className="recruitment-status-container">
+                    <div className="status">
+                      <span className="status-text">모집 현황:</span>
+                      <span>
+                        {post.status.current}/{post.status.total}
+                      </span>
+                    </div>
+                    <div className="deadline">
+                      <span className="deadline-text">마감일:</span>
+                      <span className="deadline-date">{post.endDate}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

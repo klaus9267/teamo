@@ -32,6 +32,11 @@ const Header = () => {
     navigate("/profile");
   };
 
+  // 게시글 작성 페이지로 이동
+  const goToCreatePost = () => {
+    navigate("/post/create");
+  };
+
   return (
     <>
       <header className="header">
@@ -45,6 +50,9 @@ const Header = () => {
             <nav className="main-nav">
               <Link to="/hub" className="nav-link">
                 허브
+              </Link>
+              <Link to="/post/create" className="nav-link">
+                팀원 모집하기
               </Link>
             </nav>
             {isLoggedIn ? (
