@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import "../../styles/common/LoginModal.css";
 
-const LoginModal = ({ onClose }) => {
+const LoginModal = ({ onClose, onLogin }) => {
   const [isLoginMode, setIsLoginMode] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -42,8 +42,23 @@ const LoginModal = ({ onClose }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // 실제 로그인 또는 회원가입 처리 로직
-    console.log(isLoginMode ? "로그인 시도" : "회원가입 시도");
+
+    // 실제 앱에서는 여기서 서버로 로그인/회원가입 요청을 보냅니다.
+    // 지금은 간단하게 조건만 충족시키면 로그인되도록 구현합니다.
+    if (isLoginMode) {
+      // 이메일과 비밀번호가 입력되어 있으면 로그인 성공으로 간주
+      if (email && password) {
+        console.log("로그인 성공:", email);
+        if (onLogin) onLogin();
+      }
+    } else {
+      // 회원가입 로직 - 이름, 이메일, 비밀번호가 모두 입력되어 있으면 성공
+      if (name && email && password) {
+        console.log("회원가입 성공:", name, email);
+        // 회원가입 후 자동 로그인
+        if (onLogin) onLogin();
+      }
+    }
   };
 
   return (
@@ -67,7 +82,10 @@ const LoginModal = ({ onClose }) => {
 
           {/* 소셜 로그인 버튼 */}
           <div className="social-login-buttons">
-            <button className="social-button kakao-button">
+            <button
+              className="social-button kakao-button"
+              onClick={() => onLogin && onLogin()}
+            >
               <img
                 src="/icons/kakao-icon.svg"
                 alt="Kakao"
@@ -75,7 +93,10 @@ const LoginModal = ({ onClose }) => {
               />
               카카오 로그인
             </button>
-            <button className="social-button google-button">
+            <button
+              className="social-button google-button"
+              onClick={() => onLogin && onLogin()}
+            >
               <img
                 src="/icons/google-icon.svg"
                 alt="Google"
@@ -83,7 +104,10 @@ const LoginModal = ({ onClose }) => {
               />
               구글 로그인
             </button>
-            <button className="social-button github-button">
+            <button
+              className="social-button github-button"
+              onClick={() => onLogin && onLogin()}
+            >
               <img
                 src="/icons/github-icon.svg"
                 alt="GitHub"
