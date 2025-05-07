@@ -38,6 +38,7 @@ interface PostData {
     total: number;
   };
   endDate: string;
+  meetingType: string;
 }
 
 // 모집 글 더미 데이터 (상세 페이지와 일치)
@@ -57,7 +58,8 @@ const recruitmentPostsData: PostData[] = [
       current: 3,
       total: 5,
     },
-    endDate: "2024.06.30",
+    endDate: "2024.12.31",
+    meetingType: "온라인",
   },
   {
     id: 2,
@@ -68,7 +70,8 @@ const recruitmentPostsData: PostData[] = [
       current: 2,
       total: 5,
     },
-    endDate: "2024.07.15",
+    endDate: "2025.05.06",
+    meetingType: "혼합",
   },
   {
     id: 3,
@@ -79,7 +82,8 @@ const recruitmentPostsData: PostData[] = [
       current: 2,
       total: 4,
     },
-    endDate: "2024.06.25",
+    endDate: "2025.05.07",
+    meetingType: "온라인",
   },
   {
     id: 4,
@@ -90,7 +94,8 @@ const recruitmentPostsData: PostData[] = [
       current: 2,
       total: 6,
     },
-    endDate: "2024.07.05",
+    endDate: "2025.05.08",
+    meetingType: "오프라인",
   },
   {
     id: 5,
@@ -101,7 +106,8 @@ const recruitmentPostsData: PostData[] = [
       current: 4,
       total: 8,
     },
-    endDate: "2024.07.20",
+    endDate: "2025.06.01",
+    meetingType: "온라인",
   },
   {
     id: 6,
@@ -113,6 +119,7 @@ const recruitmentPostsData: PostData[] = [
       total: 5,
     },
     endDate: "2024.08.10",
+    meetingType: "온라인",
   },
   {
     id: 7,
@@ -124,6 +131,7 @@ const recruitmentPostsData: PostData[] = [
       total: 4,
     },
     endDate: "2024.07.30",
+    meetingType: "온라인",
   },
   {
     id: 8,
@@ -135,6 +143,7 @@ const recruitmentPostsData: PostData[] = [
       total: 6,
     },
     endDate: "2024.08.05",
+    meetingType: "온라인",
   },
   {
     id: 9,
@@ -146,6 +155,7 @@ const recruitmentPostsData: PostData[] = [
       total: 5,
     },
     endDate: "2024.08.15",
+    meetingType: "오프라인",
   },
   {
     id: 10,
@@ -157,6 +167,7 @@ const recruitmentPostsData: PostData[] = [
       total: 8,
     },
     endDate: "2024.07.25",
+    meetingType: "온라인",
   },
   {
     id: 11,
@@ -168,6 +179,7 @@ const recruitmentPostsData: PostData[] = [
       total: 10,
     },
     endDate: "2024.08.20",
+    meetingType: "온라인",
   },
   {
     id: 12,
@@ -179,6 +191,7 @@ const recruitmentPostsData: PostData[] = [
       total: 4,
     },
     endDate: "2024.07.10",
+    meetingType: "온라인",
   },
   {
     id: 13,
@@ -190,6 +203,7 @@ const recruitmentPostsData: PostData[] = [
       total: 6,
     },
     endDate: "2024.06.28",
+    meetingType: "오프라인",
   },
   {
     id: 14,
@@ -201,6 +215,7 @@ const recruitmentPostsData: PostData[] = [
       total: 8,
     },
     endDate: "2024.07.12",
+    meetingType: "온라인",
   },
   {
     id: 15,
@@ -212,6 +227,7 @@ const recruitmentPostsData: PostData[] = [
       total: 5,
     },
     endDate: "2024.08.25",
+    meetingType: "온라인",
   },
   {
     id: 16,
@@ -223,6 +239,7 @@ const recruitmentPostsData: PostData[] = [
       total: 6,
     },
     endDate: "2024.07.20",
+    meetingType: "온라인",
   },
   {
     id: 17,
@@ -234,6 +251,7 @@ const recruitmentPostsData: PostData[] = [
       total: 4,
     },
     endDate: "2024.08.30",
+    meetingType: "온라인",
   },
   {
     id: 18,
@@ -245,6 +263,7 @@ const recruitmentPostsData: PostData[] = [
       total: 6,
     },
     endDate: "2024.07.18",
+    meetingType: "오프라인",
   },
   {
     id: 19,
@@ -256,6 +275,7 @@ const recruitmentPostsData: PostData[] = [
       total: 10,
     },
     endDate: "2024.08.15",
+    meetingType: "온라인",
   },
   {
     id: 20,
@@ -267,6 +287,7 @@ const recruitmentPostsData: PostData[] = [
       total: 5,
     },
     endDate: "2024.07.30",
+    meetingType: "오프라인",
   },
 ];
 
@@ -281,6 +302,7 @@ export default function HomePage() {
   const [currentPage, setCurrentPage] = useState(1);
   const postPerPage = 16;
   const navigate = useNavigate();
+  const [isRecruiting, setIsRecruiting] = useState(false);
 
   // 배너 전환 함수
   const rotateBanner = () => {
@@ -335,6 +357,21 @@ export default function HomePage() {
 
     if (selectedStatus) {
       // 진행 방식 필터링 로직 (실제 데이터에 맞게 추가)
+    }
+
+    // 모집중 체크 시 마감일이 오늘 이전인 글은 제외
+    if (isRecruiting) {
+      const today = new Date();
+      filteredPosts = filteredPosts.filter((post) => {
+        // 마감일이 YYYY.MM.DD 또는 YYYY-MM-DD 형식일 수 있음
+        const dateStr = post.endDate.replace(/\./g, "-");
+        const deadline = new Date(dateStr);
+        // 오늘 날짜 포함(마감일 당일까지 모집중)
+        return (
+          deadline >=
+          new Date(today.getFullYear(), today.getMonth(), today.getDate())
+        );
+      });
     }
 
     return filteredPosts;
@@ -562,7 +599,11 @@ export default function HomePage() {
             <option value="hybrid">혼합</option>
           </select>
           <label className="checkbox-label">
-            <input type="checkbox" />
+            <input
+              type="checkbox"
+              checked={isRecruiting}
+              onChange={(e) => setIsRecruiting(e.target.checked)}
+            />
             모집중
           </label>
         </div>
@@ -601,6 +642,34 @@ export default function HomePage() {
                       <span className="deadline-text">마감일:</span>
                       <span className="deadline-date">{post.endDate}</span>
                     </div>
+                  </div>
+                  <div style={{ marginTop: 6, fontSize: 14, fontWeight: 600 }}>
+                    <span
+                      style={{
+                        display: "inline-block",
+                        border: `1.5px solid ${
+                          post.meetingType === "온라인"
+                            ? "#3cb4ac"
+                            : post.meetingType === "오프라인"
+                            ? "#888"
+                            : "#f6b93b"
+                        }`,
+                        color:
+                          post.meetingType === "온라인"
+                            ? "#3cb4ac"
+                            : post.meetingType === "오프라인"
+                            ? "#888"
+                            : "#f6b93b",
+                        background: "#fff",
+                        borderRadius: 8,
+                        padding: "2px 14px",
+                        fontSize: 13,
+                        fontWeight: 600,
+                        letterSpacing: 0.5,
+                      }}
+                    >
+                      {post.meetingType}
+                    </span>
                   </div>
                 </div>
               </div>

@@ -152,6 +152,7 @@ const PostCreate = () => {
                     value={memberCount}
                     onChange={(e) => setMemberCount(parseInt(e.target.value))}
                     className="form-control member-count-input"
+                    style={{ textAlign: "left" }}
                   />
                   <span className="member-count-label">명</span>
                 </div>

@@ -11,6 +11,21 @@ body {
   padding: 0;
 }
 
+/* 모든 텍스트 요소를 왼쪽 정렬하는 기본 스타일 */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+b,
+strong,
+label,
+span {
+  text-align: left;
+}
+
 /* Banner.css */
 :root {
   --primary-color: #3cb4ac; /* 청록색 */
