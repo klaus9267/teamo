@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import "../../styles/post/PostDetailPage.css";
 import TechStack from "../../component/post/TechStack.tsx";
 import TeamMembers from "../../component/post/TeamMembers.tsx";
@@ -51,6 +51,28 @@ interface PostData {
     createdAt: string;
     replies?: any[];
   }>;
+}
+
+// 지원 상태 타입 정의
+type ApplicationStatus = "none" | "applied" | "accepted";
+
+// 지원자 정보 인터페이스
+interface Applicant {
+  id: number;
+  name: string;
+  avatar: string;
+  applyDate: string;
+  skills: string[];
+  resumeTitle: string;
+  resumeContent: string;
+}
+
+// 자기소개서 인터페이스
+interface Resume {
+  id: number;
+  title: string;
+  content: string;
+  createdAt: string;
 }
 
 // 더미 데이터 - 실제로는 API 호출로 대체
@@ -215,13 +237,88 @@ const postsData: PostData[] = [
     endDate: "2024-12-20",
     comments: [],
   },
+  {
+    id: 4,
+    title: "여행 동행 매칭 플랫폼",
+    category: "프로젝트",
+    content: {
+      motivation:
+        "여행 계획은 있지만 함께 갈 친구를 찾기 어려운 사람들을 위한 플랫폼입니다.",
+      product:
+        "여행 취향과 일정이 맞는 사람들을 연결해주는 소셜 매칭 서비스입니다.",
+      target: "20-30대 여행 애호가, 솔로 여행객",
+      meeting: "주 2회 온라인 회의, 필요시 오프라인 모임",
+      meetingType: "온/오프라인 혼합",
+      experience:
+        "여행 관련 서비스 개발 경험이 있으며, 디자인과 마케팅에도 관심이 많습니다.",
+      etc: "다양한 아이디어를 나눌 수 있는 열린 마인드의 팀원을 찾고 있습니다.",
+    },
+    leader: {
+      id: 20,
+      name: "여행가",
+      avatar: "https://via.placeholder.com/48x48.png?text=Travel",
+      email: "travel@example.com",
+      isLeader: true,
+      skills: ["React", "Firebase", "UI/UX"],
+    },
+    members: [
+      {
+        id: 21,
+        name: "디자이너",
+        avatar: "https://via.placeholder.com/48x48.png?text=Designer",
+        skills: ["Figma", "Illustration", "UI/UX"],
+      },
+    ],
+    techStacks: ["React", "Firebase", "Redux", "Node.js", "Express"],
+    applyStatus: { current: 1, total: 4 },
+    meetingType: "혼합",
+    endDate: "2025-12-01",
+    comments: [],
+  },
+];
+
+// 더미 자기소개서 데이터
+const dummyResumes: Resume[] = [
+  {
+    id: 1,
+    title: "프론트엔드 개발자 자기소개서",
+    content: "React와 TypeScript를 활용한 웹 개발 경험이 있습니다.",
+    createdAt: "2023-05-01",
+  },
+  {
+    id: 2,
+    title: "백엔드 개발자 자기소개서",
+    content: "Node.js와 Express를 활용한 API 개발 경험이 있습니다.",
+    createdAt: "2023-05-15",
+  },
+  {
+    id: 3,
+    title: "디자이너 자기소개서",
+    content: "UI/UX 디자인 경험이 있으며 사용자 중심의 디자인을 추구합니다.",
+    createdAt: "2023-06-01",
+  },
 ];
 
 export default function PostDetail() {
-  const { id } = useParams<{ id: string }>();
+  const { id } = useParams();
+  const navigate = useNavigate();
   const [post, setPost] = useState<PostData | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isAuthor, setIsAuthor] = useState(false);
+  const [applicationStatus, setApplicationStatus] =
+    useState<ApplicationStatus>("none");
+  const [showApplicantsList, setShowApplicantsList] = useState(false);
+  const [applicants, setApplicants] = useState<Applicant[]>([]);
+
+  // 지원 모달 관련 상태
+  const [showApplyModal, setShowApplyModal] = useState(false);
+  const [selectedResume, setSelectedResume] = useState<number | null>(null);
+  const [motivationText, setMotivationText] = useState("");
+  const [resumes, setResumes] = useState<Resume[]>([]);
+
+  // 현재 로그인 유저 ID (실제로는 로그인 상태에서 가져옴)
+  const currentUserId = 1; // 1번 유저로 설정 (1번 게시글의 작성자와 동일)
 
   useEffect(() => {
     // ID를 이용해 해당 게시글 찾기
@@ -232,6 +329,20 @@ export default function PostDetail() {
 
       if (foundPost) {
         setPost(foundPost);
+
+        // 현재 유저가 글 작성자인지 확인
+        setIsAuthor(foundPost.leader.id === currentUserId);
+
+        // 지원 상태 확인 (실제로는 API 호출)
+        checkApplicationStatus(postId, currentUserId);
+
+        // 지원자 목록 가져오기 (실제로는 API 호출)
+        if (foundPost.leader.id === currentUserId) {
+          fetchApplicants(postId);
+        }
+
+        // 사용자의 자기소개서 가져오기 (실제로는 API 호출)
+        fetchUserResumes(currentUserId);
       } else {
         setError("게시글을 찾을 수 없습니다.");
       }
@@ -242,6 +353,148 @@ export default function PostDetail() {
       setLoading(false);
     }
   }, [id]);
+
+  // 사용자의 자기소개서 가져오기 (실제로는 API 호출)
+  const fetchUserResumes = (userId: number) => {
+    // 더미 데이터로 설정
+    setResumes(dummyResumes);
+  };
+
+  // 지원 상태 확인 함수 (실제로는 API 호출)
+  const checkApplicationStatus = (postId: number, userId: number) => {
+    // 더미 데이터: 임의로 2번 글에는 지원했고, 3번 글에는 합격한 상태로 설정
+    if (postId === 2) {
+      setApplicationStatus("applied");
+    } else if (postId === 3) {
+      setApplicationStatus("accepted");
+    } else {
+      setApplicationStatus("none");
+    }
+  };
+
+  // 지원자 목록 가져오기 (실제로는 API 호출)
+  const fetchApplicants = async (postId: number) => {
+    try {
+      // TODO: 실제 API 호출로 대체
+      // const response = await axios.get(`/api/posts/${postId}/applicants`);
+      // setApplicants(response.data);
+
+      // 임시로 더미 데이터 사용
+      const dummyApplicants: Applicant[] = [
+        {
+          id: 5,
+          name: "김서연",
+          avatar: "https://via.placeholder.com/48x48.png?text=Kim",
+          applyDate: "2023-04-28",
+          skills: ["React", "TypeScript", "Next.js"],
+          resumeTitle: "웹 프론트엔드 개발자 지원서",
+          resumeContent:
+            "React와 TypeScript를 활용한 웹 프론트엔드 개발 경험이 있습니다. 사용자 중심의 UI/UX에 관심이 많습니다. 특히 가챠 매장 정보를 쉽게 찾을 수 있는 앱을 만들어보고 싶어서 지원하게 되었습니다. 사용자 경험을 개선하는데 기여하고 싶습니다.",
+        },
+        {
+          id: 6,
+          name: "이지호",
+          avatar: "https://via.placeholder.com/48x48.png?text=Lee",
+          applyDate: "2023-04-27",
+          skills: ["Node.js", "Express", "MongoDB"],
+          resumeTitle: "백엔드 개발자 지원서",
+          resumeContent:
+            "Node.js와 Express를 활용한 RESTful API 개발 경험이 있습니다. 데이터베이스 설계 및 최적화에 관심이 많습니다. 가챠 매장 정보를 효율적으로 관리하고 제공하는 백엔드 시스템을 구축하는데 도움이 될 것 같습니다.",
+        },
+        {
+          id: 7,
+          name: "박민지",
+          avatar: "https://via.placeholder.com/48x48.png?text=Park",
+          applyDate: "2023-04-26",
+          skills: ["Figma", "Adobe XD", "UI/UX"],
+          resumeTitle: "디자이너 지원서",
+          resumeContent:
+            "Figma와 Adobe XD를 활용한 UI/UX 디자인 경험이 있습니다. 사용자 중심의 디자인을 추구합니다. 가챠 매장 정보를 직관적이고 아름답게 보여주는 디자인을 만들어보고 싶습니다.",
+        },
+      ];
+
+      setApplicants(dummyApplicants);
+    } catch (error) {
+      console.error("Error fetching applicants:", error);
+      alert("지원자 목록을 불러오는데 실패했습니다.");
+    }
+  };
+
+  // 지원 승인/거절 처리 함수
+  const handleApplicantAction = async (
+    applicantId: number,
+    action: "accept" | "reject"
+  ) => {
+    try {
+      // TODO: 실제 API 호출로 대체
+      // await axios.post(`/api/posts/${post?.id}/applicants/${applicantId}/${action}`);
+
+      // 임시로 성공 메시지만 표시
+      alert(
+        action === "accept"
+          ? "지원자를 승인했습니다."
+          : "지원자를 거절했습니다."
+      );
+
+      // 지원자 목록 새로고침
+      if (post) {
+        fetchApplicants(post.id);
+      }
+    } catch (error) {
+      console.error(`Error ${action}ing applicant:`, error);
+      alert(`지원자 ${action === "accept" ? "승인" : "거절"}에 실패했습니다.`);
+    }
+  };
+
+  // 지원하기 함수
+  const handleApply = () => {
+    if (applicationStatus === "applied") {
+      alert("이미 지원한 모집글입니다.");
+      return;
+    }
+
+    if (applicationStatus === "accepted") {
+      alert(`이미 해당 ${post?.category}에 합류했습니다.`);
+      return;
+    }
+
+    // 지원 모달 열기
+    setShowApplyModal(true);
+  };
+
+  // 지원 제출 함수
+  const handleSubmitApplication = () => {
+    if (!selectedResume) {
+      alert("자기소개서를 선택해주세요.");
+      return;
+    }
+
+    // 실제로는 API 호출로 지원 처리
+    alert("지원이 완료되었습니다.");
+    setApplicationStatus("applied");
+    setShowApplyModal(false);
+  };
+
+  // 모달 닫기 함수
+  const handleCloseModal = () => {
+    setShowApplyModal(false);
+    setSelectedResume(null);
+    setMotivationText("");
+  };
+
+  // 지원 상태별 알림 메시지 표시
+  const handleAppliedClick = () => {
+    alert("이미 지원한 모집글입니다. 지원 결과를 기다려주세요.");
+  };
+
+  const handleAcceptedClick = () => {
+    alert(`이미 해당 ${post?.category}에 합류했습니다.`);
+  };
+
+  // 지원자 목록 토글 함수
+  const toggleApplicantsList = () => {
+    setShowApplicantsList(!showApplicantsList);
+  };
 
   if (loading) {
     return <div className="post-detail-loading">로딩 중...</div>;
@@ -260,6 +513,82 @@ export default function PostDetail() {
       <div className="post-detail-container">
         <div className="post-detail-main">
           <h1 style={{ textAlign: "left" }}>{post.title}</h1>
+
+          {/* 지원자 목록 섹션 */}
+          {isAuthor && showApplicantsList && (
+            <section className="applicants-section">
+              <h2 style={{ fontSize: 20, marginBottom: 15, textAlign: "left" }}>
+                지원자 목록
+              </h2>
+
+              {applicants.length === 0 ? (
+                <p>아직 지원자가 없습니다.</p>
+              ) : (
+                <div className="applicants-list">
+                  {applicants.map((applicant) => (
+                    <div key={applicant.id} className="applicant-card">
+                      <div className="applicant-header">
+                        <img
+                          src={applicant.avatar}
+                          alt={`${applicant.name} 프로필`}
+                          className="applicant-avatar"
+                        />
+                        <div className="applicant-info">
+                          <div className="applicant-name">{applicant.name}</div>
+                          <div className="applicant-date">
+                            지원일: {applicant.applyDate}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="applicant-resume">
+                        <div className="applicant-resume-title">
+                          {applicant.resumeTitle}
+                        </div>
+                        <p className="applicant-resume-content">
+                          {applicant.resumeContent}
+                        </p>
+                      </div>
+
+                      <div>
+                        <div className="applicant-skills-label">보유 기술:</div>
+                        <div className="applicant-skills-list">
+                          {applicant.skills.map((skill, index) => (
+                            <span key={index} className="applicant-skill-tag">
+                              {skill}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="applicant-actions">
+                        <button
+                          className="accept-button"
+                          onClick={() =>
+                            handleApplicantAction(applicant.id, "accept")
+                          }
+                        >
+                          승인
+                        </button>
+                        <button
+                          className="reject-button"
+                          onClick={() =>
+                            handleApplicantAction(applicant.id, "reject")
+                          }
+                        >
+                          거절
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <button onClick={toggleApplicantsList} className="close-button">
+                닫기
+              </button>
+            </section>
+          )}
 
           <section style={{ margin: "32px 0 0 0" }}>
             <h2 style={{ fontSize: 20, marginBottom: 12, textAlign: "left" }}>
@@ -395,17 +724,27 @@ export default function PostDetail() {
       {/* 오른쪽 배너 */}
       <aside className="post-detail-aside">
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <img
-            src={post.leader.avatar}
-            alt="리더 프로필"
-            style={{ width: 48, height: 48, borderRadius: "50%" }}
-          />
-          <div>
-            <div style={{ fontWeight: 600 }}>{post.leader.name}</div>
-            <div style={{ fontSize: 13, color: "#888" }}>
-              {post.leader.email}
+          <Link
+            to={`/profile/${post.leader.id}`}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              textDecoration: "none",
+              color: "inherit",
+            }}
+          >
+            <img
+              src={post.leader.avatar}
+              alt="리더 프로필"
+              style={{ width: 48, height: 48, borderRadius: "50%" }}
+            />
+            <div>
+              <div style={{ fontWeight: 600 }}>{post.leader.name}</div>
+              <div style={{ fontSize: 13, color: "#888" }}>
+                {post.leader.email}
+              </div>
             </div>
-          </div>
+          </Link>
         </div>
         <div className="aside-divider" />
         <div>
@@ -437,7 +776,92 @@ export default function PostDetail() {
             ))}
           </div>
         </div>
+
+        {/* 지원하기/지원자 확인 버튼 */}
+        <div className="aside-divider" />
+        {isAuthor ? (
+          <button
+            onClick={() => navigate(`/post/${post.id}/applicants`)}
+            className="apply-button"
+          >
+            지원자 목록 확인
+          </button>
+        ) : (
+          <div>
+            {applicationStatus === "applied" ? (
+              <div className="applied-status">이미 지원한 모집글입니다</div>
+            ) : applicationStatus === "accepted" ? (
+              <div className="accepted-status">
+                합류한 {post.category}입니다
+              </div>
+            ) : (
+              <button onClick={handleApply} className="apply-button">
+                지원하기
+              </button>
+            )}
+          </div>
+        )}
       </aside>
+
+      {/* 지원하기 모달 */}
+      {showApplyModal && (
+        <div className="apply-modal-overlay">
+          <div className="apply-modal">
+            <div className="apply-modal-header">
+              <h2>{post.title}</h2>
+              <button className="modal-close-btn" onClick={handleCloseModal}>
+                ×
+              </button>
+            </div>
+            <div className="apply-modal-content">
+              <div className="apply-modal-info">
+                <p>
+                  스마트 컨트랙트 개발 경험이 있는 블록체인 개발자를 찾습니다.
+                  5월 중순 3일간 진행되는 해커톤입니다.
+                </p>
+              </div>
+
+              <div className="apply-form-section">
+                <label htmlFor="resume-select">자기소개서 선택</label>
+                <select
+                  id="resume-select"
+                  value={selectedResume || ""}
+                  onChange={(e) =>
+                    setSelectedResume(Number(e.target.value) || null)
+                  }
+                  className="resume-select"
+                >
+                  <option value="">자기소개서를 선택해주세요</option>
+                  {resumes.map((resume) => (
+                    <option key={resume.id} value={resume.id}>
+                      {resume.title}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="apply-form-section">
+                <label htmlFor="motivation-text">지원 동기 (선택사항)</label>
+                <textarea
+                  id="motivation-text"
+                  value={motivationText}
+                  onChange={(e) => setMotivationText(e.target.value)}
+                  placeholder="지원 동기를 작성해주세요 (선택사항)"
+                  className="motivation-textarea"
+                />
+              </div>
+            </div>
+            <div className="apply-modal-actions">
+              <button className="cancel-btn" onClick={handleCloseModal}>
+                취소
+              </button>
+              <button className="submit-btn" onClick={handleSubmitApplication}>
+                지원하기
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

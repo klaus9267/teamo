@@ -87,6 +87,24 @@
   width: 100%;
 }
 
+/* 팀원 모집하기 버튼 스타일 */
+.recruit-btn {
+  background-color: var(--primary-color);
+  color: var(--text-light);
+  font-size: 1rem;
+  font-weight: 500;
+  padding: 0.5rem 1.25rem;
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  white-space: nowrap;
+}
+
+.recruit-btn:hover {
+  background-color: var(--primary-hover);
+}
+
 .login-btn {
   background-color: var(--primary-color);
   color: var(--text-light);
@@ -103,6 +121,45 @@
   background-color: var(--primary-hover);
 }
 
+/* 사용자 메뉴 스타일 */
+.user-menu {
+  display: flex;
+  gap: 10px;
+}
+
+.profile-btn {
+  background-color: var(--primary-color);
+  color: var(--text-light);
+  font-size: 1rem;
+  font-weight: 500;
+  padding: 0.5rem 1.25rem;
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.profile-btn:hover {
+  background-color: var(--primary-hover);
+}
+
+.logout-btn {
+  background-color: transparent;
+  color: var(--text-dark);
+  font-size: 1rem;
+  font-weight: 500;
+  padding: 0.5rem 1.25rem;
+  border: 1px solid var(--border-color);
+  border-radius: 0.25rem;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.logout-btn:hover {
+  background-color: #f3f4f6;
+  color: var(--primary-color);
+}
+
 /* 반응형 스타일 */
 @media (max-width: 768px) {
   .header-right {
@@ -111,5 +168,17 @@
 
   .main-nav {
     gap: 1rem;
+  }
+
+  .user-menu {
+    flex-direction: row;
+    gap: 5px;
+  }
+
+  .profile-btn,
+  .logout-btn,
+  .recruit-btn {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.9rem;
   }
 }

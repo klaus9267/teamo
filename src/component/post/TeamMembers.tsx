@@ -1,5 +1,6 @@
 import React from "react";
 import "../../styles/post/TeamMembers.css";
+import { Link } from "react-router-dom";
 
 interface MemberType {
   id: number;
@@ -20,16 +21,27 @@ const TeamMembers: React.FC<TeamMembersProps> = ({ leader, members }) => {
     <div className="team-members-section">
       <h3 className="team-title">팀 리더</h3>
       <div className="member-card leader-card">
-        <div className="member-avatar-container">
-          <img
-            src={leader.avatar}
-            alt={leader.name}
-            className="member-avatar"
-          />
-        </div>
-        <div className="member-info">
-          <div className="member-name">{leader.name}</div>
-        </div>
+        <Link
+          to={`/profile/${leader.id}`}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            textDecoration: "none",
+            color: "inherit",
+            width: "100%",
+          }}
+        >
+          <div className="member-avatar-container">
+            <img
+              src={leader.avatar}
+              alt={leader.name}
+              className="member-avatar"
+            />
+          </div>
+          <div className="member-info">
+            <div className="member-name">{leader.name}</div>
+          </div>
+        </Link>
       </div>
 
       {members.length > 0 && (
@@ -38,23 +50,34 @@ const TeamMembers: React.FC<TeamMembersProps> = ({ leader, members }) => {
           <div className="members-list">
             {members.map((member) => (
               <div key={member.id} className="member-card">
-                <div className="member-avatar-container">
-                  <img
-                    src={member.avatar}
-                    alt={member.name}
-                    className="member-avatar"
-                  />
-                </div>
-                <div className="member-info">
-                  <div className="member-name">{member.name}</div>
-                  <div className="member-skills">
-                    {member.skills?.map((skill, index) => (
-                      <span key={index} className="skill-tag">
-                        {skill}
-                      </span>
-                    ))}
+                <Link
+                  to={`/profile/${member.id}`}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    textDecoration: "none",
+                    color: "inherit",
+                    width: "100%",
+                  }}
+                >
+                  <div className="member-avatar-container">
+                    <img
+                      src={member.avatar}
+                      alt={member.name}
+                      className="member-avatar"
+                    />
                   </div>
-                </div>
+                  <div className="member-info">
+                    <div className="member-name">{member.name}</div>
+                    <div className="member-skills">
+                      {member.skills?.map((skill, index) => (
+                        <span key={index} className="skill-tag">
+                          {skill}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </Link>
               </div>
             ))}
           </div>
