@@ -15,6 +15,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 16px;
+  margin-top: 20px;
 }
 
 .tech-icon-wrapper {
@@ -28,9 +29,97 @@
   width: 36px;
   height: 36px;
   object-fit: contain;
+  background-color: transparent;
+  border-radius: 4px;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .tech-name {
   font-size: 0.9rem;
   color: #4a5568;
+}
+
+/* 검색 관련 스타일 */
+.tech-search-container {
+  position: relative;
+  margin-bottom: 16px;
+}
+
+.tech-search-input {
+  width: 100%;
+  padding: 10px 16px;
+  font-size: 14px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  transition: border-color 0.2s;
+}
+
+.tech-search-input:focus {
+  outline: none;
+  border-color: #3cb4ac;
+  box-shadow: 0 0 0 2px rgba(60, 180, 172, 0.1);
+}
+
+.tech-suggestions {
+  position: absolute;
+  width: 100%;
+  max-height: 300px;
+  overflow-y: auto;
+  background-color: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+  margin-top: 4px;
+}
+
+.tech-suggestion-item {
+  display: flex;
+  align-items: center;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.tech-suggestion-item:hover {
+  background-color: #f3f4f6;
+}
+
+.tech-suggestion-icon {
+  width: 20px;
+  height: 20px;
+  margin-right: 12px;
+  object-fit: contain;
+  background-color: transparent;
+  border-radius: 3px;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 직접 입력 관련 스타일 */
+.custom-tech-item {
+  background-color: #f8f8ff;
+  border-top: 1px dashed #e5e7eb;
+}
+
+.custom-tech-label {
+  color: #6b7280;
+  font-size: 0.85rem;
+  margin-right: 8px;
+}
+
+.custom-tech-value {
+  font-weight: 500;
+  color: #3cb4ac;
+}
+
+.no-tech-message {
+  color: #9ca3af;
+  font-style: italic;
+  margin-top: 8px;
 }

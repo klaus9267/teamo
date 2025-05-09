@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../../styles/post/create.css";
+import TechStack from "../../component/post/TechStack.tsx";
+import { postApi } from "../../api/post.ts";
 
 const PostCreate = () => {
   const navigate = useNavigate();
@@ -16,25 +18,45 @@ const PostCreate = () => {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [postType, setPostType] = useState("사이드프로젝트"); // 기본값: 사이드프로젝트
+  const [projectType, setProjectType] = useState("ONLINE"); // 기본값: ONLINE (온라인)
   const [imagePreview, setImagePreview] = useState(null);
+  const [imageFile, setImageFile] = useState(null); // 실제 파일 객체 저장
   const [techStack, setTechStack] = useState([]);
-  const [techInput, setTechInput] = useState("");
   const [memberCount, setMemberCount] = useState(1);
   const [preference, setPreference] = useState("");
   const [endDate, setEndDate] = useState(defaultEndDateString);
 
   // 게시글 유형 옵션
   const postTypeOptions = [
-    { value: "사이드프로젝트", label: "사이드프로젝트" },
-    { value: "공모전", label: "공모전" },
-    { value: "해커톤", label: "해커톤" },
-    { value: "스터디", label: "스터디" },
+    { value: "사이드프로젝트", label: "사이드프로젝트", apiValue: "PROJECT" },
+    { value: "공모전", label: "공모전", apiValue: "CONTEST" },
+    { value: "해커톤", label: "해커톤", apiValue: "HACKATHON" },
+    { value: "스터디", label: "스터디", apiValue: "STUDY" },
   ];
+
+  // 프로젝트 진행 방식 옵션
+  const projectTypeOptions = [
+    { value: "ONLINE", label: "온라인" },
+    { value: "OFFLINE", label: "오프라인" },
+    { value: "MIX", label: "혼합" },
+  ];
+
+  // 프론트엔드 카테고리 값을 백엔드 API 카테고리 값으로 변환하는 함수
+  const mapCategoryToApiValue = (frontendCategory) => {
+    const option = postTypeOptions.find(
+      (opt) => opt.value === frontendCategory
+    );
+    return option ? option.apiValue : "PROJECT"; // 기본값은 PROJECT
+  };
 
   // 이미지 업로드 처리
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
+      // 파일 객체 저장
+      setImageFile(file);
+
+      // 미리보기 생성
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(reader.result);
@@ -44,10 +66,9 @@ const PostCreate = () => {
   };
 
   // 기술 스택 추가
-  const handleAddTech = () => {
-    if (techInput && !techStack.includes(techInput)) {
-      setTechStack([...techStack, techInput]);
-      setTechInput("");
+  const handleAddTech = (tech) => {
+    if (tech && !techStack.includes(tech)) {
+      setTechStack([...techStack, tech]);
     }
   };
 
@@ -64,7 +85,7 @@ const PostCreate = () => {
   };
 
   // 폼 제출 처리
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     // 유효성 검사
@@ -78,23 +99,33 @@ const PostCreate = () => {
       return;
     }
 
-    // 서버에 데이터 전송 (실제로는 API 호출 구현 필요)
+    // 서버에 데이터 전송
     const postData = {
       title,
       content,
-      postType,
-      techStack,
-      imageUrl: imagePreview,
-      memberCount,
-      preference,
-      endDate,
+      headCount: memberCount,
+      image: imageFile, // base64 이미지 대신 파일 객체 전달
+      requirementPersonality: preference,
+      endedAt: endDate,
+      category: mapCategoryToApiValue(postType),
+      type: projectType, // 진행 방식(ONLINE, OFFLINE, MIX)
+      skills: techStack,
+      matchedUsers: [],
+      currentCount: 0,
     };
 
-    console.log("게시글 데이터:", postData);
-    alert("게시글이 등록되었습니다!");
+    try {
+      // API 호출
+      const response = await postApi.createPost(postData);
+      console.log("게시글 데이터:", response);
+      alert("게시글이 등록되었습니다!");
 
-    // 게시글 목록 페이지로 이동
-    navigate("/hub");
+      // 게시글 목록 페이지로 이동
+      navigate("/");
+    } catch (error) {
+      console.error("게시글 등록 실패:", error);
+      alert("게시글 등록에 실패했습니다. 다시 시도해주세요.");
+    }
   };
 
   return (
@@ -117,6 +148,24 @@ const PostCreate = () => {
                     postType === option.value ? "selected" : ""
                   }`}
                   onClick={() => setPostType(option.value)}
+                >
+                  <span>{option.label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* 진행 방식 선택 */}
+          <div className="form-section">
+            <h2 style={{ textAlign: "left" }}>진행 방식</h2>
+            <div className="post-type-selector">
+              {projectTypeOptions.map((option) => (
+                <div
+                  key={option.value}
+                  className={`type-option ${
+                    projectType === option.value ? "selected" : ""
+                  }`}
+                  onClick={() => setProjectType(option.value)}
                 >
                   <span>{option.label}</span>
                 </div>
@@ -172,40 +221,26 @@ const PostCreate = () => {
             </div>
           </div>
 
-          {/* 기술 스택 입력 */}
+          {/* 기술 스택 입력 - TechStack 컴포넌트 사용 */}
           <div className="form-section">
             <h2 style={{ textAlign: "left" }}>기술 스택</h2>
-            <div className="tech-input-container">
-              <input
-                type="text"
-                value={techInput}
-                onChange={(e) => setTechInput(e.target.value)}
-                placeholder="기술 스택을 입력하세요 (예: React, Node.js)"
-                className="form-control tech-input"
-              />
-              <button
-                type="button"
-                onClick={handleAddTech}
-                className="add-tech-btn"
-              >
-                추가
-              </button>
-            </div>
-
-            <div className="tech-stack-list">
-              {techStack.map((tech, index) => (
-                <div key={index} className="tech-tag">
-                  {tech}
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveTech(tech)}
-                    className="remove-tech"
-                  >
-                    &times;
-                  </button>
-                </div>
-              ))}
-            </div>
+            <TechStack technologies={techStack} onSelectTech={handleAddTech} />
+            {techStack.length > 0 && (
+              <div className="tech-stack-list">
+                {techStack.map((tech, index) => (
+                  <div key={index} className="tech-tag">
+                    {tech}
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveTech(tech)}
+                      className="remove-tech"
+                    >
+                      &times;
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* 내용 입력 */}

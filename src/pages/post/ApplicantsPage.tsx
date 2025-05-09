@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import axios from "axios";
 
 // 자기소개서 타입 정의
 interface Resume {
@@ -10,35 +11,6 @@ interface Resume {
   skills: string[];
   traits: string;
 }
-
-// 더미 자기소개서 목록 (실제로는 API에서 가져옴)
-const dummyResumes: Resume[] = [
-  {
-    id: 1,
-    title: "프론트엔드 개발자 자기소개서",
-    content:
-      "안녕하세요, 웹 개발자로 지원하는 리박스입니다. React와 TypeScript를 활용한 프로젝트 경험이 풍부하며, 협업을 중요시합니다.",
-    createdAt: "2023-04-25",
-    skills: ["React", "TypeScript", "JavaScript", "HTML/CSS"],
-    traits: "협업 중심의 개발자 | 문제 해결 능력 | 긍정적인 태도",
-  },
-  {
-    id: 2,
-    title: "백엔드 개발자 자기소개서",
-    content: "Node.js와 Express를 활용한 API 개발 경험이 있습니다.",
-    createdAt: "2023-05-15",
-    skills: ["Node.js", "Express", "MongoDB"],
-    traits: "논리적 사고 | 책임감 | 꼼꼼함",
-  },
-  {
-    id: 3,
-    title: "디자이너 자기소개서",
-    content: "UI/UX 디자인 경험이 있으며 사용자 중심의 디자인을 추구합니다.",
-    createdAt: "2023-06-01",
-    skills: ["Figma", "Adobe XD", "Photoshop"],
-    traits: "창의성 | 소통 능력 | 트렌드 파악",
-  },
-];
 
 // 지원자 타입 정의 (motivation, resumeId 추가)
 interface Applicant {
@@ -56,64 +28,50 @@ interface Applicant {
   location: string;
 }
 
-// 더미 지원자 데이터
-const dummyApplicants: Applicant[] = [
-  {
-    id: 5,
-    name: "김서연",
-    avatar: "https://via.placeholder.com/48x48.png?text=Kim",
-    applyDate: "2025-04-28",
-    skills: ["React", "TypeScript", "Next.js", "TailwindCSS"],
-    resumeId: 1,
-    motivation: "사용자 경험을 개선하는데 기여하고 싶어서 지원했습니다.",
-    aiScore: 98,
-    aiReason:
-      "React와 TypeScript를 활용한 실시간 변경 기능 개발 경험이 있어 프로젝트에 빨리 기여할 것으로 예상됩니다. 학습과 성장에 대한 의지가 높고, 팀 프로젝트의 목표와 방향성에 공감하고 있습니다.",
-    portfolioUrl: "https://portfolio.example.com/kim",
-    position: "프론트엔드 개발자",
-    location: "서울",
-  },
-  {
-    id: 6,
-    name: "이준호",
-    avatar: "https://via.placeholder.com/48x48.png?text=Lee",
-    applyDate: "2025-04-27",
-    skills: ["Figma", "Adobe XD", "Prototype", "Principle"],
-    resumeId: 3,
-    motivation: "팀 프로젝트에서 다양한 협업 경험을 쌓고 싶어서 지원했습니다.",
-    aiScore: 92,
-    aiReason:
-      "다양한 협업 경험과 학습에 대한 의지가 높아 팀 프로젝트에 긍정적인 시너지를 낼 것으로 기대됩니다.",
-    portfolioUrl: "https://portfolio.example.com/lee",
-    position: "UI/UX 디자이너",
-    location: "경기",
-  },
-  {
-    id: 7,
-    name: "박지훈",
-    avatar: "https://via.placeholder.com/48x48.png?text=Park",
-    applyDate: "2025-04-26",
-    skills: ["JavaScript", "Sass", "Redux"],
-    resumeId: 1,
-    motivation: "신입 프론트엔드 엔지니어로 성장하고 싶어서 지원했습니다.",
-    aiScore: 88,
-    aiReason:
-      "React와 TypeScript를 활용한 실시간 변경 기능 개발 경험이 있어 프로젝트에 빨리 기여할 것으로 예상됩니다.",
-    portfolioUrl: "https://portfolio.example.com/park",
-    position: "프론트엔드 개발자",
-    location: "인천",
-  },
-];
-
 export default function ApplicantsPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [selectedId, setSelectedId] = useState<number | null>(
-    dummyApplicants[0].id
-  );
+  const [selectedId, setSelectedId] = useState<number | null>(null);
   const [showResumeModal, setShowResumeModal] = useState(false);
-  const selectedApplicant = dummyApplicants.find((a) => a.id === selectedId);
-  const selectedResume = dummyResumes.find(
+  const [resumes, setResumes] = useState<Resume[]>([]);
+  const [applicants, setApplicants] = useState<Applicant[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // API 연동을 위한 함수들
+  const fetchResumes = async () => {
+    try {
+      // TODO: API 연동
+      // const response = await axios.get('/api/resumes');
+      // setResumes(response.data);
+      setLoading(false);
+    } catch (err) {
+      setError("자기소개서를 불러오는데 실패했습니다.");
+      setLoading(false);
+    }
+  };
+
+  const fetchApplicants = async (postId: number) => {
+    try {
+      // TODO: API 연동
+      // const response = await axios.get(`/api/posts/${postId}/applicants`);
+      // setApplicants(response.data);
+      setLoading(false);
+    } catch (err) {
+      setError("지원자 목록을 불러오는데 실패했습니다.");
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (id) {
+      fetchResumes();
+      fetchApplicants(Number(id));
+    }
+  }, [id]);
+
+  const selectedApplicant = applicants.find((a) => a.id === selectedId);
+  const selectedResume = resumes.find(
     (r) => r.id === selectedApplicant?.resumeId
   );
 
@@ -138,7 +96,7 @@ export default function ApplicantsPage() {
         >
           지원자 매칭
         </div>
-        {dummyApplicants.map((applicant) => (
+        {applicants.map((applicant) => (
           <div
             key={applicant.id}
             onClick={() => setSelectedId(applicant.id)}

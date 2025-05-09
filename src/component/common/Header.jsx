@@ -1,12 +1,33 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import LoginModal from "./LoginModal";
 import "../../styles/common/Header.css";
+import { authApi } from "../../api/auth.ts";
 
 const Header = () => {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // 로그인 상태를 관리
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const navigate = useNavigate();
+
+  // 컴포넌트 마운트 시 로그인 상태 확인
+  useEffect(() => {
+    const checkAuthStatus = () => {
+      const isAuthenticated = authApi.isAuthenticated();
+      setIsLoggedIn(isAuthenticated);
+    };
+
+    checkAuthStatus();
+
+    // 로컬 스토리지 변경 감지
+    const handleStorageChange = () => {
+      checkAuthStatus();
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+    };
+  }, []);
 
   const openLoginModal = () => {
     setIsLoginModalOpen(true);
@@ -16,25 +37,28 @@ const Header = () => {
     setIsLoginModalOpen(false);
   };
 
-  // 임시 로그인 처리 함수
   const handleLogin = () => {
     setIsLoggedIn(true);
     closeLoginModal();
   };
 
-  // 임시 로그아웃 처리 함수
   const handleLogout = () => {
+    authApi.logout();
     setIsLoggedIn(false);
   };
 
-  // 프로필 페이지로 이동
   const goToProfile = () => {
     navigate("/profile");
   };
 
-  // 게시글 작성 페이지로 이동
-  const goToCreatePost = () => {
-    navigate("/post/create");
+  const handleCreatePost = () => {
+    if (!isLoggedIn) {
+      // 로그인하지 않은 경우 알림 표시 후 로그인 모달 열기
+      alert("팀원 모집하기는 로그인 후 이용 가능합니다.");
+      openLoginModal();
+    } else {
+      navigate("/post/create");
+    }
   };
 
   return (
@@ -51,9 +75,13 @@ const Header = () => {
               <Link to="/hub" className="nav-link">
                 허브
               </Link>
-              <Link to="/post/create" className="nav-link">
+              <span
+                className="nav-link"
+                onClick={handleCreatePost}
+                style={{ cursor: "pointer" }}
+              >
                 팀원 모집하기
-              </Link>
+              </span>
             </nav>
             {isLoggedIn ? (
               <div className="user-menu">
