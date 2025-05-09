@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import "../../styles/main/Main.css";
+import { postApi, Post } from "../../api/post.ts";
+import Spinner from "../../component/common/Spinner.tsx";
+import { authApi } from "../../api/auth.ts";
 
 // 배너 데이터
 const bannerData = [
@@ -27,275 +30,26 @@ const bannerData = [
   },
 ];
 
-// 데이터 타입 정의
-interface PostData {
-  id: number;
-  title: string;
-  category: string;
-  techStack: string[];
-  status: {
-    current: number;
-    total: number;
-  };
-  endDate: string;
-  meetingType: string;
-}
+// 카테고리 영어-한글 매핑
+const categoryMap = {
+  PROJECT: "프로젝트",
+  CONTEST: "공모전",
+  HACKATHON: "해커톤",
+  STUDY: "스터디",
+};
 
-// 모집 글 더미 데이터 (상세 페이지와 일치)
-const recruitmentPostsData: PostData[] = [
-  {
-    id: 1,
-    title: "[서울] Kettodze - 일본 가챠 매장",
-    category: "프로젝트",
-    techStack: [
-      "React",
-      "TypeScript",
-      "Styled-Components",
-      "NodeJS",
-      "MongoDB",
-    ],
-    status: {
-      current: 3,
-      total: 5,
-    },
-    endDate: "2024.12.31",
-    meetingType: "온라인",
-  },
-  {
-    id: 2,
-    title: "투표와 기술대회 사업화전략 플랫폼",
-    category: "공모전",
-    techStack: ["Spring", "Java", "MySQL", "React", "AWS"],
-    status: {
-      current: 2,
-      total: 5,
-    },
-    endDate: "2025.05.06",
-    meetingType: "혼합",
-  },
-  {
-    id: 3,
-    title: "AI 기반 추천 시스템 개발",
-    category: "해커톤",
-    techStack: ["Python", "TensorFlow", "MongoDB", "Flask", "AWS"],
-    status: {
-      current: 2,
-      total: 4,
-    },
-    endDate: "2025.05.07",
-    meetingType: "온라인",
-  },
-  {
-    id: 4,
-    title: "UX/UI 개선 프로젝트 팀원 모집",
-    category: "스터디",
-    techStack: ["Figma", "Adobe XD", "Sketch"],
-    status: {
-      current: 2,
-      total: 6,
-    },
-    endDate: "2025.05.08",
-    meetingType: "오프라인",
-  },
-  {
-    id: 5,
-    title: "쇼핑몰 마케팅 전략 기획 스터디",
-    category: "스터디",
-    techStack: ["Google Analytics", "SEO", "Marketing"],
-    status: {
-      current: 4,
-      total: 8,
-    },
-    endDate: "2025.06.01",
-    meetingType: "온라인",
-  },
-  {
-    id: 6,
-    title: "블록체인 기반 NFT 마켓플레이스",
-    category: "프로젝트",
-    techStack: ["Solidity", "Web3.js", "React"],
-    status: {
-      current: 3,
-      total: 5,
-    },
-    endDate: "2024.08.10",
-    meetingType: "온라인",
-  },
-  {
-    id: 7,
-    title: "클라우드 환경 CI/CD 파이프라인 구축",
-    category: "프로젝트",
-    techStack: ["AWS", "Docker", "Jenkins"],
-    status: {
-      current: 2,
-      total: 4,
-    },
-    endDate: "2024.07.30",
-    meetingType: "온라인",
-  },
-  {
-    id: 8,
-    title: "AI 기반 추천 시스템 개발",
-    category: "해커톤",
-    techStack: ["Python", "TensorFlow", "MongoDB"],
-    status: {
-      current: 3,
-      total: 6,
-    },
-    endDate: "2024.08.05",
-    meetingType: "온라인",
-  },
-  {
-    id: 9,
-    title: "모바일 앱 UX 개선 프로젝트",
-    category: "프로젝트",
-    techStack: ["Swift", "Kotlin", "Figma"],
-    status: {
-      current: 2,
-      total: 5,
-    },
-    endDate: "2024.08.15",
-    meetingType: "오프라인",
-  },
-  {
-    id: 10,
-    title: "웹 성능 최적화 스터디",
-    category: "스터디",
-    techStack: ["JavaScript", "Webpack", "Lighthouse"],
-    status: {
-      current: 4,
-      total: 8,
-    },
-    endDate: "2024.07.25",
-    meetingType: "온라인",
-  },
-  {
-    id: 11,
-    title: "오픈소스 프로젝트 기여 모임",
-    category: "스터디",
-    techStack: ["Git", "GitHub", "JavaScript"],
-    status: {
-      current: 5,
-      total: 10,
-    },
-    endDate: "2024.08.20",
-    meetingType: "온라인",
-  },
-  {
-    id: 12,
-    title: "데이터 시각화 대시보드",
-    category: "프로젝트",
-    techStack: ["D3.js", "React", "Python"],
-    status: {
-      current: 2,
-      total: 4,
-    },
-    endDate: "2024.07.10",
-    meetingType: "온라인",
-  },
-  {
-    id: 13,
-    title: "크로스 플랫폼 모바일 앱 개발",
-    category: "해커톤",
-    techStack: ["React Native", "Firebase", "Redux"],
-    status: {
-      current: 3,
-      total: 6,
-    },
-    endDate: "2024.06.28",
-    meetingType: "오프라인",
-  },
-  {
-    id: 14,
-    title: "마이크로서비스 아키텍처 스터디",
-    category: "스터디",
-    techStack: ["Docker", "Kubernetes", "Spring Boot"],
-    status: {
-      current: 4,
-      total: 8,
-    },
-    endDate: "2024.07.12",
-    meetingType: "온라인",
-  },
-  {
-    id: 15,
-    title: "IoT 스마트홈 프로젝트",
-    category: "프로젝트",
-    techStack: ["Arduino", "Raspberry Pi", "MQTT"],
-    status: {
-      current: 2,
-      total: 5,
-    },
-    endDate: "2024.08.25",
-    meetingType: "온라인",
-  },
-  {
-    id: 16,
-    title: "AI 이미지 생성 웹 서비스",
-    category: "프로젝트",
-    techStack: ["Python", "PyTorch", "React"],
-    status: {
-      current: 3,
-      total: 6,
-    },
-    endDate: "2024.07.20",
-    meetingType: "온라인",
-  },
-  {
-    id: 17,
-    title: "블록체인 기반 투표 시스템",
-    category: "공모전",
-    techStack: ["Ethereum", "Solidity", "Web3.js"],
-    status: {
-      current: 2,
-      total: 4,
-    },
-    endDate: "2024.08.30",
-    meetingType: "온라인",
-  },
-  {
-    id: 18,
-    title: "AR/VR 게임 개발 프로젝트",
-    category: "프로젝트",
-    techStack: ["Unity", "C#", "ARKit"],
-    status: {
-      current: 3,
-      total: 6,
-    },
-    endDate: "2024.07.18",
-    meetingType: "오프라인",
-  },
-  {
-    id: 19,
-    title: "프로그래밍 언어 스터디",
-    category: "스터디",
-    techStack: ["Go", "Rust", "TypeScript"],
-    status: {
-      current: 5,
-      total: 10,
-    },
-    endDate: "2024.08.15",
-    meetingType: "온라인",
-  },
-  {
-    id: 20,
-    title: "보안 취약점 분석 프로젝트",
-    category: "해커톤",
-    techStack: ["Python", "Burp Suite", "Metasploit"],
-    status: {
-      current: 2,
-      total: 5,
-    },
-    endDate: "2024.07.30",
-    meetingType: "오프라인",
-  },
-];
+// 진행 방식 영어-한글 매핑
+const typeMap = {
+  ONLINE: "온라인",
+  OFFLINE: "오프라인",
+  HYBRID: "혼합",
+};
 
 export default function HomePage() {
   const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("전체");
-  const [selectedStatus, setSelectedStatus] = useState("");
+  const [selectedType, setSelectedType] = useState("");
   const [isPaused, setIsPaused] = useState(false);
   const intervalRef = useRef(null);
   const lastPausedTimeRef = useRef(null);
@@ -303,6 +57,9 @@ export default function HomePage() {
   const postPerPage = 16;
   const navigate = useNavigate();
   const [isRecruiting, setIsRecruiting] = useState(false);
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   // 배너 전환 함수
   const rotateBanner = () => {
@@ -346,31 +103,68 @@ export default function HomePage() {
     };
   }, [isPaused]);
 
+  // API 연동 (목록)
+  const fetchPosts = async () => {
+    try {
+      const data = await postApi.getPosts();
+      setPosts(data);
+      setLoading(false);
+    } catch (err) {
+      setError("게시글을 불러오는데 실패했습니다.");
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchPosts();
+  }, []);
+
+  // 날짜 포맷 변환 (YYYY-MM-DD를 YYYY.MM.DD로)
+  const formatDate = (dateString) => {
+    if (!dateString) return "마감일 미정";
+    const parts = dateString.split("-");
+    if (parts.length === 3) {
+      return `${parts[0]}.${parts[1]}.${parts[2]}`;
+    }
+    return dateString;
+  };
+
   // 필터링된 모집글 게시물 가져오기
   const getFilteredPosts = () => {
-    let filteredPosts = [...recruitmentPostsData];
+    let filteredPosts = [...posts];
+
+    // 카테고리 필터링
     if (selectedCategory !== "전체") {
-      filteredPosts = filteredPosts.filter(
-        (post) => post.category === selectedCategory
-      );
+      filteredPosts = filteredPosts.filter((post) => {
+        // API의 category 값을 한글로 변환하여 비교
+        const koreanCategory = categoryMap[post.category] || post.category;
+        return koreanCategory === selectedCategory;
+      });
     }
 
-    if (selectedStatus) {
-      // 진행 방식 필터링 로직 (실제 데이터에 맞게 추가)
+    // 진행 방식 필터링
+    if (selectedType) {
+      filteredPosts = filteredPosts.filter((post) => {
+        // API의 type 값을 한글로 변환하여 비교
+        const koreanType = typeMap[post.type] || post.type;
+        return koreanType === selectedType;
+      });
     }
 
     // 모집중 체크 시 마감일이 오늘 이전인 글은 제외
     if (isRecruiting) {
       const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
       filteredPosts = filteredPosts.filter((post) => {
-        // 마감일이 YYYY.MM.DD 또는 YYYY-MM-DD 형식일 수 있음
-        const dateStr = post.endDate.replace(/\./g, "-");
-        const deadline = new Date(dateStr);
+        if (!post.endedAt) return true;
+
+        // 마감일 형식 변환
+        const deadline = new Date(post.endedAt);
+        deadline.setHours(0, 0, 0, 0);
+
         // 오늘 날짜 포함(마감일 당일까지 모집중)
-        return (
-          deadline >=
-          new Date(today.getFullYear(), today.getMonth(), today.getDate())
-        );
+        return deadline >= today;
       });
     }
 
@@ -400,86 +194,99 @@ export default function HomePage() {
 
   // 페이지네이션 컴포넌트
   const Pagination = () => {
-    const filteredPosts = getFilteredPosts();
-    const totalPages = Math.ceil(filteredPosts.length / postPerPage);
+    const totalPages = Math.ceil(getFilteredPosts().length / postPerPage);
+    const maxVisiblePages = 5; // 한 번에 보여줄 페이지 버튼 수
+    const pageNumbers: number[] = [];
 
-    if (totalPages <= 1) return null;
+    // 시작 페이지와 끝 페이지 계산
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
 
-    // 표시할 페이지 번호 계산 (최대 5개)
-    let startPage = Math.max(1, currentPage - 2);
-    let endPage = Math.min(totalPages, startPage + 4);
+    // 페이지 버튼이 최대 개수보다 적을 경우 시작 페이지 조정
+    if (endPage - startPage + 1 < maxVisiblePages && startPage > 1) {
+      startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    }
 
-    // 마지막 페이지가 totalPages보다 작으면 startPage 조정
-    if (endPage < totalPages) {
-      startPage = Math.max(1, endPage - 4);
+    // 페이지 번호 생성
+    for (let i = startPage; i <= endPage; i++) {
+      pageNumbers.push(i);
+    }
+
+    if (totalPages <= 1) {
+      return null; // 페이지가 1개 이하면 페이지네이션 숨김
     }
 
     return (
       <div className="pagination">
+        {/* 이전 페이지 버튼 */}
         <button
-          className={`pagination-btn ${currentPage === 1 ? "disabled" : ""}`}
           onClick={() => handlePageChange(currentPage - 1)}
           disabled={currentPage === 1}
+          className="page-button prev"
         >
-          이전
+          &lt;
         </button>
 
-        <div className="pagination-numbers">
-          {startPage > 1 && (
-            <>
-              <button
-                className="pagination-number"
-                onClick={() => handlePageChange(1)}
-              >
-                1
-              </button>
-              {startPage > 2 && (
-                <span className="pagination-ellipsis">...</span>
-              )}
-            </>
-          )}
-
-          {Array.from({ length: endPage - startPage + 1 }, (_, i) => (
+        {/* 첫 페이지 버튼 (시작 페이지가 1이 아닌 경우) */}
+        {startPage > 1 && (
+          <>
             <button
-              key={startPage + i}
-              className={`pagination-number ${
-                currentPage === startPage + i ? "active" : ""
-              }`}
-              onClick={() => handlePageChange(startPage + i)}
+              onClick={() => handlePageChange(1)}
+              className={`page-button ${currentPage === 1 ? "active" : ""}`}
             >
-              {startPage + i}
+              1
             </button>
-          ))}
+            {startPage > 2 && <span className="page-ellipsis">...</span>}
+          </>
+        )}
 
-          {endPage < totalPages && (
-            <>
-              {endPage < totalPages - 1 && (
-                <span className="pagination-ellipsis">...</span>
-              )}
+        {/* 페이지 번호 버튼 */}
+        {pageNumbers.map(
+          (number) =>
+            number !== 1 &&
+            number !== totalPages && (
               <button
-                className="pagination-number"
-                onClick={() => handlePageChange(totalPages)}
+                key={number}
+                onClick={() => handlePageChange(number)}
+                className={`page-button ${
+                  currentPage === number ? "active" : ""
+                }`}
               >
-                {totalPages}
+                {number}
               </button>
-            </>
-          )}
-        </div>
+            )
+        )}
 
+        {/* 마지막 페이지 버튼 (끝 페이지가 총 페이지 수와 다른 경우) */}
+        {endPage < totalPages && (
+          <>
+            {endPage < totalPages - 1 && (
+              <span className="page-ellipsis">...</span>
+            )}
+            <button
+              onClick={() => handlePageChange(totalPages)}
+              className={`page-button ${
+                currentPage === totalPages ? "active" : ""
+              }`}
+            >
+              {totalPages}
+            </button>
+          </>
+        )}
+
+        {/* 다음 페이지 버튼 */}
         <button
-          className={`pagination-btn ${
-            currentPage === totalPages ? "disabled" : ""
-          }`}
           onClick={() => handlePageChange(currentPage + 1)}
           disabled={currentPage === totalPages}
+          className="page-button next"
         >
-          다음
+          &gt;
         </button>
       </div>
     );
   };
 
-  const changeBanner = (index) => {
+  const changeBanner = (index: number) => {
     if (isTransitioning) return;
     setIsTransitioning(true);
     setTimeout(() => {
@@ -500,10 +307,10 @@ export default function HomePage() {
     return orderedBanners;
   };
 
-  // 카테고리 변경 시 페이지 초기화
+  // 카테고리/타입 변경 시 페이지 초기화
   useEffect(() => {
     setCurrentPage(1);
-  }, [selectedCategory, selectedStatus]);
+  }, [selectedCategory, selectedType, isRecruiting]);
 
   const currentPosts = getCurrentPagePosts();
 
@@ -512,6 +319,57 @@ export default function HomePage() {
     navigate(`/post/${postId}`);
   };
 
+  // 팀원 모집하기 버튼 클릭 핸들러
+  const handleCreatePost = () => {
+    if (!authApi.isAuthenticated()) {
+      // 로그인하지 않은 경우 알림 표시
+      alert("팀원 모집하기는 로그인 후 이용 가능합니다.");
+    } else {
+      navigate("/post/create");
+    }
+  };
+
+  if (loading) {
+    return (
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "70vh",
+        }}
+      >
+        <Spinner size="large" text="로딩중입니다" />
+      </div>
+    );
+  }
+
+  if (error || posts.length === 0) {
+    return (
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "70vh",
+          flexDirection: "column",
+          color: "#555",
+        }}
+      >
+        <div
+          style={{ fontSize: "18px", fontWeight: "bold", marginBottom: "12px" }}
+        >
+          {error || "게시글이 없습니다."}
+        </div>
+        <div style={{ fontSize: "14px" }}>
+          {error
+            ? "잠시 후 다시 시도해주세요."
+            : "첫 번째 게시글을 작성해보세요!"}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="home-container">
       <section className="banner-section">
@@ -519,6 +377,9 @@ export default function HomePage() {
           <div className="banner-text">
             <h1>팀원 준비 완료!</h1>
             <h2>팀워크가 필요할 때, Teamo</h2>
+            <button className="create-team-btn" onClick={handleCreatePost}>
+              팀원 모집하기
+            </button>
           </div>
         </div>
 
@@ -590,13 +451,13 @@ export default function HomePage() {
         </div>
         <div className="recruitment-row-bottom">
           <select
-            value={selectedStatus}
-            onChange={(e) => setSelectedStatus(e.target.value)}
+            value={selectedType}
+            onChange={(e) => setSelectedType(e.target.value)}
           >
             <option value="">진행 방식</option>
-            <option value="online">온라인</option>
-            <option value="offline">오프라인</option>
-            <option value="hybrid">혼합</option>
+            <option value="온라인">온라인</option>
+            <option value="오프라인">오프라인</option>
+            <option value="혼합">혼합</option>
           </select>
           <label className="checkbox-label">
             <input
@@ -611,23 +472,41 @@ export default function HomePage() {
         <div className="recruitment-list">
           {currentPosts.map((post) => (
             <div
-              key={post.id}
+              key={post?.id || Math.random()}
               className="recruitment-card"
-              onClick={() => handlePostClick(post.id)}
+              onClick={() => handlePostClick(post?.id ?? 0)}
               style={{ cursor: "pointer" }}
             >
-              <div className="recruitment-image">
-                <span className="recruitment-category">{post.category}</span>
+              <div
+                className="recruitment-image"
+                style={
+                  post.image
+                    ? {
+                        backgroundImage: `url(${post.image})`,
+                        backgroundSize: "cover",
+                        backgroundPosition: "center",
+                      }
+                    : {}
+                }
+              >
+                <span className="recruitment-category">
+                  {categoryMap[post?.category] || post?.category || "기타"}
+                </span>
               </div>
               <div className="recruitment-content">
-                <h3>{post.title}</h3>
+                <h3>{post?.title || "제목 없음"}</h3>
                 <div className="recruitment-meta">
                   <div className="tech-stack">
-                    {post.techStack.map((tech) => (
+                    {(post?.skills || []).slice(0, 5).map((tech) => (
                       <span key={tech} className="tech-tag">
                         {tech}
                       </span>
                     ))}
+                    {(post?.skills?.length || 0) > 5 && (
+                      <span className="tech-tag">
+                        +{post.skills.length - 5}
+                      </span>
+                    )}
                   </div>
                 </div>
                 <div className="recruitment-stats">
@@ -635,12 +514,14 @@ export default function HomePage() {
                     <div className="status">
                       <span className="status-text">모집 현황:</span>
                       <span>
-                        {post.status.current}/{post.status.total}
+                        {post?.currentCount ?? 0}/{post?.headCount ?? 0}
                       </span>
                     </div>
                     <div className="deadline">
                       <span className="deadline-text">마감일:</span>
-                      <span className="deadline-date">{post.endDate}</span>
+                      <span className="deadline-date">
+                        {formatDate(post?.endedAt)}
+                      </span>
                     </div>
                   </div>
                   <div style={{ marginTop: 6, fontSize: 14, fontWeight: 600 }}>
@@ -648,16 +529,16 @@ export default function HomePage() {
                       style={{
                         display: "inline-block",
                         border: `1.5px solid ${
-                          post.meetingType === "온라인"
+                          typeMap[post?.type] === "온라인"
                             ? "#3cb4ac"
-                            : post.meetingType === "오프라인"
+                            : typeMap[post?.type] === "오프라인"
                             ? "#888"
                             : "#f6b93b"
                         }`,
                         color:
-                          post.meetingType === "온라인"
+                          typeMap[post?.type] === "온라인"
                             ? "#3cb4ac"
-                            : post.meetingType === "오프라인"
+                            : typeMap[post?.type] === "오프라인"
                             ? "#888"
                             : "#f6b93b",
                         background: "#fff",
@@ -668,7 +549,7 @@ export default function HomePage() {
                         letterSpacing: 0.5,
                       }}
                     >
-                      {post.meetingType}
+                      {typeMap[post?.type] || post?.type || "미정"}
                     </span>
                   </div>
                 </div>

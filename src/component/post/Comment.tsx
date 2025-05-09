@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import "../../styles/post/Comment.css";
+import Spinner from "../common/Spinner.tsx";
 
 interface CommentType {
   id: number;
@@ -14,11 +15,11 @@ interface CommentType {
 }
 
 interface CommentProps {
-  comments: CommentType[];
-  postId: number;
+  comments?: CommentType[];
+  postId?: number;
 }
 
-const Comment: React.FC<CommentProps> = ({ comments, postId }) => {
+const Comment: React.FC<CommentProps> = ({ comments = [], postId }) => {
   const [newComment, setNewComment] = useState("");
   const [activeReplyId, setActiveReplyId] = useState<number | null>(null);
   const [replyContent, setReplyContent] = useState("");
@@ -32,15 +33,18 @@ const Comment: React.FC<CommentProps> = ({ comments, postId }) => {
   // 댓글 작성 처리
   const handleCommentSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newComment.trim()) return;
+    if (!newComment.trim() || !postId) return;
 
-    // 새 댓글 객체 생성 (실제로는 API 호출 후 응답 데이터를 사용)
+    // API 미완성 - 댓글 작성 API 연결 예정
+    alert("API 연결 예정: 댓글 작성 기능은 아직 준비 중입니다.");
+
+    // 새 댓글 객체 생성 (임시 데이터)
     const newCommentObj: CommentType = {
       id: Date.now(),
       author: {
-        id: currentUserId, // 현재 로그인한 사용자 ID
-        name: "현재 사용자", // 현재 로그인한 사용자 이름
-        avatar: "https://via.placeholder.com/40", // 현재 로그인한 사용자 아바타
+        id: currentUserId,
+        name: "현재 사용자",
+        avatar: "https://via.placeholder.com/40",
       },
       content: newComment,
       createdAt: new Date().toISOString(),
@@ -65,13 +69,16 @@ const Comment: React.FC<CommentProps> = ({ comments, postId }) => {
     e.preventDefault();
     if (!replyContent.trim()) return;
 
-    // 새 대댓글 객체 생성
+    // API 미완성 - 대댓글 작성 API 연결 예정
+    alert("API 연결 예정: 대댓글 작성 기능은 아직 준비 중입니다.");
+
+    // 새 대댓글 객체 생성 (임시 데이터)
     const newReply: CommentType = {
       id: Date.now(),
       author: {
-        id: currentUserId, // 현재 로그인한 사용자 ID
-        name: "현재 사용자", // 현재 로그인한 사용자 이름
-        avatar: "https://via.placeholder.com/40", // 현재 로그인한 사용자 아바타
+        id: currentUserId,
+        name: "현재 사용자",
+        avatar: "https://via.placeholder.com/40",
       },
       content: replyContent,
       createdAt: new Date().toISOString(),
@@ -82,7 +89,7 @@ const Comment: React.FC<CommentProps> = ({ comments, postId }) => {
       if (comment.id === parentComment.id) {
         return {
           ...comment,
-          replies: [...(comment.replies || []), newReply],
+          replies: [...(comment.replies ?? []), newReply],
         };
       }
       return comment;
@@ -105,13 +112,16 @@ const Comment: React.FC<CommentProps> = ({ comments, postId }) => {
     setEditContent("");
   };
 
-  // a댓글 수정 저장
+  // 댓글 수정 저장
   const handleEditSave = (
     commentId: number,
     isReply: boolean = false,
     parentId?: number
   ) => {
     if (!editContent.trim()) return;
+
+    // API 미완성 - 댓글 수정 API 연결 예정
+    alert("API 연결 예정: 댓글 수정 기능은 아직 준비 중입니다.");
 
     let updatedComments;
     if (isReply && parentId) {
@@ -149,6 +159,9 @@ const Comment: React.FC<CommentProps> = ({ comments, postId }) => {
     isReply: boolean = false,
     parentId?: number
   ) => {
+    // API 미완성 - 댓글 삭제 API 연결 예정
+    alert("API 연결 예정: 댓글 삭제 기능은 아직 준비 중입니다.");
+
     if (isReply && parentId) {
       // 대댓글 삭제
       const updatedComments = localComments.map((comment) => {
@@ -171,18 +184,22 @@ const Comment: React.FC<CommentProps> = ({ comments, postId }) => {
 
   // 날짜 포맷팅 함수
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(
-      2,
-      "0"
-    )}-${String(date.getDate()).padStart(2, "0")}`;
+    try {
+      const date = new Date(dateString);
+      return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(
+        2,
+        "0"
+      )}-${String(date.getDate()).padStart(2, "0")}`;
+    } catch (error) {
+      return "날짜 정보 없음";
+    }
   };
 
   // 댓글 총 개수 계산 (댓글 + 대댓글)
   const getTotalCommentCount = () => {
-    let count = localComments.length;
-    localComments.forEach((comment) => {
-      if (comment.replies) {
+    let count = localComments?.length ?? 0;
+    localComments?.forEach((comment) => {
+      if (comment?.replies) {
         count += comment.replies.length;
       }
     });
@@ -192,6 +209,20 @@ const Comment: React.FC<CommentProps> = ({ comments, postId }) => {
   return (
     <div className="comments-section">
       <h3 className="comments-title">댓글</h3>
+
+      <div
+        style={{
+          padding: "8px 12px",
+          background: "#ffefef",
+          border: "1px solid #ffcfcf",
+          borderRadius: "4px",
+          marginBottom: "16px",
+          fontSize: "13px",
+          color: "#e74c3c",
+        }}
+      >
+        현재 댓글 API가 연결 예정 중입니다. 작성된 댓글은 저장되지 않습니다.
+      </div>
 
       {/* 댓글 작성 폼 */}
       <form className="comment-form" onSubmit={handleCommentSubmit}>
@@ -208,25 +239,41 @@ const Comment: React.FC<CommentProps> = ({ comments, postId }) => {
 
       {/* 댓글 목록 */}
       <div className="comments-list">
-        {localComments.length === 0 ? (
-          <div className="no-comments">첫 댓글을 작성해보세요!</div>
+        {!localComments || localComments.length === 0 ? (
+          <div
+            className="no-comments"
+            style={{ padding: "30px 0", textAlign: "center" }}
+          >
+            <Spinner size="small" text="댓글이 없습니다" />
+          </div>
         ) : (
           localComments.map((comment) => (
-            <div key={comment.id} className="comment-container">
+            <div
+              key={comment?.id ?? Math.random()}
+              className="comment-container"
+            >
               {/* 댓글 */}
               <div className="comment">
                 <div className="comment-avatar">
-                  <img src={comment.author.avatar} alt={comment.author.name} />
+                  <img
+                    src={
+                      comment?.author?.avatar ??
+                      "https://via.placeholder.com/40"
+                    }
+                    alt={comment?.author?.name ?? "사용자"}
+                  />
                 </div>
                 <div className="comment-content">
                   <div className="comment-header">
-                    <div className="comment-author">{comment.author.name}</div>
+                    <div className="comment-author">
+                      {comment?.author?.name ?? "사용자"}
+                    </div>
                     <div className="comment-date">
-                      {formatDate(comment.createdAt)}
+                      {formatDate(comment?.createdAt ?? "")}
                     </div>
                   </div>
 
-                  {editMode === comment.id ? (
+                  {editMode === comment?.id ? (
                     // 댓글 수정 폼
                     <div className="edit-form">
                       <textarea
@@ -261,18 +308,18 @@ const Comment: React.FC<CommentProps> = ({ comments, postId }) => {
                     </div>
                   ) : (
                     // 댓글 내용
-                    <div className="comment-text">{comment.content}</div>
+                    <div className="comment-text">{comment?.content ?? ""}</div>
                   )}
 
-                  {editMode !== comment.id && (
+                  {editMode !== comment?.id && (
                     <div className="comment-actions">
                       <button
                         className="reply-btn"
-                        onClick={() => toggleReplyForm(comment.id)}
+                        onClick={() => toggleReplyForm(comment?.id ?? 0)}
                       >
                         답글달기
                       </button>
-                      {comment.author.id === currentUserId && (
+                      {comment?.author?.id === currentUserId && (
                         <>
                           <button
                             className="modify-btn"
@@ -282,7 +329,7 @@ const Comment: React.FC<CommentProps> = ({ comments, postId }) => {
                           </button>
                           <button
                             className="delete-btn"
-                            onClick={() => handleDelete(comment.id)}
+                            onClick={() => handleDelete(comment?.id ?? 0)}
                           >
                             삭제
                           </button>
@@ -294,7 +341,7 @@ const Comment: React.FC<CommentProps> = ({ comments, postId }) => {
               </div>
 
               {/* 대댓글 작성 폼 */}
-              {activeReplyId === comment.id && (
+              {activeReplyId === comment?.id && (
                 <form
                   className="reply-form"
                   onSubmit={(e) => handleReplySubmit(e, comment)}
@@ -312,27 +359,30 @@ const Comment: React.FC<CommentProps> = ({ comments, postId }) => {
               )}
 
               {/* 대댓글 목록 */}
-              {comment.replies && comment.replies.length > 0 && (
+              {comment?.replies && comment.replies.length > 0 && (
                 <div className="replies-list">
                   {comment.replies.map((reply) => (
-                    <div key={reply.id} className="reply">
+                    <div key={reply?.id ?? Math.random()} className="reply">
                       <div className="comment-avatar">
                         <img
-                          src={reply.author.avatar}
-                          alt={reply.author.name}
+                          src={
+                            reply?.author?.avatar ??
+                            "https://via.placeholder.com/40"
+                          }
+                          alt={reply?.author?.name ?? "사용자"}
                         />
                       </div>
                       <div className="comment-content">
                         <div className="comment-header">
                           <div className="comment-author">
-                            {reply.author.name}
+                            {reply?.author?.name ?? "사용자"}
                           </div>
                           <div className="comment-date">
-                            {formatDate(reply.createdAt)}
+                            {formatDate(reply?.createdAt ?? "")}
                           </div>
                         </div>
 
-                        {editMode === reply.id ? (
+                        {editMode === reply?.id ? (
                           // 대댓글 수정 폼
                           <div className="edit-form">
                             <textarea
@@ -369,11 +419,13 @@ const Comment: React.FC<CommentProps> = ({ comments, postId }) => {
                           </div>
                         ) : (
                           // 대댓글 내용
-                          <div className="comment-text">{reply.content}</div>
+                          <div className="comment-text">
+                            {reply?.content ?? ""}
+                          </div>
                         )}
 
-                        {editMode !== reply.id &&
-                          reply.author.id === currentUserId && (
+                        {editMode !== reply?.id &&
+                          reply?.author?.id === currentUserId && (
                             <div className="comment-actions">
                               <button
                                 className="modify-btn"
@@ -384,7 +436,11 @@ const Comment: React.FC<CommentProps> = ({ comments, postId }) => {
                               <button
                                 className="delete-btn"
                                 onClick={() =>
-                                  handleDelete(reply.id, true, comment.id)
+                                  handleDelete(
+                                    reply?.id ?? 0,
+                                    true,
+                                    comment?.id
+                                  )
                                 }
                               >
                                 삭제

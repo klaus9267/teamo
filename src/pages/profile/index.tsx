@@ -1,6 +1,35 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import axios from "axios";
 import "../../styles/profile/Profile.css";
+import { userApi, User } from "../../api/user.ts";
+
+interface UserData {
+  id: number;
+  name: string;
+  profileImg: string;
+  skills: string[];
+  introduce: string;
+  projects: {
+    id: number;
+    title: string;
+    description: string;
+    date: string;
+    thumbnail: string;
+  }[];
+  reviews: {
+    id: number;
+    author: string;
+    content: string;
+    date: string;
+  }[];
+  resumeList: {
+    id: number;
+    title: string;
+    content: string;
+    date: string;
+  }[];
+}
 
 // 더미 데이터 - 로그인한 사용자 정보
 const initialUserData = {
@@ -94,7 +123,16 @@ const ProfileEditModal = ({ isOpen, onClose, userData, onUpdate }) => {
           <form onSubmit={handleSubmit}>
             <div className="profile-image-upload">
               <div className="profile-image-preview">
-                <img src={userData.profileImg} alt="프로필 이미지" />
+                <img
+                  src={userData.profileImg}
+                  alt={`${userData.name} 프로필`}
+                  style={{
+                    width: 150,
+                    height: 150,
+                    borderRadius: "50%",
+                    objectFit: "cover",
+                  }}
+                />
                 <button type="button" className="edit-image-btn">
                   <svg
                     viewBox="0 0 24 24"
@@ -144,8 +182,42 @@ const ProfileEditModal = ({ isOpen, onClose, userData, onUpdate }) => {
 
 const ProfilePage = () => {
   const navigate = useNavigate();
-  const [userData, setUserData] = useState(initialUserData);
+  const { id } = useParams();
+  const [userData, setUserData] = useState<UserData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  // 참여/작성한 모집글 더미 (실제로는 API에서 가져옴)
+  const myPosts = [
+    { id: 1, title: "[서울] Kettodze - 일본 가챠 매장" },
+    { id: 3, title: "AI 기반 추천 시스템 개발" },
+    { id: 5, title: "쇼핑몰 마케팅 전략 기획 스터디" },
+  ];
+  // 리뷰 작성 상태
+  const [reviewPostId, setReviewPostId] = useState(""); // 모집글 id
+  const [reviewContent, setReviewContent] = useState("");
+  // 리뷰 작성자 프로필 더미 (실제로는 리뷰 author id 등으로 받아야 함)
+  const reviewerProfileImg = "https://via.placeholder.com/40x40.png?text=U";
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        if (id) {
+          const data = await userApi.getUser(Number(id));
+          setUserData(data);
+        } else {
+          const data = await userApi.getCurrentUser();
+          setUserData(data);
+        }
+        setLoading(false);
+      } catch (err) {
+        setError("사용자 정보를 불러오는데 실패했습니다.");
+        setLoading(false);
+      }
+    };
+
+    fetchUserData();
+  }, [id]);
 
   // 프로필 업데이트
   const handleProfileUpdate = (updatedData) => {
@@ -170,6 +242,38 @@ const ProfilePage = () => {
     }
   };
 
+  // 리뷰 작성 핸들러
+  const handleReviewSubmit = (e) => {
+    e.preventDefault();
+    if (!reviewContent.trim()) {
+      alert("리뷰 내용을 입력해주세요.");
+      return;
+    }
+    const today = new Date();
+    const dateStr = today.toISOString().slice(0, 10);
+    setUserData((prev) => ({
+      ...prev,
+      reviews: [
+        ...prev.reviews,
+        {
+          id: Date.now(),
+          postId: reviewPostId,
+          postTitle:
+            myPosts.find((p) => String(p.id) === reviewPostId)?.title || "",
+          content: reviewContent,
+          date: dateStr,
+        },
+      ],
+    }));
+    setReviewPostId("");
+    setReviewContent("");
+    alert("리뷰가 등록되었습니다.");
+  };
+
+  if (loading) return <div>로딩 중...</div>;
+  if (error) return <div>{error}</div>;
+  if (!userData) return <div>사용자를 찾을 수 없습니다.</div>;
+
   return (
     <div className="profile-container">
       {/* 상단 프로필 영역 */}
@@ -177,7 +281,16 @@ const ProfilePage = () => {
         <div className="profile-info-container">
           <div className="profile-left">
             <div className="profile-image">
-              <img src={userData.profileImg} alt={`${userData.name} 프로필`} />
+              <img
+                src={userData.profileImg}
+                alt={`${userData.name} 프로필`}
+                style={{
+                  width: 150,
+                  height: 150,
+                  borderRadius: "50%",
+                  objectFit: "cover",
+                }}
+              />
             </div>
           </div>
           <div className="profile-info">
@@ -253,12 +366,76 @@ const ProfilePage = () => {
             {userData.reviews.length > 0 ? (
               <div className="reviews-container">
                 {userData.reviews.map((review) => (
-                  <div className="review-card" key={review.id}>
-                    <div className="review-header">
-                      <span className="review-author">{review.author}</span>
-                      <span className="review-date">{review.date}</span>
+                  <div
+                    className="review-card"
+                    key={review.id}
+                    style={{
+                      display: "flex",
+                      gap: 16,
+                      background: "#fcfcfc",
+                      borderRadius: 10,
+                      padding: 20,
+                      marginBottom: 18,
+                      boxShadow: "0 1px 4px #0001",
+                      alignItems: "flex-start",
+                    }}
+                  >
+                    {/* 프로필 이미지 */}
+                    <div style={{ flexShrink: 0 }}>
+                      <img
+                        src={reviewerProfileImg}
+                        alt="작성자 프로필"
+                        style={{
+                          width: 40,
+                          height: 40,
+                          borderRadius: "50%",
+                          background: "#eee",
+                          objectFit: "cover",
+                        }}
+                      />
                     </div>
-                    <p className="review-content">{review.content}</p>
+                    <div style={{ flex: 1 }}>
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 10,
+                          marginBottom: 2,
+                        }}
+                      >
+                        <span style={{ fontWeight: 700, fontSize: 16 }}>
+                          {review.author || "익명"}
+                        </span>
+                        {/* 별점 제거됨 */}
+                        <span style={{ color: "#888", fontSize: 13 }}>
+                          {review.date}
+                        </span>
+                      </div>
+                      {/* 관련 프로젝트 */}
+                      {review.postTitle && (
+                        <div
+                          style={{
+                            color: "#3cb4ac",
+                            fontSize: 13,
+                            fontWeight: 500,
+                            marginBottom: 4,
+                          }}
+                        >
+                          {review.postTitle}
+                        </div>
+                      )}
+                      <div
+                        style={{
+                          fontSize: 15,
+                          color: "#222",
+                          lineHeight: 1.7,
+                          paddingLeft: 0,
+                          marginLeft: 0,
+                        }}
+                      >
+                        {review.content}
+                      </div>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -266,6 +443,66 @@ const ProfilePage = () => {
               <div className="no-content">받은 리뷰가 없습니다.</div>
             )}
           </div>
+          {/* 리뷰 작성 폼 */}
+          <form
+            onSubmit={handleReviewSubmit}
+            className="review-form"
+            style={{
+              marginTop: 24,
+              background: "#f9f9f9",
+              borderRadius: 8,
+              padding: 20,
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                marginBottom: 10,
+              }}
+            >
+              <select
+                value={reviewPostId}
+                onChange={(e) => setReviewPostId(e.target.value)}
+                style={{
+                  width: 180,
+                  minWidth: 120,
+                  maxWidth: 220,
+                  padding: 7,
+                  borderRadius: 4,
+                  border: "1px solid #ddd",
+                  fontSize: 15,
+                }}
+              >
+                <option value="">관련 프로젝트(선택)</option>
+                {myPosts.map((post) => (
+                  <option key={post.id} value={post.id}>
+                    {post.title}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <textarea
+              placeholder="리뷰 내용을 입력해주세요. (필수)"
+              value={reviewContent}
+              onChange={(e) => setReviewContent(e.target.value)}
+              style={{
+                width: "100%",
+                minHeight: 60,
+                padding: 8,
+                borderRadius: 4,
+                border: "1px solid #ddd",
+                marginBottom: 10,
+              }}
+              required
+            />
+            <div style={{ textAlign: "right" }}>
+              <button type="submit" className="add-btn">
+                리뷰 등록
+              </button>
+            </div>
+          </form>
         </div>
 
         {/* 자기소개서 섹션 */}
