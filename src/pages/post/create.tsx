@@ -204,7 +204,7 @@ const PostCreate = () => {
                     value={memberCount}
                     onChange={(e) => setMemberCount(parseInt(e.target.value))}
                     className="form-control member-count-input"
-                    style={{ textAlign: "left", width: 60 }}
+                    style={{ textAlign: "left", width: 180 }}
                   />
                   <span className="member-count-label">명</span>
                 </div>
@@ -222,6 +222,7 @@ const PostCreate = () => {
                   value={endDate}
                   onChange={(e) => setEndDate(e.target.value)}
                   className="form-control date-input"
+                  style={{ width: 180 }}
                 />
               </div>
             </div>
