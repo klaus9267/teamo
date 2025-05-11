@@ -190,7 +190,10 @@ const PostCreate = () => {
           <div className="form-section">
             <div className="recruitment-info-container">
               <div className="member-count-wrapper">
-                <label className="info-label" style={{ textAlign: "left" }}>
+                <label
+                  className="info-label"
+                  style={{ textAlign: "left", fontWeight: "bold" }}
+                >
                   모집 인원
                 </label>
                 <div className="member-count-container">
@@ -201,13 +204,16 @@ const PostCreate = () => {
                     value={memberCount}
                     onChange={(e) => setMemberCount(parseInt(e.target.value))}
                     className="form-control member-count-input"
-                    style={{ textAlign: "left" }}
+                    style={{ textAlign: "left", width: 60 }}
                   />
                   <span className="member-count-label">명</span>
                 </div>
               </div>
               <div className="end-date-wrapper">
-                <label className="info-label" style={{ textAlign: "left" }}>
+                <label
+                  className="info-label"
+                  style={{ textAlign: "left", fontWeight: "bold" }}
+                >
                   모집 마감일
                 </label>
                 <input
@@ -223,7 +229,6 @@ const PostCreate = () => {
 
           {/* 기술 스택 입력 - TechStack 컴포넌트 사용 */}
           <div className="form-section">
-            <h2 style={{ textAlign: "left" }}>기술 스택</h2>
             <TechStack technologies={techStack} onSelectTech={handleAddTech} />
             {techStack.length > 0 && (
               <div className="tech-stack-list">
