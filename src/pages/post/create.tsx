@@ -361,6 +361,36 @@ const PostCreate = () => {
                   </span>
                 </div>
               </div>
+              <div style={{ marginTop: 10 }}>
+                <span
+                  style={{
+                    display: "inline-block",
+                    border: `1.5px solid ${
+                      projectType === "ONLINE"
+                        ? "#3cb4ac"
+                        : projectType === "OFFLINE"
+                        ? "#888"
+                        : "#f6b93b"
+                    }`,
+                    color:
+                      projectType === "ONLINE"
+                        ? "#3cb4ac"
+                        : projectType === "OFFLINE"
+                        ? "#888"
+                        : "#f6b93b",
+                    background: "#fff",
+                    borderRadius: 8,
+                    padding: "2px 14px",
+                    fontSize: 13,
+                    fontWeight: 600,
+                    letterSpacing: 0.5,
+                  }}
+                >
+                  {projectType === "ONLINE" && "온라인"}
+                  {projectType === "OFFLINE" && "오프라인"}
+                  {projectType === "MIX" && "혼합"}
+                </span>
+              </div>
             </div>
           </div>
           <div className="preview-note">
