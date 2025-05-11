@@ -1,21 +1,21 @@
-import React from "react";
-import "../../styles/post/TeamMembers.css";
+import React from 'react';
+import '../../styles/post/TeamMembers.css';
 
 interface ProjectTypeProps {
   type?: string;
 }
 
-const ProjectType: React.FC<ProjectTypeProps> = ({ type }) => {
+const ProjectType = ({ type }: ProjectTypeProps) => {
   const getTypeLabel = (type: string | undefined) => {
     switch (type) {
-      case "ONLINE":
-        return "온라인";
-      case "OFFLINE":
-        return "오프라인";
-      case "MIX":
-        return "온라인 + 오프라인 혼합";
+      case 'ONLINE':
+        return '온라인';
+      case 'OFFLINE':
+        return '오프라인';
+      case 'MIX':
+        return '혼합';
       default:
-        return "미정";
+        return '미정';
     }
   };
 

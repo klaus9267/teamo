@@ -30,7 +30,7 @@ interface SocialUserInfo {
 
 const SocialCallback = () => {
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
   const [debug, setDebug] = useState('');
   const [errorDetails, setErrorDetails] = useState<string[]>([]);
   const [tokenInfo, setTokenInfo] = useState<TokenResponse | null>(null);
