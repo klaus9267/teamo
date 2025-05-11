@@ -124,6 +124,11 @@ const PostCreate = () => {
       navigate("/");
     } catch (error) {
       console.error("게시글 등록 실패:", error);
+      if (error.response && error.response.status === 401) {
+        alert("로그인이 필요합니다. 다시 로그인 해주세요.");
+        navigate("/login");
+        return;
+      }
       alert("게시글 등록에 실패했습니다. 다시 시도해주세요.");
     }
   };

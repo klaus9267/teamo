@@ -107,7 +107,14 @@ export default function HomePage() {
   const fetchPosts = async () => {
     try {
       const data = await postApi.getPosts();
-      setPosts(data);
+      // 최신순 정렬 (endedAt이 있으면 endedAt 내림차순, 없으면 id 내림차순)
+      const sorted = [...data].sort((a, b) => {
+        if (a.endedAt && b.endedAt) {
+          return b.endedAt.localeCompare(a.endedAt);
+        }
+        return (b.id || 0) - (a.id || 0);
+      });
+      setPosts(sorted);
       setLoading(false);
     } catch (err) {
       setError("게시글을 불러오는데 실패했습니다.");
@@ -192,80 +199,60 @@ export default function HomePage() {
     }
   };
 
-  // 페이지네이션 컴포넌트
+  // 페이지네이션 컴포넌트 (더 깔끔하게 개선)
   const Pagination = () => {
     const totalPages = Math.ceil(getFilteredPosts().length / postPerPage);
-    const maxVisiblePages = 5; // 한 번에 보여줄 페이지 버튼 수
+    if (totalPages <= 1) return null;
     const pageNumbers: number[] = [];
-
-    // 시작 페이지와 끝 페이지 계산
-    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
-    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
-
-    // 페이지 버튼이 최대 개수보다 적을 경우 시작 페이지 조정
-    if (endPage - startPage + 1 < maxVisiblePages && startPage > 1) {
-      startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    let startPage = Math.max(1, currentPage - 2);
+    let endPage = Math.min(totalPages, startPage + 4);
+    if (endPage - startPage < 4 && startPage > 1) {
+      startPage = Math.max(1, endPage - 4);
     }
-
-    // 페이지 번호 생성
     for (let i = startPage; i <= endPage; i++) {
       pageNumbers.push(i);
     }
-
-    if (totalPages <= 1) {
-      return null; // 페이지가 1개 이하면 페이지네이션 숨김
-    }
-
     return (
       <div className="pagination">
-        {/* 이전 페이지 버튼 */}
         <button
           onClick={() => handlePageChange(currentPage - 1)}
           disabled={currentPage === 1}
-          className="page-button prev"
+          className="pagination-btn"
         >
-          &lt;
+          이전
         </button>
-
-        {/* 첫 페이지 버튼 (시작 페이지가 1이 아닌 경우) */}
         {startPage > 1 && (
           <>
             <button
               onClick={() => handlePageChange(1)}
-              className={`page-button ${currentPage === 1 ? "active" : ""}`}
+              className={`pagination-number ${
+                currentPage === 1 ? "active" : ""
+              }`}
             >
               1
             </button>
-            {startPage > 2 && <span className="page-ellipsis">...</span>}
+            {startPage > 2 && <span className="pagination-ellipsis">...</span>}
           </>
         )}
-
-        {/* 페이지 번호 버튼 */}
-        {pageNumbers.map(
-          (number) =>
-            number !== 1 &&
-            number !== totalPages && (
-              <button
-                key={number}
-                onClick={() => handlePageChange(number)}
-                className={`page-button ${
-                  currentPage === number ? "active" : ""
-                }`}
-              >
-                {number}
-              </button>
-            )
-        )}
-
-        {/* 마지막 페이지 버튼 (끝 페이지가 총 페이지 수와 다른 경우) */}
+        {pageNumbers.map((number) => (
+          <button
+            key={number}
+            onClick={() => handlePageChange(number)}
+            className={`pagination-number ${
+              currentPage === number ? "active" : ""
+            }`}
+          >
+            {number}
+          </button>
+        ))}
         {endPage < totalPages && (
           <>
             {endPage < totalPages - 1 && (
-              <span className="page-ellipsis">...</span>
+              <span className="pagination-ellipsis">...</span>
             )}
             <button
               onClick={() => handlePageChange(totalPages)}
-              className={`page-button ${
+              className={`pagination-number ${
                 currentPage === totalPages ? "active" : ""
               }`}
             >
@@ -273,14 +260,12 @@ export default function HomePage() {
             </button>
           </>
         )}
-
-        {/* 다음 페이지 버튼 */}
         <button
           onClick={() => handlePageChange(currentPage + 1)}
           disabled={currentPage === totalPages}
-          className="page-button next"
+          className="pagination-btn"
         >
-          &gt;
+          다음
         </button>
       </div>
     );
