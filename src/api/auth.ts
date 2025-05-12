@@ -30,7 +30,7 @@ export interface UserInfo {
   email: string;
 }
 
-export const AUTH_TOKEN_KEY = "auth_token";
+export const AUTH_TOKEN_KEY = "token";
 
 export const authApi = {
   // 회원가입
@@ -112,6 +112,9 @@ export const authApi = {
   // 로그아웃
   logout: () => {
     localStorage.removeItem(AUTH_TOKEN_KEY);
+    localStorage.removeItem("token");
+    sessionStorage.clear();
+    window.location.reload();
   },
 
   // 토큰 확인

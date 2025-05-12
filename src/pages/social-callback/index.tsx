@@ -259,10 +259,10 @@ const SocialCallback = () => {
           // JWT 토큰 저장 (응답에 토큰이 있다고 가정)
           const jwt = socialLoginRes.token;
           if (jwt) {
-            localStorage.setItem("auth_token", jwt);
+            localStorage.setItem("token", jwt);
           }
           // 홈으로 이동
-          navigate("/");
+          window.location.href = "/";
           return;
         } catch (err) {
           logError("소셜 로그인 백엔드 인증 오류:", err);
@@ -279,6 +279,13 @@ const SocialCallback = () => {
 
     processOAuthCallback();
   }, [location, navigate]);
+
+  useEffect(() => {
+    if (error) {
+      alert(error);
+      navigate("/");
+    }
+  }, [error, navigate]);
 
   // 토큰 및 사용자 정보 표시 헬퍼 함수
   const formatJSON = (data: any) => {
@@ -304,8 +311,6 @@ const SocialCallback = () => {
   }
 
   if (error) {
-    alert(error);
-    navigate("/");
     return null;
   }
 
