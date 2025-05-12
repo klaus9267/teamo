@@ -1,7 +1,7 @@
 # Teamo - 함께할 팀원을 찾는 최고의 플랫폼
 
 <p align="center">
-  <img src="https://github.com/prgrms-aibe-devcourse/AIBE1-Project2-Team03-frontend/blob/main/public/logo.svg" alt="Teamo 로고" width="200" />
+  <img src="https://github.com/user-attachments/assets/855841b1-5dda-4ae7-9ddf-197042425953" alt="Teamo 로고" width="200" />
 </p>
 
 [![Website](https://img.shields.io/badge/Website-teamo.kro.kr-blue)](https://teamo.kro.kr)
