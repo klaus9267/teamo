@@ -24,7 +24,7 @@
 
 - **언어 및 프레임워크**: React, JavaScript
 - **상태 관리**: Redux / Context API
-- **스타일링**: CSS / Styled-components
+- **스타일링**: CSS
 - **배포**: GitHub Pages
 
 ## 🚀 시작하기
