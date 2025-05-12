@@ -107,11 +107,6 @@ const ResumeForm = () => {
     };
 
     try {
-      // 실제로는 API 호출하여 저장
-      console.log("자기소개서 저장:", resumeData);
-      // API 연결 코드 추가 예정
-      // const response = await resumeApi.createResume(resumeData);
-
       // 저장 완료 후 프로필 페이지로 이동
       alert(
         isEditing
@@ -120,7 +115,6 @@ const ResumeForm = () => {
       );
       navigate("/profile");
     } catch (error) {
-      console.error("자기소개서 저장 실패:", error);
       alert("자기소개서 저장에 실패했습니다. 다시 시도해주세요.");
     }
   };

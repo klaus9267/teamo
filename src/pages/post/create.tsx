@@ -117,13 +117,11 @@ const PostCreate = () => {
     try {
       // API 호출
       const response = await postApi.createPost(postData);
-      console.log("게시글 데이터:", response);
       alert("게시글이 등록되었습니다!");
 
       // 게시글 목록 페이지로 이동
       navigate("/");
     } catch (error) {
-      console.error("게시글 등록 실패:", error);
       if (error.response && error.response.status === 401) {
         alert("로그인이 필요합니다. 다시 로그인 해주세요.");
         navigate("/login");
