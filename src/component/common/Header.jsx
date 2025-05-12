@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import LoginModal from "./LoginModal";
-import "../../styles/common/Header.css";
-import { authApi } from "../../api/auth.ts";
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import LoginModal from './LoginModal';
+import '../../styles/common/Header.css';
+import { authApi } from '../../api/auth.ts';
 
 const Header = () => {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
@@ -23,9 +23,9 @@ const Header = () => {
       checkAuthStatus();
     };
 
-    window.addEventListener("storage", handleStorageChange);
+    window.addEventListener('storage', handleStorageChange);
     return () => {
-      window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener('storage', handleStorageChange);
     };
   }, []);
 
@@ -48,16 +48,16 @@ const Header = () => {
   };
 
   const goToProfile = () => {
-    navigate("/profile");
+    navigate('/profile');
   };
 
   const handleCreatePost = () => {
     if (!isLoggedIn) {
       // 로그인하지 않은 경우 알림 표시 후 로그인 모달 열기
-      alert("팀원 모집하기는 로그인 후 이용 가능합니다.");
+      alert('팀원 모집하기는 로그인 후 이용 가능합니다.');
       openLoginModal();
     } else {
-      navigate("/post/create");
+      navigate('/post/create');
     }
   };
 
@@ -75,11 +75,7 @@ const Header = () => {
               <Link to="/hub" className="nav-link">
                 허브
               </Link>
-              <span
-                className="nav-link"
-                onClick={handleCreatePost}
-                style={{ cursor: "pointer" }}
-              >
+              <span className="nav-link" onClick={handleCreatePost} style={{ cursor: 'pointer' }}>
                 팀원 모집하기
               </span>
             </nav>
@@ -101,9 +97,7 @@ const Header = () => {
         </div>
       </header>
 
-      {isLoginModalOpen && (
-        <LoginModal onClose={closeLoginModal} onLogin={handleLogin} />
-      )}
+      {isLoginModalOpen && <LoginModal onClose={closeLoginModal} onLogin={handleLogin} />}
     </>
   );
 };

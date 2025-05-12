@@ -7,6 +7,7 @@ import Comment from "../../component/post/Comment.tsx";
 import { postApi } from "../../api/post.ts";
 import { resumeApi } from "../../api/resume.ts";
 import Spinner from "../../component/common/Spinner.tsx";
+import { authApi } from "../../api/auth.ts";
 
 // 지원 상태 타입 정의
 type ApplicationStatus =
@@ -35,6 +36,7 @@ export default function PostDetail() {
   const [applicationStatus, setApplicationStatus] = useState("none");
   const [showApplicantsList, setShowApplicantsList] = useState(false);
   const [applicants, setApplicants] = useState([]);
+  const [userId, setUserId] = useState<number | null>(null);
 
   // 지원 모달 관련 상태
   const [showApplyModal, setShowApplyModal] = useState(false);
@@ -94,6 +96,19 @@ export default function PostDetail() {
       fetchApplicants(post.id);
     }
   }, [post]);
+
+  useEffect(() => {
+    const userInfo = authApi.getUserInfo();
+    setUserId(userInfo?.id ?? null);
+  }, []);
+
+  useEffect(() => {
+    console.log("현재 로그인한 사용자 id:", userId);
+    console.log(
+      "게시글 작성자 id:",
+      post && "userId" in post ? post.userId : undefined
+    );
+  }, [userId, post]);
 
   // 지원자 승인/거절 처리 함수
   const handleApplicantAction = async (applicantId, action) => {
@@ -354,7 +369,7 @@ export default function PostDetail() {
               <span style={{ color: "#333" }}>
                 {post?.type === "ONLINE" && "온라인"}
                 {post?.type === "OFFLINE" && "오프라인"}
-                {post?.type === "MIX" && "온라인 + 오프라인 혼합"}
+                {post?.type === "MIX" && "혼합"}
                 {!post?.type && "미정"}
               </span>
             </div>
@@ -424,7 +439,7 @@ export default function PostDetail() {
           <div style={{ fontWeight: 600 }}>
             {post?.type === "ONLINE" && "온라인"}
             {post?.type === "OFFLINE" && "오프라인"}
-            {post?.type === "MIX" && "온라인 + 오프라인 혼합"}
+            {post?.type === "MIX" && "혼합"}
             {!post?.type && "미정"}
           </div>
         </div>

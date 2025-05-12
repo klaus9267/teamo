@@ -18,14 +18,14 @@
       "type": "image/png"
     },
     {
-      "src": "android-icon-192x192.png",
+      "src": "logo192.png",
       "type": "image/png",
       "sizes": "192x192"
     },
     {
-      "src": "ms-icon-310x310.png",
+      "src": "logo512.png",
       "type": "image/png",
-      "sizes": "310x310"
+      "sizes": "512x512"
     }
   ],
   "start_url": ".",

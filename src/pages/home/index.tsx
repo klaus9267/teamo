@@ -1,55 +1,53 @@
-import React, { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
-import "../../styles/main/Main.css";
-import { postApi, Post } from "../../api/post.ts";
-import Spinner from "../../component/common/Spinner.tsx";
-import { authApi } from "../../api/auth.ts";
+import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+import '../../styles/main/Main.css';
+import { postApi, Post } from '../../api/post.ts';
+import Spinner from '../../component/common/Spinner.tsx';
+import { authApi } from '../../api/auth.ts';
 
 // 배너 데이터
 const bannerData = [
   {
     id: 1,
-    title: "AI 추천 시스템",
-    subtitle:
-      "자기소개서와 기술 스택을 분석하여 프로젝트에 가장 적합한 팀원을 추천해드립니다.",
-    color: "#2196f3", // 파란색
+    title: 'AI 추천 시스템',
+    subtitle: '자기소개서와 기술 스택을 분석하여 프로젝트에 가장 적합한 팀원을 추천해드립니다.',
+    color: '#2196f3', // 파란색
   },
   {
     id: 2,
-    title: "성향 매칭 분석",
-    subtitle:
-      "기술적 역량뿐만 아니라 팀원 간의 성향과 작업 스타일을 고려한 매칭을 제공합니다.",
-    color: "#4caf50", // 초록색
+    title: '성향 매칭 분석',
+    subtitle: '기술적 역량뿐만 아니라 팀원 간의 성향과 작업 스타일을 고려한 매칭을 제공합니다.',
+    color: '#4caf50', // 초록색
   },
   {
     id: 3,
-    title: "포트폴리오 관리",
-    subtitle:
-      "프로젝트 경험과 팀 활동을 자동으로 포트폴리오에 기록하고 관리할 수 있습니다.",
-    color: "#ffd700", // 노란색
+    title: '포트폴리오 관리',
+    subtitle: '프로젝트 경험과 팀 활동을 자동으로 포트폴리오에 기록하고 관리할 수 있습니다.',
+    color: '#ffd700', // 노란색
   },
 ];
 
 // 카테고리 영어-한글 매핑
 const categoryMap = {
-  PROJECT: "프로젝트",
-  CONTEST: "공모전",
-  HACKATHON: "해커톤",
-  STUDY: "스터디",
+  PROJECT: '프로젝트',
+  CONTEST: '공모전',
+  HACKATHON: '해커톤',
+  STUDY: '스터디',
 };
 
 // 진행 방식 영어-한글 매핑
 const typeMap = {
-  ONLINE: "온라인",
-  OFFLINE: "오프라인",
-  HYBRID: "혼합",
+  ONLINE: '온라인',
+  OFFLINE: '오프라인',
+  HYBRID: '혼합',
+  MIX: '혼합',
 };
 
 export default function HomePage() {
   const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState("전체");
-  const [selectedType, setSelectedType] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState('전체');
+  const [selectedType, setSelectedType] = useState('');
   const [isPaused, setIsPaused] = useState(false);
   const intervalRef = useRef(null);
   const lastPausedTimeRef = useRef(null);
@@ -65,9 +63,7 @@ export default function HomePage() {
   const rotateBanner = () => {
     setIsTransitioning(true);
     setTimeout(() => {
-      setCurrentBannerIndex((prevIndex) =>
-        prevIndex === bannerData.length - 1 ? 0 : prevIndex + 1
-      );
+      setCurrentBannerIndex(prevIndex => (prevIndex === bannerData.length - 1 ? 0 : prevIndex + 1));
       setIsTransitioning(false);
     }, 200);
   };
@@ -107,10 +103,17 @@ export default function HomePage() {
   const fetchPosts = async () => {
     try {
       const data = await postApi.getPosts();
-      setPosts(data);
+      // 최신순 정렬 (endedAt이 있으면 endedAt 내림차순, 없으면 id 내림차순)
+      const sorted = [...data].sort((a, b) => {
+        if (a.endedAt && b.endedAt) {
+          return b.endedAt.localeCompare(a.endedAt);
+        }
+        return (b.id || 0) - (a.id || 0);
+      });
+      setPosts(sorted);
       setLoading(false);
     } catch (err) {
-      setError("게시글을 불러오는데 실패했습니다.");
+      setError('게시글을 불러오는데 실패했습니다.');
       setLoading(false);
     }
   };
@@ -120,9 +123,9 @@ export default function HomePage() {
   }, []);
 
   // 날짜 포맷 변환 (YYYY-MM-DD를 YYYY.MM.DD로)
-  const formatDate = (dateString) => {
-    if (!dateString) return "마감일 미정";
-    const parts = dateString.split("-");
+  const formatDate = dateString => {
+    if (!dateString) return '마감일 미정';
+    const parts = dateString.split('-');
     if (parts.length === 3) {
       return `${parts[0]}.${parts[1]}.${parts[2]}`;
     }
@@ -134,8 +137,8 @@ export default function HomePage() {
     let filteredPosts = [...posts];
 
     // 카테고리 필터링
-    if (selectedCategory !== "전체") {
-      filteredPosts = filteredPosts.filter((post) => {
+    if (selectedCategory !== '전체') {
+      filteredPosts = filteredPosts.filter(post => {
         // API의 category 값을 한글로 변환하여 비교
         const koreanCategory = categoryMap[post.category] || post.category;
         return koreanCategory === selectedCategory;
@@ -144,7 +147,7 @@ export default function HomePage() {
 
     // 진행 방식 필터링
     if (selectedType) {
-      filteredPosts = filteredPosts.filter((post) => {
+      filteredPosts = filteredPosts.filter(post => {
         // API의 type 값을 한글로 변환하여 비교
         const koreanType = typeMap[post.type] || post.type;
         return koreanType === selectedType;
@@ -156,7 +159,7 @@ export default function HomePage() {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
-      filteredPosts = filteredPosts.filter((post) => {
+      filteredPosts = filteredPosts.filter(post => {
         if (!post.endedAt) return true;
 
         // 마감일 형식 변환
@@ -183,104 +186,56 @@ export default function HomePage() {
   const handlePageChange = (pageNumber: number) => {
     setCurrentPage(pageNumber);
     // 페이지 변경 시 상단으로 스크롤
-    const recruitmentSection = document.querySelector(".recruitment-section");
+    const recruitmentSection = document.querySelector('.recruitment-section');
     if (recruitmentSection) {
       window.scrollTo({
         top: (recruitmentSection as HTMLElement).offsetTop || 0,
-        behavior: "smooth",
+        behavior: 'smooth',
       });
     }
   };
 
-  // 페이지네이션 컴포넌트
+  // 페이지네이션 컴포넌트 (더 깔끔하게 개선)
   const Pagination = () => {
     const totalPages = Math.ceil(getFilteredPosts().length / postPerPage);
-    const maxVisiblePages = 5; // 한 번에 보여줄 페이지 버튼 수
+    if (totalPages <= 1) return null;
     const pageNumbers: number[] = [];
-
-    // 시작 페이지와 끝 페이지 계산
-    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
-    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
-
-    // 페이지 버튼이 최대 개수보다 적을 경우 시작 페이지 조정
-    if (endPage - startPage + 1 < maxVisiblePages && startPage > 1) {
-      startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    let startPage = Math.max(1, currentPage - 2);
+    let endPage = Math.min(totalPages, startPage + 4);
+    if (endPage - startPage < 4 && startPage > 1) {
+      startPage = Math.max(1, endPage - 4);
     }
-
-    // 페이지 번호 생성
     for (let i = startPage; i <= endPage; i++) {
       pageNumbers.push(i);
     }
-
-    if (totalPages <= 1) {
-      return null; // 페이지가 1개 이하면 페이지네이션 숨김
-    }
-
     return (
       <div className="pagination">
-        {/* 이전 페이지 버튼 */}
-        <button
-          onClick={() => handlePageChange(currentPage - 1)}
-          disabled={currentPage === 1}
-          className="page-button prev"
-        >
-          &lt;
+        <button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} className="pagination-btn">
+          이전
         </button>
-
-        {/* 첫 페이지 버튼 (시작 페이지가 1이 아닌 경우) */}
         {startPage > 1 && (
           <>
-            <button
-              onClick={() => handlePageChange(1)}
-              className={`page-button ${currentPage === 1 ? "active" : ""}`}
-            >
+            <button onClick={() => handlePageChange(1)} className={`pagination-number ${currentPage === 1 ? 'active' : ''}`}>
               1
             </button>
-            {startPage > 2 && <span className="page-ellipsis">...</span>}
+            {startPage > 2 && <span className="pagination-ellipsis">...</span>}
           </>
         )}
-
-        {/* 페이지 번호 버튼 */}
-        {pageNumbers.map(
-          (number) =>
-            number !== 1 &&
-            number !== totalPages && (
-              <button
-                key={number}
-                onClick={() => handlePageChange(number)}
-                className={`page-button ${
-                  currentPage === number ? "active" : ""
-                }`}
-              >
-                {number}
-              </button>
-            )
-        )}
-
-        {/* 마지막 페이지 버튼 (끝 페이지가 총 페이지 수와 다른 경우) */}
+        {pageNumbers.map(number => (
+          <button key={number} onClick={() => handlePageChange(number)} className={`pagination-number ${currentPage === number ? 'active' : ''}`}>
+            {number}
+          </button>
+        ))}
         {endPage < totalPages && (
           <>
-            {endPage < totalPages - 1 && (
-              <span className="page-ellipsis">...</span>
-            )}
-            <button
-              onClick={() => handlePageChange(totalPages)}
-              className={`page-button ${
-                currentPage === totalPages ? "active" : ""
-              }`}
-            >
+            {endPage < totalPages - 1 && <span className="pagination-ellipsis">...</span>}
+            <button onClick={() => handlePageChange(totalPages)} className={`pagination-number ${currentPage === totalPages ? 'active' : ''}`}>
               {totalPages}
             </button>
           </>
         )}
-
-        {/* 다음 페이지 버튼 */}
-        <button
-          onClick={() => handlePageChange(currentPage + 1)}
-          disabled={currentPage === totalPages}
-          className="page-button next"
-        >
-          &gt;
+        <button onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages} className="pagination-btn">
+          다음
         </button>
       </div>
     );
@@ -323,9 +278,9 @@ export default function HomePage() {
   const handleCreatePost = () => {
     if (!authApi.isAuthenticated()) {
       // 로그인하지 않은 경우 알림 표시
-      alert("팀원 모집하기는 로그인 후 이용 가능합니다.");
+      alert('팀원 모집하기는 로그인 후 이용 가능합니다.');
     } else {
-      navigate("/post/create");
+      navigate('/post/create');
     }
   };
 
@@ -333,10 +288,10 @@ export default function HomePage() {
     return (
       <div
         style={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          height: "70vh",
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          height: '70vh',
         }}
       >
         <Spinner size="large" text="로딩중입니다" />
@@ -348,24 +303,16 @@ export default function HomePage() {
     return (
       <div
         style={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          height: "70vh",
-          flexDirection: "column",
-          color: "#555",
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          height: '70vh',
+          flexDirection: 'column',
+          color: '#555',
         }}
       >
-        <div
-          style={{ fontSize: "18px", fontWeight: "bold", marginBottom: "12px" }}
-        >
-          {error || "게시글이 없습니다."}
-        </div>
-        <div style={{ fontSize: "14px" }}>
-          {error
-            ? "잠시 후 다시 시도해주세요."
-            : "첫 번째 게시글을 작성해보세요!"}
-        </div>
+        <div style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '12px' }}>{error || '게시글이 없습니다.'}</div>
+        <div style={{ fontSize: '14px' }}>{error ? '잠시 후 다시 시도해주세요.' : '첫 번째 게시글을 작성해보세요!'}</div>
       </div>
     );
   }
@@ -383,32 +330,14 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div
-          className="banner-stack"
-          onMouseEnter={handleMouseEnter}
-          onMouseLeave={handleMouseLeave}
-        >
+        <div className="banner-stack" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
           {getOrderedBanners().map((banner, index) => (
             <div
               key={banner.id}
-              className={`banner-card ${
-                isTransitioning ? "transitioning" : ""
-              } ${
-                index === bannerData.length - 1
-                  ? "front"
-                  : index === bannerData.length - 2
-                  ? "middle"
-                  : "back"
-              }`}
+              className={`banner-card ${isTransitioning ? 'transitioning' : ''} ${index === bannerData.length - 1 ? 'front' : index === bannerData.length - 2 ? 'middle' : 'back'}`}
               style={{
                 backgroundColor: banner.color,
-                transform: `translateY(${-index * 20}px) scale(${
-                  index === bannerData.length - 1
-                    ? 1
-                    : index === bannerData.length - 2
-                    ? 0.95
-                    : 0.9
-                })`,
+                transform: `translateY(${-index * 20}px) scale(${index === bannerData.length - 1 ? 1 : index === bannerData.length - 2 ? 0.95 : 0.9})`,
                 zIndex: index,
               }}
             >
@@ -422,11 +351,7 @@ export default function HomePage() {
 
         <div className="banner-dots">
           {bannerData.map((_, index) => (
-            <span
-              key={index}
-              className={`dot ${index === currentBannerIndex ? "active" : ""}`}
-              onClick={() => changeBanner(index)}
-            />
+            <span key={index} className={`dot ${index === currentBannerIndex ? 'active' : ''}`} onClick={() => changeBanner(index)} />
           ))}
         </div>
       </section>
@@ -434,79 +359,53 @@ export default function HomePage() {
       <section className="recruitment-section">
         <div className="category-filter-row">
           <div className="category-filters">
-            {["전체", "프로젝트", "공모전", "해커톤", "스터디"].map(
-              (category) => (
-                <button
-                  key={category}
-                  className={`category-btn ${
-                    selectedCategory === category ? "active" : ""
-                  }`}
-                  onClick={() => setSelectedCategory(category)}
-                >
-                  {category}
-                </button>
-              )
-            )}
+            {['전체', '프로젝트', '공모전', '해커톤', '스터디'].map(category => (
+              <button key={category} className={`category-btn ${selectedCategory === category ? 'active' : ''}`} onClick={() => setSelectedCategory(category)}>
+                {category}
+              </button>
+            ))}
           </div>
         </div>
         <div className="recruitment-row-bottom">
-          <select
-            value={selectedType}
-            onChange={(e) => setSelectedType(e.target.value)}
-          >
+          <select value={selectedType} onChange={e => setSelectedType(e.target.value)}>
             <option value="">진행 방식</option>
             <option value="온라인">온라인</option>
             <option value="오프라인">오프라인</option>
             <option value="혼합">혼합</option>
           </select>
           <label className="checkbox-label">
-            <input
-              type="checkbox"
-              checked={isRecruiting}
-              onChange={(e) => setIsRecruiting(e.target.checked)}
-            />
+            <input type="checkbox" checked={isRecruiting} onChange={e => setIsRecruiting(e.target.checked)} />
             모집중
           </label>
         </div>
 
         <div className="recruitment-list">
-          {currentPosts.map((post) => (
-            <div
-              key={post?.id || Math.random()}
-              className="recruitment-card"
-              onClick={() => handlePostClick(post?.id ?? 0)}
-              style={{ cursor: "pointer" }}
-            >
+          {currentPosts.map(post => (
+            <div key={post?.id || Math.random()} className="recruitment-card" onClick={() => handlePostClick(post?.id ?? 0)} style={{ cursor: 'pointer' }}>
               <div
                 className="recruitment-image"
                 style={
                   post.image
                     ? {
                         backgroundImage: `url(${post.image})`,
-                        backgroundSize: "cover",
-                        backgroundPosition: "center",
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
                       }
                     : {}
                 }
               >
-                <span className="recruitment-category">
-                  {categoryMap[post?.category] || post?.category || "기타"}
-                </span>
+                <span className="recruitment-category">{categoryMap[post?.category] || post?.category || '기타'}</span>
               </div>
               <div className="recruitment-content">
-                <h3>{post?.title || "제목 없음"}</h3>
+                <h3>{post?.title || '제목 없음'}</h3>
                 <div className="recruitment-meta">
                   <div className="tech-stack">
-                    {(post?.skills || []).slice(0, 5).map((tech) => (
+                    {(post?.skills || []).slice(0, 5).map(tech => (
                       <span key={tech} className="tech-tag">
                         {tech}
                       </span>
                     ))}
-                    {(post?.skills?.length || 0) > 5 && (
-                      <span className="tech-tag">
-                        +{post.skills.length - 5}
-                      </span>
-                    )}
+                    {(post?.skills?.length || 0) > 5 && <span className="tech-tag">+{post.skills.length - 5}</span>}
                   </div>
                 </div>
                 <div className="recruitment-stats">
@@ -519,37 +418,24 @@ export default function HomePage() {
                     </div>
                     <div className="deadline">
                       <span className="deadline-text">마감일:</span>
-                      <span className="deadline-date">
-                        {formatDate(post?.endedAt)}
-                      </span>
+                      <span className="deadline-date">{formatDate(post?.endedAt)}</span>
                     </div>
                   </div>
                   <div style={{ marginTop: 6, fontSize: 14, fontWeight: 600 }}>
                     <span
                       style={{
-                        display: "inline-block",
-                        border: `1.5px solid ${
-                          typeMap[post?.type] === "온라인"
-                            ? "#3cb4ac"
-                            : typeMap[post?.type] === "오프라인"
-                            ? "#888"
-                            : "#f6b93b"
-                        }`,
-                        color:
-                          typeMap[post?.type] === "온라인"
-                            ? "#3cb4ac"
-                            : typeMap[post?.type] === "오프라인"
-                            ? "#888"
-                            : "#f6b93b",
-                        background: "#fff",
+                        display: 'inline-block',
+                        border: `1.5px solid ${typeMap[post?.type] === '온라인' ? '#3cb4ac' : typeMap[post?.type] === '오프라인' ? '#888' : '#f6b93b'}`,
+                        color: typeMap[post?.type] === '온라인' ? '#3cb4ac' : typeMap[post?.type] === '오프라인' ? '#888' : '#f6b93b',
+                        background: '#fff',
                         borderRadius: 8,
-                        padding: "2px 14px",
+                        padding: '2px 14px',
                         fontSize: 13,
                         fontWeight: 600,
                         letterSpacing: 0.5,
                       }}
                     >
-                      {typeMap[post?.type] || post?.type || "미정"}
+                      {typeMap[post?.type] || post?.type || '미정'}
                     </span>
                   </div>
                 </div>

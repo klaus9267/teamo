@@ -117,13 +117,16 @@ const PostCreate = () => {
     try {
       // API 호출
       const response = await postApi.createPost(postData);
-      console.log("게시글 데이터:", response);
       alert("게시글이 등록되었습니다!");
 
       // 게시글 목록 페이지로 이동
       navigate("/");
     } catch (error) {
-      console.error("게시글 등록 실패:", error);
+      if (error.response && error.response.status === 401) {
+        alert("로그인이 필요합니다. 다시 로그인 해주세요.");
+        navigate("/login");
+        return;
+      }
       alert("게시글 등록에 실패했습니다. 다시 시도해주세요.");
     }
   };
@@ -190,7 +193,10 @@ const PostCreate = () => {
           <div className="form-section">
             <div className="recruitment-info-container">
               <div className="member-count-wrapper">
-                <label className="info-label" style={{ textAlign: "left" }}>
+                <label
+                  className="info-label"
+                  style={{ textAlign: "left", fontWeight: "bold" }}
+                >
                   모집 인원
                 </label>
                 <div className="member-count-container">
@@ -201,13 +207,16 @@ const PostCreate = () => {
                     value={memberCount}
                     onChange={(e) => setMemberCount(parseInt(e.target.value))}
                     className="form-control member-count-input"
-                    style={{ textAlign: "left" }}
+                    style={{ textAlign: "left", width: 180 }}
                   />
                   <span className="member-count-label">명</span>
                 </div>
               </div>
               <div className="end-date-wrapper">
-                <label className="info-label" style={{ textAlign: "left" }}>
+                <label
+                  className="info-label"
+                  style={{ textAlign: "left", fontWeight: "bold" }}
+                >
                   모집 마감일
                 </label>
                 <input
@@ -216,6 +225,7 @@ const PostCreate = () => {
                   value={endDate}
                   onChange={(e) => setEndDate(e.target.value)}
                   className="form-control date-input"
+                  style={{ width: 180 }}
                 />
               </div>
             </div>
@@ -223,7 +233,6 @@ const PostCreate = () => {
 
           {/* 기술 스택 입력 - TechStack 컴포넌트 사용 */}
           <div className="form-section">
-            <h2 style={{ textAlign: "left" }}>기술 스택</h2>
             <TechStack technologies={techStack} onSelectTech={handleAddTech} />
             {techStack.length > 0 && (
               <div className="tech-stack-list">
@@ -354,6 +363,36 @@ const PostCreate = () => {
                     {formatEndDate(endDate)}
                   </span>
                 </div>
+              </div>
+              <div style={{ marginTop: 10 }}>
+                <span
+                  style={{
+                    display: "inline-block",
+                    border: `1.5px solid ${
+                      projectType === "ONLINE"
+                        ? "#3cb4ac"
+                        : projectType === "OFFLINE"
+                        ? "#888"
+                        : "#f6b93b"
+                    }`,
+                    color:
+                      projectType === "ONLINE"
+                        ? "#3cb4ac"
+                        : projectType === "OFFLINE"
+                        ? "#888"
+                        : "#f6b93b",
+                    background: "#fff",
+                    borderRadius: 8,
+                    padding: "2px 14px",
+                    fontSize: 13,
+                    fontWeight: 600,
+                    letterSpacing: 0.5,
+                  }}
+                >
+                  {projectType === "ONLINE" && "온라인"}
+                  {projectType === "OFFLINE" && "오프라인"}
+                  {projectType === "MIX" && "혼합"}
+                </span>
               </div>
             </div>
           </div>

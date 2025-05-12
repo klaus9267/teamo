@@ -112,15 +112,10 @@ const LoginModal = ({ onClose, onLogin }) => {
           setLoading(false);
           return;
         }
-        console.log("[로그인 요청]", {
-          username: formData.username,
-          password: formData.password,
-        });
         const res = await authApi.login({
           username: formData.username,
           password: formData.password,
         });
-        console.log("[로그인 응답]", res);
         onLogin();
         onClose();
       } else {
@@ -129,14 +124,11 @@ const LoginModal = ({ onClose, onLogin }) => {
           setLoading(false);
           return;
         }
-        console.log("[회원가입 요청]", formData);
         const res = await authApi.signUp(formData);
-        console.log("[회원가입 응답]", res);
         setIsLoginMode(true);
         setFormData({ username: "", password: "", name: "", email: "" });
       }
     } catch (err) {
-      console.error("[API 에러]", err);
       setApiError(
         err.response?.data?.message ||
           (isLoginMode
@@ -147,6 +139,11 @@ const LoginModal = ({ onClose, onLogin }) => {
       setLoading(false);
     }
   };
+
+  // 소셜 로그인 설정 - 환경 변수를 올바르게 사용하고 기본값 설정
+  // 카카오 로그인 설정
+
+  // 소셜 로그인 설정 디버깅 로그
 
   return (
     <div className="modal-backdrop">
@@ -171,35 +168,59 @@ const LoginModal = ({ onClose, onLogin }) => {
           <div className="social-login-buttons">
             <button
               className="social-button kakao-button"
-              onClick={() => onLogin && onLogin()}
+              onClick={() => {
+                // 카카오 로그인 URL 생성
+                const KAKAO_CLIENT_ID = process.env.REACT_APP_KAKAO_CLIENT_ID;
+                const KAKAO_AUTH_URI = process.env.REACT_APP_KAKAO_AUTH_URI;
+                const KAKAO_REDIRECT_URI =
+                  process.env.REACT_APP_KAKAO_REDIRECT_URI;
+
+                // 리다이렉트 URI 인코딩
+                const ENCODED_REDIRECT_URI =
+                  encodeURIComponent(KAKAO_REDIRECT_URI);
+                const KAKAO_AUTH_URL = `${KAKAO_AUTH_URI}?client_id=${KAKAO_CLIENT_ID}&redirect_uri=${ENCODED_REDIRECT_URI}&response_type=code`;
+
+                window.location.href = KAKAO_AUTH_URL;
+              }}
             >
-              <img
-                src="/icons/kakao-icon.svg"
-                alt="Kakao"
-                className="social-icon"
-              />
               카카오 로그인
             </button>
             <button
               className="social-button google-button"
-              onClick={() => onLogin && onLogin()}
+              onClick={() => {
+                // 구글 로그인 설정
+                const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID;
+                const GOOGLE_AUTH_URI = process.env.REACT_APP_GOOGLE_AUTH_URI;
+                const GOOGLE_REDIRECT_URI =
+                  process.env.REACT_APP_GOOGLE_REDIRECT_URI;
+
+                // 리다이렉트 URI 인코딩
+                const ENCODED_REDIRECT_URI =
+                  encodeURIComponent(GOOGLE_REDIRECT_URI);
+                const GOOGLE_AUTH_URL = `${GOOGLE_AUTH_URI}?client_id=${GOOGLE_CLIENT_ID}&redirect_uri=${ENCODED_REDIRECT_URI}&response_type=code&scope=openid%20profile%20email`;
+
+                window.location.href = GOOGLE_AUTH_URL;
+              }}
             >
-              <img
-                src="/icons/google-icon.svg"
-                alt="Google"
-                className="social-icon"
-              />
               구글 로그인
             </button>
             <button
               className="social-button github-button"
-              onClick={() => onLogin && onLogin()}
+              onClick={() => {
+                // 깃허브 로그인 설정
+                const GITHUB_CLIENT_ID = process.env.REACT_APP_GITHUB_CLIENT_ID;
+                const GITHUB_AUTH_URI = process.env.REACT_APP_GITHUB_AUTH_URI;
+                const GITHUB_REDIRECT_URI =
+                  process.env.REACT_APP_GITHUB_REDIRECT_URI;
+
+                // 리다이렉트 URI 인코딩
+                const ENCODED_REDIRECT_URI =
+                  encodeURIComponent(GITHUB_REDIRECT_URI);
+                const GITHUB_AUTH_URL = `${GITHUB_AUTH_URI}?client_id=${GITHUB_CLIENT_ID}&redirect_uri=${ENCODED_REDIRECT_URI}&scope=read:user,user:email`;
+
+                window.location.href = GITHUB_AUTH_URL;
+              }}
             >
-              <img
-                src="/icons/github-icon.svg"
-                alt="GitHub"
-                className="social-icon"
-              />
               Github 로그인
             </button>
           </div>
