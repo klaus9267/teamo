@@ -274,23 +274,42 @@ const ProfilePage = () => {
           apiResponse = await userApi.getCurrentUser();
         }
 
+        console.log("API 응답 데이터:", apiResponse); // 디버깅을 위한 로그 추가
+
+        // 프로필 데이터가 있는지 확인
+        if (!apiResponse || !apiResponse.profile) {
+          setError("프로필 정보를 불러올 수 없습니다.");
+          setLoading(false);
+          return;
+        }
+
         // API 응답 데이터를 UserData 형식에 맞게 변환
         const mappedData: ProfileData = {
-          id: apiResponse.id,
-          username: apiResponse.username,
-          profileImage:
-            apiResponse.profileImage || "/images/default-profile.png",
-          introduction: apiResponse.introduction || "",
-          location: apiResponse.location || "",
-          followers: apiResponse.followers || 0,
-          following: apiResponse.following || 0,
-          myPosts: apiResponse.myPosts || [],
-          participatingPosts: apiResponse.participatingPosts || [],
+          id: apiResponse.profile?.id || 0,
+          username:
+            apiResponse.profile?.name ||
+            apiResponse.profile?.nickname ||
+            "사용자",
+          profileImage: apiResponse.profile?.image || "/profile.png",
+          introduction: apiResponse.profile?.introduction || "",
+          location: "", // API에서 제공하지 않는 경우 빈 문자열로 설정
+          followers: 0, // API에서 제공하지 않는 경우 0으로 설정
+          following: 0, // API에서 제공하지 않는 경우 0으로 설정
+          myPosts: apiResponse.authorPosts || [],
+          participatingPosts: apiResponse.joinedPosts || [],
           reviews: apiResponse.reviews || [],
           resumes: apiResponse.resumes || [],
         };
 
+        console.log("매핑된 데이터:", mappedData); // 디버깅을 위한 로그 추가
         setUserData(mappedData);
+
+        // 내 프로필인 경우에만 사용자 ID를 localStorage에 저장
+        if (!id && apiResponse.profile.userId) {
+          localStorage.setItem("myUserId", String(apiResponse.profile.userId));
+          console.log("내 사용자 ID 저장됨:", apiResponse.profile.userId);
+        }
+
         setLoading(false);
       } catch (err) {
         console.error("프로필 데이터 로딩 에러:", err);
@@ -323,27 +342,33 @@ const ProfilePage = () => {
   };
 
   // 자기소개서 삭제
-  const handleDeleteResume = (resumeId: number) => {
-    showConfirm("정말 삭제하시겠습니까?").then((result) => {
-      if (result.isConfirmed) {
-        // 자기소개서 삭제 API 호출 추가 필요
-        // TODO: 백엔드 연동 시 API 호출 추가
-        try {
-          const updatedResumes =
-            userData?.resumes.filter((resume) => resume.id !== resumeId) || [];
+  const handleDeleteResume = async (resumeId: number) => {
+    const confirmed = await showConfirm(
+      "자기소개서 삭제",
+      "정말 삭제하시겠습니까?",
+      "삭제",
+      "취소"
+    );
 
-          setUserData({
-            ...userData!,
-            resumes: updatedResumes,
-          });
+    if (confirmed) {
+      // 자기소개서 삭제 API 호출 추가 필요
+      try {
+        await resumeApi.deleteResume(resumeId);
 
-          showSuccess("자기소개서가 삭제되었습니다.");
-        } catch (err) {
-          console.error("자기소개서 삭제 에러:", err);
-          showError("자기소개서 삭제에 실패했습니다.");
-        }
+        const updatedResumes =
+          userData?.resumes.filter((resume) => resume.id !== resumeId) || [];
+
+        setUserData({
+          ...userData!,
+          resumes: updatedResumes,
+        });
+
+        showSuccess("자기소개서가 삭제되었습니다.");
+      } catch (err) {
+        console.error("자기소개서 삭제 에러:", err);
+        showError("자기소개서 삭제에 실패했습니다.");
       }
-    });
+    }
   };
 
   // 리뷰 작성 핸들러

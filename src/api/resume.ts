@@ -9,6 +9,8 @@ export interface Resume {
   personality: string;
   isMain?: boolean;
   file?: File;
+  fileUrl?: string;
+  userId?: number;
 }
 
 export const resumeApi = {
@@ -79,7 +81,7 @@ export const resumeApi = {
         },
       };
 
-      const response = await api.put<Resume>(
+      const response = await api.patch<Resume>(
         `/api/resumes/${id}`,
         resumeData,
         config
