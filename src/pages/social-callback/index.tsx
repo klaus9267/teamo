@@ -247,6 +247,7 @@ const SocialCallback = () => {
           const retrievedUserInfo = await socialApi.getKakaoUserInfo(
             tokenData.access_token
           );
+          console.log("retrievedUserInfo", retrievedUserInfo);
           setUserInfo(retrievedUserInfo);
 
           // 소셜 로그인 백엔드 인증 요청

@@ -14,6 +14,7 @@ import {
   showInfo,
   showWarning,
 } from "../../utils/sweetAlert.ts";
+import { applyApi } from "../../api/apply.ts";
 
 // 지원 상태 타입 정의
 type ApplicationStatus =
@@ -38,17 +39,21 @@ export default function PostDetail() {
   const [post, setPost] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [isAuthor] = useState(false);
-  const [applicationStatus, setApplicationStatus] = useState("none");
+  const [isAuthor, setIsAuthor] = useState(false);
+  const [applicationStatus, setApplicationStatus] = useState(
+    "none" as ApplicationStatus
+  );
   const [showApplicantsList, setShowApplicantsList] = useState(false);
   const [applicants, setApplicants] = useState([]);
-  const [userId, setUserId] = useState<number | null>(null);
+  const [userId, setUserId] = useState(null as number | null);
 
   // 지원 모달 관련 상태
   const [showApplyModal, setShowApplyModal] = useState(false);
   const [selectedResume, setSelectedResume] = useState(null);
   const [motivationText, setMotivationText] = useState("");
   const [resumes, setResumes] = useState([]);
+  const [resumesLoading, setResumesLoading] = useState(false);
+  const [resumesError, setResumesError] = useState(null);
 
   // API 연동을 위한 함수들
   const fetchPost = async (postId) => {
@@ -64,15 +69,24 @@ export default function PostDetail() {
 
   const fetchResumes = async () => {
     try {
-      // API 미완성 - 자기소개서 API 연결 예정
-      // const data = await resumeApi.getResumes();
-      // setResumes(data);
-      console.log("자기소개서 API 연결 예정");
-      setResumes([
-        { id: 1, title: "[API 연결 예정] 자기소개서 API가 준비 중입니다." },
-      ]);
+      setResumesLoading(true);
+      setResumesError(null);
+      console.log("자기소개서 목록 불러오기 시작");
+      const data = await resumeApi.getResumes();
+      console.log("자기소개서 목록 불러오기 성공:", data);
+      setResumes(data);
     } catch (err) {
-      setError("자기소개서를 불러오는데 실패했습니다.");
+      console.error("자기소개서 목록 불러오기 실패:", err);
+      console.log("에러 상세 정보:", JSON.stringify(err, null, 2));
+      if (err.response) {
+        console.log("에러 응답 상태:", err.response.status);
+        console.log("에러 응답 데이터:", err.response.data);
+      }
+      setResumesError("자기소개서를 불러오는데 실패했습니다.");
+      // 빈 배열로 설정하여 에러 발생 시에도 UI 표시 가능
+      setResumes([]);
+    } finally {
+      setResumesLoading(false);
     }
   };
 
@@ -80,48 +94,80 @@ export default function PostDetail() {
     if (!postId) return;
 
     try {
-      // API 미완성 - 지원자 목록 API 연결 예정
-      // const data = await postApi.getApplicants(postId);
-      // setApplicants(data);
-      console.log("지원자 목록 API 연결 예정");
-      setApplicants([]);
+      const data = await applyApi.getAppliesByPostId(postId);
+      setApplicants(data);
+
+      // 현재 사용자가 이미 지원했는지 확인
+      if (userId) {
+        const userApplied = data.some((app) => app.userId === userId);
+        if (userApplied) {
+          setApplicationStatus("applied");
+        }
+      }
     } catch (err) {
-      setError("지원자 목록을 불러오는데 실패했습니다.");
+      console.error("지원자 목록 조회 에러:", err);
     }
   };
 
+  // 사용자 정보 불러오기
+  useEffect(() => {
+    const userInfo = authApi.getUserInfo();
+
+    // localStorage에서 직접 myUserId를 확인하여 사용
+    const storedUserId = localStorage.getItem("myUserId");
+
+    if (storedUserId) {
+      setUserId(Number(storedUserId));
+    } else if (userInfo?.id) {
+      setUserId(userInfo.id);
+    } else {
+      setUserId(null);
+    }
+  }, []);
+
+  // 게시글 불러오기
   useEffect(() => {
     if (id) {
       fetchPost(Number(id));
     }
   }, [id]);
 
+  // post와 userId가 모두 로드된 후 글 작성자 및 지원 상태 확인
   useEffect(() => {
-    if (post && post.id) {
-      fetchResumes();
+    if (post && userId) {
+      setIsAuthor(post.userId === userId);
+
+      // 지원자 목록 조회 (내가 작성한 글이거나 지원 여부 확인 필요할 때)
       fetchApplicants(post.id);
     }
-  }, [post]);
+  }, [post, userId]);
 
+  // 자기소개서 목록 미리 로드
   useEffect(() => {
-    const userInfo = authApi.getUserInfo();
-    setUserId(userInfo?.id ?? null);
-  }, []);
-
-  useEffect(() => {}, [userId, post]);
+    if (userId) {
+      // 사용자 ID가 있을 경우 자기소개서 목록 로드
+      fetchResumes();
+    }
+  }, [userId]);
 
   // 지원자 승인/거절 처리 함수
   const handleApplicantAction = async (applicantId, action) => {
     try {
       if (!id || !post?.id) return;
 
-      // API 미완성 - 지원자 승인/거절 API 연결 예정
-      // await postApi.handleApplicant(Number(id), applicantId, action);
-      showInfo("API 연결 예정: 지원자 승인/거절 기능은 아직 준비 중입니다.");
+      // 승인 혹은 거절 액션에 따라 API 호출
+      if (action === "accept") {
+        await applyApi.selectApplicant(applicantId, true);
+        showSuccess("지원자가 승인되었습니다.");
+      } else {
+        await applyApi.selectApplicant(applicantId, false);
+        showSuccess("지원자가 거절되었습니다.");
+      }
 
+      // 지원자 목록 새로고침
       fetchApplicants(post.id);
     } catch (error) {
-      console.error(`Error ${action}ing applicant:`, error);
+      console.error(`지원자 ${action}하기 오류:`, error);
       showError(
         `지원자 ${action === "accept" ? "승인" : "거절"}에 실패했습니다.`
       );
@@ -130,6 +176,11 @@ export default function PostDetail() {
 
   // 지원하기 함수
   const handleApply = () => {
+    console.log("지원하기 버튼 클릭");
+    console.log("로그인 상태:", authApi.isAuthenticated());
+    console.log("토큰:", authApi.getToken());
+    console.log("저장된 myUserId:", localStorage.getItem("myUserId"));
+
     if (!post) {
       showWarning(
         "게시글 정보를 불러오는 중입니다. 잠시 후 다시 시도해주세요."
@@ -137,8 +188,25 @@ export default function PostDetail() {
       return;
     }
 
-    // API 미완성 - 지원하기 기능 준비 중
-    showInfo("API 연결 예정: 지원하기 기능은 아직 준비 중입니다.");
+    // 로그인 상태 확인 방식 수정
+    if (!authApi.isAuthenticated()) {
+      showWarning("로그인이 필요한 기능입니다.");
+      navigate("/login"); // 로그인 페이지로 이동
+      return;
+    }
+
+    // 사용자 ID 확인
+    if (!userId && !localStorage.getItem("myUserId")) {
+      showWarning("사용자 정보를 불러올 수 없습니다. 다시 로그인해주세요.");
+      navigate("/login");
+      return;
+    }
+
+    // 모달 표시 전에 자기소개서 로드
+    fetchResumes();
+
+    // 모달 표시
+    console.log("지원하기 모달 열기");
     setShowApplyModal(true);
   };
 
@@ -149,28 +217,38 @@ export default function PostDetail() {
       return;
     }
 
-    if (!id) {
+    if (!motivationText.trim()) {
+      showWarning("지원 동기를 입력해주세요.");
+      return;
+    }
+
+    if (!id || !post?.id) {
       showError("잘못된 접근입니다.");
       return;
     }
 
     try {
-      // API 미완성 - 지원 API 연결 예정
-      // await postApi.apply(Number(id), {
-      //   resumeId: selectedResume,
-      //   motivation: motivationText,
-      // });
-      showInfo("API 연결 예정: 지원 제출 기능은 아직 준비 중입니다.");
+      await applyApi.apply({
+        postId: post.id,
+        resumeId: selectedResume,
+        reason: motivationText,
+      });
+
+      showSuccess("지원이 완료되었습니다.");
       setApplicationStatus("applied");
       setShowApplyModal(false);
+
+      // 지원자 목록 새로고침
+      fetchApplicants(post.id);
     } catch (error) {
-      console.error("Error submitting application:", error);
+      console.error("지원 제출 에러:", error);
       showError("지원에 실패했습니다.");
     }
   };
 
   // 모달 닫기 함수
   const handleCloseModal = () => {
+    console.log("지원하기 모달 닫기");
     setShowApplyModal(false);
     setSelectedResume(null);
     setMotivationText("");
@@ -350,7 +428,11 @@ export default function PostDetail() {
             </h2>
             <div style={{ marginBottom: 16, color: "#444" }}>
               <p
-                style={{ margin: 0, whiteSpace: "pre-line", textAlign: "left" }}
+                style={{
+                  margin: 0,
+                  whiteSpace: "pre-line",
+                  textAlign: "left",
+                }}
               >
                 {post?.content ?? "프로젝트 내용을 가져오는 중입니다."}
               </p>
@@ -384,7 +466,11 @@ export default function PostDetail() {
             <h3 className="team-title">필요한 성향</h3>
             <div style={{ marginBottom: 16, color: "#444" }}>
               <p
-                style={{ margin: 0, whiteSpace: "pre-line", textAlign: "left" }}
+                style={{
+                  margin: 0,
+                  whiteSpace: "pre-line",
+                  textAlign: "left",
+                }}
               >
                 {post?.requirementPersonality ||
                   "특별히 필요한 성향이 없습니다."}
@@ -458,7 +544,12 @@ export default function PostDetail() {
         <div>
           <div style={{ fontSize: 14, color: "#888" }}>기술 스택</div>
           <div
-            style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 6 }}
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: 8,
+              marginTop: 6,
+            }}
           >
             {(post?.skills ?? []).map((tech) => (
               <span className="tech-tag" key={tech}>
@@ -471,74 +562,20 @@ export default function PostDetail() {
         {/* 지원하기/지원자 확인 버튼 */}
         <div className="aside-divider" />
         {isAuthor ? (
-          <button
-            onClick={() => post && navigate(`/post/${post.id}/applicants`)}
-            className="apply-button"
-            style={{ position: "relative" }}
-          >
+          <button onClick={toggleApplicantsList} className="apply-button">
             지원자 목록 확인
-            <div
-              style={{
-                position: "absolute",
-                bottom: "-20px",
-                left: 0,
-                right: 0,
-                fontSize: "11px",
-                color: "#ff6b6b",
-                fontWeight: "normal",
-              }}
-            >
-              * API 연결 예정
-            </div>
           </button>
         ) : (
           <div>
             {applicationStatus === "applied" ? (
-              <div className="applied-status">
-                이미 지원한 모집글입니다
-                <div
-                  style={{
-                    fontSize: "11px",
-                    color: "#ff6b6b",
-                    marginTop: "4px",
-                  }}
-                >
-                  * API 연결 예정
-                </div>
-              </div>
+              <div className="applied-status">이미 지원한 모집글입니다</div>
             ) : applicationStatus === "accepted" ? (
               <div className="accepted-status">
                 합류한 {post?.category ?? "프로젝트"}입니다
-                <div
-                  style={{
-                    fontSize: "11px",
-                    color: "#ff6b6b",
-                    marginTop: "4px",
-                  }}
-                >
-                  * API 연결 예정
-                </div>
               </div>
             ) : (
-              <button
-                onClick={handleApply}
-                className="apply-button"
-                style={{ position: "relative" }}
-              >
+              <button onClick={handleApply} className="apply-button">
                 지원하기
-                <div
-                  style={{
-                    position: "absolute",
-                    bottom: "-20px",
-                    left: 0,
-                    right: 0,
-                    fontSize: "11px",
-                    color: "#ff6b6b",
-                    fontWeight: "normal",
-                  }}
-                >
-                  * API 연결 예정
-                </div>
               </button>
             )}
           </div>
@@ -556,67 +593,102 @@ export default function PostDetail() {
               </button>
             </div>
             <div className="apply-modal-content">
-              <div
-                className="apply-modal-info"
-                style={{ position: "relative" }}
-              >
+              <div className="apply-modal-info">
                 <p>{post?.content?.substring(0, 100) ?? ""}...</p>
-                <div
-                  style={{
-                    padding: "8px",
-                    background: "#ffefef",
-                    border: "1px solid #ffcfcf",
-                    borderRadius: "4px",
-                    marginTop: "12px",
-                    color: "#e74c3c",
-                    fontSize: "14px",
-                    textAlign: "center",
-                  }}
-                >
-                  현재 자기소개서 및 지원 API가 연결 예정 중입니다.
-                </div>
               </div>
 
-              <div className="apply-form-section">
-                <label htmlFor="resume-select">자기소개서 선택</label>
-                <select
-                  id="resume-select"
-                  value={selectedResume || ""}
-                  onChange={(e) =>
-                    setSelectedResume(Number(e.target.value) || null)
-                  }
-                  className="resume-select"
-                >
-                  <option value="">자기소개서를 선택해주세요</option>
-                  {resumes.map((resume) => (
-                    <option
-                      key={resume?.id ?? Math.random()}
-                      value={resume?.id ?? ""}
+              <div className="apply-form">
+                <h3>자기소개서 선택</h3>
+                {resumesLoading ? (
+                  <div style={{ textAlign: "center", padding: "20px" }}>
+                    <Spinner
+                      size="medium"
+                      text="자기소개서 목록을 불러오는 중..."
+                    />
+                  </div>
+                ) : resumesError ? (
+                  <div
+                    className="error-message"
+                    style={{
+                      padding: "15px",
+                      backgroundColor: "#ffebee",
+                      borderRadius: "8px",
+                      color: "#d32f2f",
+                      marginBottom: "15px",
+                    }}
+                  >
+                    <p style={{ margin: 0 }}>{resumesError}</p>
+                    <button
+                      onClick={fetchResumes}
+                      style={{
+                        marginTop: "10px",
+                        padding: "5px 12px",
+                        backgroundColor: "#ffcdd2",
+                        border: "none",
+                        borderRadius: "4px",
+                        cursor: "pointer",
+                      }}
                     >
-                      {resume?.title ?? "자기소개서"}
-                    </option>
-                  ))}
-                </select>
-              </div>
+                      다시 시도
+                    </button>
+                  </div>
+                ) : resumes.length > 0 ? (
+                  <div className="resume-select-container">
+                    {resumes.map((resume) => (
+                      <div
+                        key={resume.id}
+                        className={`resume-option ${
+                          selectedResume === resume.id ? "selected" : ""
+                        }`}
+                        onClick={() => setSelectedResume(resume.id)}
+                      >
+                        <div className="resume-option-title">
+                          {resume.title}
+                        </div>
+                        <div className="resume-option-content">
+                          {resume.content?.substring(0, 50)}
+                          {resume.content?.length > 50 ? "..." : ""}
+                        </div>
+                        {selectedResume === resume.id && (
+                          <div className="resume-selected-check">✓</div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="no-resumes-message">
+                    <p>등록된 자기소개서가 없습니다.</p>
+                    <button
+                      className="create-resume-btn"
+                      onClick={() => navigate("/profile/resume/new")}
+                    >
+                      자기소개서 작성하기
+                    </button>
+                  </div>
+                )}
 
-              <div className="apply-form-section">
-                <label htmlFor="motivation-text">지원 동기 (선택사항)</label>
+                <h3>지원 동기</h3>
                 <textarea
-                  id="motivation-text"
                   value={motivationText}
                   onChange={(e) => setMotivationText(e.target.value)}
-                  placeholder="지원 동기를 작성해주세요 (선택사항)"
+                  placeholder="프로젝트에 지원하는 동기를 작성해주세요."
                   className="motivation-textarea"
+                  rows={5}
                 />
+
+                <div className="apply-modal-actions">
+                  <button className="cancel-btn" onClick={handleCloseModal}>
+                    취소
+                  </button>
+                  <button
+                    className="apply-submit-btn"
+                    onClick={handleSubmitApplication}
+                    disabled={!selectedResume || !motivationText.trim()}
+                  >
+                    지원하기
+                  </button>
+                </div>
               </div>
-            </div>
-            <div className="apply-modal-actions">
-              <button className="cancel-btn" onClick={handleCloseModal}>
-                취소
-              </button>
-              <button className="submit-btn" onClick={handleSubmitApplication}>
-                지원하기
-              </button>
             </div>
           </div>
         </div>

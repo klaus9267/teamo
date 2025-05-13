@@ -20,9 +20,11 @@ api.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+
     return config;
   },
   (error) => {
+    console.error("API 요청 전송 중 오류:", error);
     return Promise.reject(error);
   }
 );
