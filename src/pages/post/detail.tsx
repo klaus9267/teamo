@@ -8,6 +8,12 @@ import { postApi } from "../../api/post.ts";
 import { resumeApi } from "../../api/resume.ts";
 import Spinner from "../../component/common/Spinner.tsx";
 import { authApi } from "../../api/auth.ts";
+import {
+  showSuccess,
+  showError,
+  showInfo,
+  showWarning,
+} from "../../utils/sweetAlert.ts";
 
 // 지원 상태 타입 정의
 type ApplicationStatus =
@@ -102,13 +108,7 @@ export default function PostDetail() {
     setUserId(userInfo?.id ?? null);
   }, []);
 
-  useEffect(() => {
-    console.log("현재 로그인한 사용자 id:", userId);
-    console.log(
-      "게시글 작성자 id:",
-      post && "userId" in post ? post.userId : undefined
-    );
-  }, [userId, post]);
+  useEffect(() => {}, [userId, post]);
 
   // 지원자 승인/거절 처리 함수
   const handleApplicantAction = async (applicantId, action) => {
@@ -117,36 +117,40 @@ export default function PostDetail() {
 
       // API 미완성 - 지원자 승인/거절 API 연결 예정
       // await postApi.handleApplicant(Number(id), applicantId, action);
-      alert("API 연결 예정: 지원자 승인/거절 기능은 아직 준비 중입니다.");
+      showInfo("API 연결 예정: 지원자 승인/거절 기능은 아직 준비 중입니다.");
 
       fetchApplicants(post.id);
     } catch (error) {
       console.error(`Error ${action}ing applicant:`, error);
-      alert(`지원자 ${action === "accept" ? "승인" : "거절"}에 실패했습니다.`);
+      showError(
+        `지원자 ${action === "accept" ? "승인" : "거절"}에 실패했습니다.`
+      );
     }
   };
 
   // 지원하기 함수
   const handleApply = () => {
     if (!post) {
-      alert("게시글 정보를 불러오는 중입니다. 잠시 후 다시 시도해주세요.");
+      showWarning(
+        "게시글 정보를 불러오는 중입니다. 잠시 후 다시 시도해주세요."
+      );
       return;
     }
 
     // API 미완성 - 지원하기 기능 준비 중
-    alert("API 연결 예정: 지원하기 기능은 아직 준비 중입니다.");
+    showInfo("API 연결 예정: 지원하기 기능은 아직 준비 중입니다.");
     setShowApplyModal(true);
   };
 
   // 지원 제출 함수
   const handleSubmitApplication = async () => {
     if (!selectedResume) {
-      alert("자기소개서를 선택해주세요.");
+      showWarning("자기소개서를 선택해주세요.");
       return;
     }
 
     if (!id) {
-      alert("잘못된 접근입니다.");
+      showError("잘못된 접근입니다.");
       return;
     }
 
@@ -156,12 +160,12 @@ export default function PostDetail() {
       //   resumeId: selectedResume,
       //   motivation: motivationText,
       // });
-      alert("API 연결 예정: 지원 제출 기능은 아직 준비 중입니다.");
+      showInfo("API 연결 예정: 지원 제출 기능은 아직 준비 중입니다.");
       setApplicationStatus("applied");
       setShowApplyModal(false);
     } catch (error) {
       console.error("Error submitting application:", error);
-      alert("지원에 실패했습니다.");
+      showError("지원에 실패했습니다.");
     }
   };
 
@@ -359,11 +363,11 @@ export default function PostDetail() {
                 marginBottom: 20,
                 padding: 12,
                 borderRadius: 6,
-                backgroundColor: "#f0f9f8",
+                backgroundColor: "#FFF8E1",
                 display: "inline-block",
               }}
             >
-              <span style={{ fontWeight: "bold", color: "#2a9d8f" }}>
+              <span style={{ fontWeight: "bold", color: "#FFC107" }}>
                 진행 방식:{" "}
               </span>
               <span style={{ color: "#333" }}>

@@ -20,7 +20,7 @@
   content: "(3)";
   margin-left: 6px;
   font-size: 1rem;
-  color: #666;
+  color: #ffd54f;
   font-weight: normal;
 }
 
@@ -53,14 +53,14 @@
 
 .comment-textarea:focus {
   outline: none;
-  border-color: #3cb4ac;
+  border-color: #ffd54f;
 }
 
 .comment-submit-btn {
   align-self: flex-end;
   padding: 8px 18px;
-  background-color: #3cb4ac;
-  color: white;
+  background-color: #ffd54f;
+  color: #1b3a4b;
   font-weight: 600;
   border: none;
   border-radius: 6px;
@@ -70,7 +70,7 @@
 }
 
 .comment-submit-btn:hover {
-  background-color: #2a9d8f;
+  background-color: #ffc107;
 }
 
 .no-comments {
@@ -183,7 +183,7 @@
 }
 
 .reply-btn {
-  color: #3cb4ac;
+  color: #ffd54f;
   margin-right: auto;
 }
 
@@ -198,7 +198,7 @@
 
 .modify-btn:hover,
 .delete-btn:hover {
-  color: #3cb4ac;
+  color: #ffd54f;
 }
 
 .reply-form {
@@ -226,14 +226,14 @@
 
 .reply-textarea:focus {
   outline: none;
-  border-color: #3cb4ac;
+  border-color: #ffd54f;
 }
 
 .reply-submit-btn {
   align-self: flex-end;
   padding: 6px 14px;
-  background-color: #3cb4ac;
-  color: white;
+  background-color: #ffd54f;
+  color: #1b3a4b;
   font-weight: 500;
   border: none;
   border-radius: 6px;
@@ -244,7 +244,7 @@
 }
 
 .reply-submit-btn:hover {
-  background-color: #2a9d8f;
+  background-color: #ffc107;
 }
 
 .replies-list {

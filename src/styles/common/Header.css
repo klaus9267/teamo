@@ -1,10 +1,10 @@
-/* 프로젝트 대표 색상: 파랑과 초록 사이의 청록색(teal) */
+/* 프로젝트 대표 색상: 노란색 계열로 변경 */
 :root {
-  --primary-color: #3cb4ac; /* 청록색 */
-  --primary-hover: #2a9d8f; /* 클릭/호버 시 더 어두운 청록색 */
-  --text-dark: #1b3a4b; /* 어두운 테마 텍스트 색상 */
+  --primary-color: #ffd54f; /* 메인 노란색 */
+  --primary-hover: #ffc107; /* 클릭/호버 시 더 진한 노란색 */
+  --text-dark: #333333; /* 어두운 테마 텍스트 색상 */
   --text-light: #ffffff; /* 밝은 테마 텍스트 색상 */
-  --background-light: #f5f9f9; /* 연한 배경색 */
+  --background-light: #fff8e1; /* 연한 노란색 배경 */
   --border-color: #e5e7eb; /* 경계선 색상 */
 }
 
@@ -19,7 +19,7 @@
 .header-container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0.75rem 1rem;
+  padding: 0.5rem 1rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -34,16 +34,22 @@
   font-size: 1.5rem;
   font-weight: 700;
   margin: 0;
+  display: flex;
+  align-items: center;
 }
 
 .logo a {
   color: var(--primary-color);
   text-decoration: none;
   transition: color 0.2s;
+  display: flex;
+  align-items: center;
 }
 
-.logo a:hover {
-  color: var(--primary-hover);
+.logo-image {
+  height: 60px;
+  width: auto;
+  margin: 5px 0;
 }
 
 .header-right {
@@ -137,6 +143,20 @@
   border-radius: 0.25rem;
   cursor: pointer;
   transition: background-color 0.2s;
+}
+
+.profile-btn-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.profile-btn-image {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: center;
 }
 
 .profile-btn:hover {

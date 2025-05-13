@@ -1,12 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import LoginModal from './LoginModal';
-import '../../styles/common/Header.css';
-import { authApi } from '../../api/auth.ts';
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import LoginModal from "./LoginModal.jsx";
+import "../../styles/common/Header.css";
+import { authApi } from "../../api/auth.ts";
+import { showInfo } from "../../utils/sweetAlert.ts";
 
 const Header = () => {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userInfo, setUserInfo] = useState(null);
   const navigate = useNavigate();
 
   // 컴포넌트 마운트 시 로그인 상태 확인
@@ -14,6 +16,13 @@ const Header = () => {
     const checkAuthStatus = () => {
       const isAuthenticated = authApi.isAuthenticated();
       setIsLoggedIn(isAuthenticated);
+
+      if (isAuthenticated) {
+        const info = authApi.getUserInfo();
+        setUserInfo(info);
+      } else {
+        setUserInfo(null);
+      }
     };
 
     checkAuthStatus();
@@ -23,9 +32,9 @@ const Header = () => {
       checkAuthStatus();
     };
 
-    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener("storage", handleStorageChange);
     return () => {
-      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener("storage", handleStorageChange);
     };
   }, []);
 
@@ -39,26 +48,28 @@ const Header = () => {
 
   const handleLogin = () => {
     setIsLoggedIn(true);
+    const info = authApi.getUserInfo();
+    setUserInfo(info);
     closeLoginModal();
   };
 
   const handleLogout = () => {
     authApi.logout();
     setIsLoggedIn(false);
+    setUserInfo(null);
   };
 
   const goToProfile = () => {
-    navigate('/profile');
+    navigate("/profile");
   };
 
-  const handleCreatePost = () => {
+  const handleCreateBtn = () => {
     if (!isLoggedIn) {
-      // 로그인하지 않은 경우 알림 표시 후 로그인 모달 열기
-      alert('팀원 모집하기는 로그인 후 이용 가능합니다.');
-      openLoginModal();
-    } else {
-      navigate('/post/create');
+      showInfo("팀원 모집하기는 로그인 후 이용 가능합니다.");
+      setIsLoginModalOpen(true);
+      return;
     }
+    navigate("/post/create");
   };
 
   return (
@@ -67,7 +78,9 @@ const Header = () => {
         <div className="header-container">
           <div className="header-left">
             <h1 className="logo">
-              <Link to="/">Teamo</Link>
+              <Link to="/">
+                <img src="/logo.png" alt="Teamo 로고" className="logo-image" />
+              </Link>
             </h1>
           </div>
           <div className="header-right">
@@ -75,14 +88,25 @@ const Header = () => {
               <Link to="/hub" className="nav-link">
                 허브
               </Link>
-              <span className="nav-link" onClick={handleCreatePost} style={{ cursor: 'pointer' }}>
+              <span
+                className="nav-link"
+                onClick={handleCreateBtn}
+                style={{ cursor: "pointer" }}
+              >
                 팀원 모집하기
               </span>
             </nav>
             {isLoggedIn ? (
               <div className="user-menu">
                 <button className="profile-btn" onClick={goToProfile}>
-                  프로필
+                  <div className="profile-btn-content">
+                    <img
+                      src={userInfo?.profileImage || "/profile.png"}
+                      alt="프로필"
+                      className="profile-btn-image"
+                    />
+                    <span>프로필</span>
+                  </div>
                 </button>
                 <button className="logout-btn" onClick={handleLogout}>
                   로그아웃
@@ -97,7 +121,9 @@ const Header = () => {
         </div>
       </header>
 
-      {isLoginModalOpen && <LoginModal onClose={closeLoginModal} onLogin={handleLogin} />}
+      {isLoginModalOpen && (
+        <LoginModal onClose={closeLoginModal} onLogin={handleLogin} />
+      )}
     </>
   );
 };

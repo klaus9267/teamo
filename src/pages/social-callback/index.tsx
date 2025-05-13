@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { authApi } from "../../api/auth.ts";
 import { socialApi } from "../../api/social.ts";
+import Spinner from "../../component/common/Spinner.tsx";
+import { showError } from "../../utils/sweetAlert.ts";
 
 interface TokenResponse {
   access_token: string;
@@ -282,7 +284,7 @@ const SocialCallback = () => {
 
   useEffect(() => {
     if (error) {
-      alert(error);
+      showError(error);
       navigate("/");
     }
   }, [error, navigate]);

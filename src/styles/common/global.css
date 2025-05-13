@@ -21,10 +21,12 @@ body {
 }
 
 :root {
-  --primary-color: #3cb4ac;
-  --primary-hover: #2a9d8f;
+  --primary-color: #ffd54f;
+  --primary-hover: #ffc107;
   --text-dark: #1b3a4b;
   --text-light: #ffffff;
-  --background-light: #f9fafb;
+  --background-light: #fff8e1;
   --border-color: #e5e7eb;
+  --secondary-color: #ff9800; /* profile.png의 주황색에 맞춘 두 번째 색상 */
+  --secondary-hover: #f57c00; /* 두 번째 색상의 호버 효과 */
 }

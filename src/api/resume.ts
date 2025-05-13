@@ -7,6 +7,8 @@ export interface Resume {
   date: string;
   skills: string[];
   personality: string;
+  isMain?: boolean;
+  file?: File;
 }
 
 export const resumeApi = {
@@ -39,9 +41,22 @@ export const resumeApi = {
   },
 
   // 자기소개서 작성
-  createResume: async (resumeData: Omit<Resume, "id" | "date">) => {
+  createResume: async (resumeData: FormData | Omit<Resume, "id" | "date">) => {
     try {
-      const response = await api.post<Resume>("/api/resumes", resumeData);
+      const config = {
+        headers: {
+          "Content-Type":
+            resumeData instanceof FormData
+              ? "multipart/form-data"
+              : "application/json",
+        },
+      };
+
+      const response = await api.post<Resume>(
+        "/api/resumes",
+        resumeData,
+        config
+      );
       return response.data;
     } catch (error: any) {
       console.error(
@@ -53,9 +68,22 @@ export const resumeApi = {
   },
 
   // 자기소개서 수정
-  updateResume: async (id: number, resumeData: Partial<Resume>) => {
+  updateResume: async (id: number, resumeData: FormData | Partial<Resume>) => {
     try {
-      const response = await api.put<Resume>(`/api/resumes/${id}`, resumeData);
+      const config = {
+        headers: {
+          "Content-Type":
+            resumeData instanceof FormData
+              ? "multipart/form-data"
+              : "application/json",
+        },
+      };
+
+      const response = await api.put<Resume>(
+        `/api/resumes/${id}`,
+        resumeData,
+        config
+      );
       return response.data;
     } catch (error: any) {
       console.error(
@@ -73,6 +101,20 @@ export const resumeApi = {
     } catch (error: any) {
       console.error(
         "자기소개서 삭제 에러:",
+        error.response?.data || error.message
+      );
+      throw error;
+    }
+  },
+
+  // 대표 자기소개서 설정
+  setMainResume: async (id: number) => {
+    try {
+      const response = await api.put<Resume>(`/api/resumes/${id}/main`);
+      return response.data;
+    } catch (error: any) {
+      console.error(
+        "대표 자기소개서 설정 에러:",
         error.response?.data || error.message
       );
       throw error;

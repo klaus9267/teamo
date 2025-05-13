@@ -59,8 +59,8 @@
 
 .tech-search-input:focus {
   outline: none;
-  border-color: #3cb4ac;
-  box-shadow: 0 0 0 2px rgba(60, 180, 172, 0.1);
+  border-color: #ffd54f;
+  box-shadow: 0 0 0 2px rgba(255, 213, 79, 0.1);
 }
 
 .tech-suggestions {
@@ -115,7 +115,7 @@
 
 .custom-tech-value {
   font-weight: 500;
-  color: #3cb4ac;
+  color: #ffd54f;
 }
 
 .no-tech-message {

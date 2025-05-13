@@ -9,7 +9,7 @@ interface SpinnerProps {
 
 const Spinner: React.FC<SpinnerProps> = ({
   size = "medium",
-  color = "#3cb4ac",
+  color = "#FFD54F",
   text = "로딩중입니다",
 }) => {
   const getSize = () => {

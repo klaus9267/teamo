@@ -1,10 +1,10 @@
 /* 프로필 페이지 전체 컨테이너 */
 :root {
-  --primary-color: #3cb4ac; /* 청록색 */
-  --primary-hover: #2a9d8f; /* 클릭/호버 시 더 어두운 청록색 */
-  --text-dark: #1b3a4b; /* 어두운 테마 텍스트 색상 */
+  --primary-color: #ffd54f; /* 메인 노란색 */
+  --primary-hover: #ffc107; /* 클릭/호버 시 더 진한 노란색 */
+  --text-dark: #333333; /* 어두운 테마 텍스트 색상 */
   --text-light: #ffffff; /* 밝은 테마 텍스트 색상 */
-  --background-light: #f5f9f9; /* 연한 배경색 */
+  --background-light: #fff8e1; /* 연한 노란색 배경 */
   --border-color: #e5e7eb; /* 경계선 색상 */
   --error-color: #e53e3e; /* 오류/삭제 색상 */
 }
@@ -60,6 +60,7 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center;
 }
 
 .profile-info {
@@ -125,7 +126,24 @@
   margin: 0 0 20px 0;
   padding-bottom: 10px;
   border-bottom: 2px solid var(--primary-color);
+  width: 100%;
   text-align: left;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  width: 100%;
+}
+
+.section-header .section-title {
+  margin: 0;
+  padding-bottom: 10px;
+  border-bottom: 2px solid var(--primary-color);
+  flex: 1;
+  width: auto;
 }
 
 /* 기본 정보 섹션 */
@@ -167,7 +185,7 @@
 .skill-tag {
   display: inline-block;
   background-color: #f3f4f6;
-  color: #3cb4ac;
+  color: var(--primary-color);
   padding: 5px 10px;
   border-radius: 5px;
   font-size: 14px;
@@ -315,13 +333,15 @@
 
 /* 자기소개서 섹션 스타일 */
 .resume-section {
-  margin-bottom: 20px;
+  margin-top: 15px;
+  width: 100%;
 }
 
 .resume-container {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 20px;
+  width: 100%;
 }
 
 .resume-card {
@@ -385,6 +405,60 @@
   margin-bottom: 8px;
 }
 
+/* 자기소개서 액션 버튼 스타일 */
+.resume-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.resume-actions button {
+  font-size: 13px;
+  padding: 6px 10px;
+  border-radius: 5px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.main-btn {
+  background-color: #ffd54f;
+  color: #333;
+}
+
+.main-btn:hover {
+  background-color: #ffc107;
+}
+
+.edit-btn {
+  background-color: #e9ecef;
+  color: #495057;
+}
+
+.edit-btn:hover {
+  background-color: #dee2e6;
+}
+
+.delete-btn {
+  background-color: #f8d7da;
+  color: #842029;
+}
+
+.delete-btn:hover {
+  background-color: #f5c2c7;
+}
+
+/* 대표 자기소개서 배지 */
+.resume-main-badge {
+  background-color: #ffd54f;
+  color: #333;
+  font-size: 12px;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-weight: 500;
+}
+
 /* 자기소개서와 프로젝트 설명 카드 컨테이너 */
 .project-detail-container {
   display: flex;
@@ -441,77 +515,46 @@
 .edit-profile-btn {
   padding: 8px 12px;
   background-color: var(--primary-color);
-  color: white;
+  color: var(--text-dark);
   border: none;
   border-radius: 4px;
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
   transition: background-color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+  margin-top: 10px;
 }
 
 .edit-profile-btn:hover {
   background-color: var(--primary-hover);
-}
-
-/* 섹션 헤더 스타일 */
-.section-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
+  transform: translateY(-1px);
+  box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.15);
 }
 
 /* 자기소개서 작성 버튼 */
 .add-btn {
-  padding: 6px 12px;
   background-color: var(--primary-color);
-  color: white;
+  color: var(--text-dark);
   border: none;
-  border-radius: 4px;
+  border-radius: 5px;
+  padding: 8px 15px;
   font-size: 14px;
+  font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: background-color 0.2s, transform 0.2s;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  white-space: nowrap;
+  margin-left: 15px;
 }
 
 .add-btn:hover {
   background-color: var(--primary-hover);
-}
-
-/* 자기소개서 수정/삭제 버튼 */
-.resume-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  margin-top: 15px;
-}
-
-.edit-btn,
-.delete-btn {
-  padding: 5px 10px;
-  border: none;
-  border-radius: 4px;
-  font-size: 13px;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.edit-btn {
-  background-color: #e2e8f0;
-  color: #4a5568;
-}
-
-.edit-btn:hover {
-  background-color: #cbd5e0;
-}
-
-.delete-btn {
-  background-color: #fed7d7;
-  color: #e53e3e;
-}
-
-.delete-btn:hover {
-  background-color: #feb2b2;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 /* 모달 스타일 */
@@ -627,43 +670,63 @@ textarea.form-control {
 }
 
 .save-btn {
+  padding: 8px 16px;
   background-color: var(--primary-color);
-  color: white;
+  color: var(--text-dark);
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .save-btn:hover {
   background-color: var(--primary-hover);
+  transform: translateY(-1px);
+  box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.15);
 }
 
 /* 프로필 이미지 업로드 */
 .profile-image-upload {
-  margin-bottom: 20px;
+  margin-bottom: 30px;
   display: flex;
   justify-content: center;
+  align-items: center;
+  width: 100%;
 }
 
 .profile-image-preview {
   position: relative;
-  width: 100px;
-  height: 100px;
+  width: 150px;
+  height: 150px;
   border-radius: 50%;
-  overflow: hidden;
+  overflow: visible;
+  margin: 0 auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  background-color: #f0f0f0;
 }
 
 .profile-image-preview img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center;
+  border-radius: 50%;
+  display: block;
 }
 
 .edit-image-btn {
   position: absolute;
-  bottom: 0;
-  right: 0;
+  bottom: 5px;
+  right: 5px;
   background-color: var(--primary-color);
-  color: white;
-  width: 28px;
-  height: 28px;
+  color: var(--text-dark);
+  width: 32px;
+  height: 32px;
   border: none;
   border-radius: 50%;
   display: flex;
@@ -671,13 +734,17 @@ textarea.form-control {
   justify-content: center;
   cursor: pointer;
   transition: background-color 0.2s;
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
+  z-index: 10;
 }
 
 .edit-image-btn:hover {
   background-color: var(--primary-hover);
+  transform: translateY(-1px);
+  box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.25);
 }
 
 .edit-image-btn svg {
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
 }

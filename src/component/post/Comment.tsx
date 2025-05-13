@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import "../../styles/post/Comment.css";
 import Spinner from "../common/Spinner.tsx";
+import { showInfo } from "../../utils/sweetAlert.ts";
 
 interface CommentType {
   id: number;
@@ -36,7 +37,7 @@ const Comment: React.FC<CommentProps> = ({ comments = [], postId }) => {
     if (!newComment.trim() || !postId) return;
 
     // API 미완성 - 댓글 작성 API 연결 예정
-    alert("API 연결 예정: 댓글 작성 기능은 아직 준비 중입니다.");
+    showInfo("API 연결 예정: 댓글 작성 기능은 아직 준비 중입니다.");
 
     // 새 댓글 객체 생성 (임시 데이터)
     const newCommentObj: CommentType = {
@@ -70,7 +71,7 @@ const Comment: React.FC<CommentProps> = ({ comments = [], postId }) => {
     if (!replyContent.trim()) return;
 
     // API 미완성 - 대댓글 작성 API 연결 예정
-    alert("API 연결 예정: 대댓글 작성 기능은 아직 준비 중입니다.");
+    showInfo("API 연결 예정: 대댓글 작성 기능은 아직 준비 중입니다.");
 
     // 새 대댓글 객체 생성 (임시 데이터)
     const newReply: CommentType = {
@@ -121,7 +122,7 @@ const Comment: React.FC<CommentProps> = ({ comments = [], postId }) => {
     if (!editContent.trim()) return;
 
     // API 미완성 - 댓글 수정 API 연결 예정
-    alert("API 연결 예정: 댓글 수정 기능은 아직 준비 중입니다.");
+    showInfo("API 연결 예정: 댓글 수정 기능은 아직 준비 중입니다.");
 
     let updatedComments;
     if (isReply && parentId) {
@@ -160,7 +161,7 @@ const Comment: React.FC<CommentProps> = ({ comments = [], postId }) => {
     parentId?: number
   ) => {
     // API 미완성 - 댓글 삭제 API 연결 예정
-    alert("API 연결 예정: 댓글 삭제 기능은 아직 준비 중입니다.");
+    showInfo("API 연결 예정: 댓글 삭제 기능은 아직 준비 중입니다.");
 
     if (isReply && parentId) {
       // 대댓글 삭제

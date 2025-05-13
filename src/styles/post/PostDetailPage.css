@@ -41,7 +41,7 @@ div {
   padding: 0 24px;
   background: #fff;
   border-radius: 16px;
-  box-shadow: 0 2px 16px rgba(60, 180, 172, 0.06);
+  box-shadow: 0 2px 16px rgba(255, 213, 79, 0.06);
   border: 1px solid #e5e7eb;
   box-sizing: border-box;
   overflow-x: hidden; /* 내용이 컨테이너를 벗어나지 않도록 설정 */
@@ -168,8 +168,8 @@ div {
 .apply-button {
   width: 100%;
   padding: 12px;
-  background-color: #3cb4ac;
-  color: white;
+  background-color: #ffd54f;
+  color: #1b3a4b;
   border: none;
   border-radius: 6px;
   font-weight: 500;
@@ -181,7 +181,7 @@ div {
 }
 
 .apply-button:hover {
-  background-color: #2a9d8f;
+  background-color: #ffc107;
 }
 
 .applied-status {
@@ -206,9 +206,9 @@ div {
 .accepted-status {
   width: 100%;
   padding: 12px;
-  background-color: #e6f7f5;
-  color: #2a9d8f;
-  border: 1px solid #2a9d8f;
+  background-color: #fff8e1;
+  color: #ff9800;
+  border: 1px solid #ff9800;
   border-radius: 6px;
   text-align: center;
   font-weight: 500;
