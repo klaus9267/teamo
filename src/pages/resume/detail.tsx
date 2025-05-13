@@ -28,15 +28,11 @@ export default function ResumeDetail() {
 
           // localStorage에서 myUserId 가져오기
           const myUserId = localStorage.getItem("myUserId");
-          console.log("localStorage 사용자 ID:", myUserId);
-          console.log("자기소개서 작성자 ID:", data.userId);
-          console.log("자기소개서 전체 데이터:", data);
 
           // 사용자 ID 비교
           if (myUserId && data.userId) {
             const isCurrentUserOwner = Number(myUserId) === data.userId;
             setIsOwner(isCurrentUserOwner);
-            console.log("본인 자기소개서 여부:", isCurrentUserOwner);
           }
 
           setLoading(false);
@@ -68,7 +64,7 @@ export default function ResumeDetail() {
         showSuccess("자기소개서가 삭제되었습니다.");
         navigate("/profile");
       } catch (err) {
-        console.error("Error deleting resume:", err);
+        console.error("자기소개서 삭제 중 오류 발생:", err);
         showWarning("자기소개서 삭제에 실패했습니다.");
       }
     }
@@ -203,12 +199,8 @@ export default function ResumeDetail() {
       </div>
 
       <div className="resume-actions">
-        <button className="back-btn" onClick={() => navigate("/profile")}>
-          목록으로
-        </button>
-
         {isOwner && (
-          <>
+          <div className="right-actions">
             <button
               className="edit-btn"
               onClick={() => navigate(`/profile/resume/edit/${resume.id}`)}
@@ -218,7 +210,7 @@ export default function ResumeDetail() {
             <button className="delete-btn" onClick={handleDeleteResume}>
               삭제
             </button>
-          </>
+          </div>
         )}
       </div>
     </div>

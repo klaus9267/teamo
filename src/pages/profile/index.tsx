@@ -274,8 +274,6 @@ const ProfilePage = () => {
           apiResponse = await userApi.getCurrentUser();
         }
 
-        console.log("API 응답 데이터:", apiResponse); // 디버깅을 위한 로그 추가
-
         // 프로필 데이터가 있는지 확인
         if (!apiResponse || !apiResponse.profile) {
           setError("프로필 정보를 불러올 수 없습니다.");
@@ -301,13 +299,11 @@ const ProfilePage = () => {
           resumes: apiResponse.resumes || [],
         };
 
-        console.log("매핑된 데이터:", mappedData); // 디버깅을 위한 로그 추가
         setUserData(mappedData);
 
         // 내 프로필인 경우에만 사용자 ID를 localStorage에 저장
         if (!id && apiResponse.profile.userId) {
           localStorage.setItem("myUserId", String(apiResponse.profile.userId));
-          console.log("내 사용자 ID 저장됨:", apiResponse.profile.userId);
         }
 
         setLoading(false);
