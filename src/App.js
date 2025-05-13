@@ -1,8 +1,9 @@
-import { createContext, useState, useEffect } from 'react';
-import './App.css';
-import Header from './component/common/Header';
-import Router from './component/Router.tsx';
-import { authApi } from './api/auth.ts';
+import { createContext, useState, useEffect } from "react";
+import "./App.css";
+import Header from "./component/common/Header";
+import Router from "./component/Router.tsx";
+import { authApi } from "./api/auth.ts";
+import { userApi } from "./api/user.ts";
 
 // 인증 컨텍스트 생성
 export const AuthContext = createContext();
@@ -14,33 +15,93 @@ function App() {
 
   // 앱 로드 시 로그인 상태 확인
   useEffect(() => {
-    const checkAuthStatus = () => {
+    const initAuthStatus = async () => {
       const authenticated = authApi.isAuthenticated();
       setIsAuthenticated(authenticated);
 
       if (authenticated) {
-        // 사용자 정보 가져오기 (JWT 토큰에서 디코딩)
-        const userInfo = authApi.getUserInfo();
-        setUser(userInfo);
+        try {
+          // API를 통해 내 프로필 정보 가져오기
+          const profileData = await userApi.getCurrentUser();
+
+          if (profileData && profileData.profile) {
+            // 사용자 정보 설정
+            setUser({
+              id: profileData.profile.userId,
+              name: profileData.profile.name || profileData.profile.nickname,
+              profileImage: profileData.profile.image,
+              introduction: profileData.profile.introduction,
+            });
+
+            // userId를 localStorage에 저장
+            if (profileData.profile.userId) {
+              localStorage.setItem(
+                "myUserId",
+                String(profileData.profile.userId)
+              );
+            }
+          }
+        } catch (error) {
+          console.error("프로필 정보 불러오기 실패:", error);
+          // 실패 시 fallback으로 JWT 토큰 정보 사용
+          const userInfo = authApi.getUserInfo();
+          setUser(userInfo);
+        }
+      } else {
+        // 로그인 상태가 아니면 localStorage의 userId 제거
+        localStorage.removeItem("myUserId");
       }
 
       setLoading(false);
     };
 
-    checkAuthStatus();
+    initAuthStatus();
   }, []);
 
   // 로그인 핸들러
-  const login = userData => {
+  const login = (userData) => {
     setIsAuthenticated(true);
     setUser(userData);
+
+    // 로그인 후 프로필 정보 다시 불러오기
+    refreshUserProfile();
   };
 
   // 로그아웃 핸들러
   const logout = () => {
     authApi.logout();
+    localStorage.removeItem("myUserId");
     setIsAuthenticated(false);
     setUser(null);
+  };
+
+  // 프로필 정보 다시 불러오는 함수
+  const refreshUserProfile = async () => {
+    const authenticated = authApi.isAuthenticated();
+
+    if (authenticated) {
+      try {
+        const profileData = await userApi.getCurrentUser();
+
+        if (profileData && profileData.profile) {
+          setUser({
+            id: profileData.profile.userId,
+            name: profileData.profile.name || profileData.profile.nickname,
+            profileImage: profileData.profile.image,
+            introduction: profileData.profile.introduction,
+          });
+
+          if (profileData.profile.userId) {
+            localStorage.setItem(
+              "myUserId",
+              String(profileData.profile.userId)
+            );
+          }
+        }
+      } catch (error) {
+        console.error("프로필 정보 다시 불러오기 실패:", error);
+      }
+    }
   };
 
   // 인증 관련 값과 함수들을 컨텍스트 프로바이더를 통해 자식 컴포넌트들에 제공
@@ -52,6 +113,7 @@ function App() {
         loading,
         login,
         logout,
+        refreshUserInfo: refreshUserProfile,
       }}
     >
       <div className="App">
