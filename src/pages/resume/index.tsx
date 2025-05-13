@@ -91,10 +91,10 @@ const ResumeForm = () => {
           setIsMain(data.isMain || false);
 
           // 포트폴리오 파일이 있을 경우
-          if (data.fileUrl) {
-            setCurrentPortfolio(data.fileUrl);
+          if (data.portfolio) {
+            setCurrentPortfolio(data.portfolio);
             // 파일 이름 추출
-            const fileNameFromUrl = data.fileUrl.split("/").pop();
+            const fileNameFromUrl = data.portfolio.split("/").pop();
             setFileName(fileNameFromUrl || "첨부된 포트폴리오");
           }
 

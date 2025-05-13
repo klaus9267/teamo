@@ -14,14 +14,15 @@ function Router() {
   return (
     <Routes>
       <Route path="/" element={<HomePage />}></Route>
-      <Route path="/post/:id" element={<PostDetail />} />
       <Route path="/post/create" element={<PostCreate />} />
+      <Route path="/post/:id/applicants" element={<ApplicantsPage />} />
+      <Route path="/post/:id" element={<PostDetail />} />
       <Route path="/hub" element={<HubPage />} />
-      <Route path="/profile" element={<ProfilePage />} />
       <Route path="/profile/resume/new" element={<ResumeForm />} />
       <Route path="/profile/resume/edit/:id" element={<ResumeForm />} />
       <Route path="/profile/resume/:id" element={<ResumeDetail />} />
-      <Route path="/post/:id/applicants" element={<ApplicantsPage />} />
+      <Route path="/profile" element={<ProfilePage />} />
+      <Route path="/profile/:id" element={<ProfilePage />} />
       <Route path="/login/oauth2/code/:provider" element={<SocialCallback />} />
       <Route path="/auth" element={<SocialCallback />} />
       <Route path="/login" element={<Navigate to="/" replace />} />

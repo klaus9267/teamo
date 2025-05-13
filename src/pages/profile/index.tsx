@@ -1,4 +1,10 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useMemo,
+  useCallback,
+} from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import axios from "axios";
 import "../../styles/profile/Profile.css";
@@ -9,6 +15,7 @@ import {
   Review,
   Resume,
 } from "../../api/user.ts";
+import { reviewApi } from "../../api/user.ts";
 import { resumeApi } from "../../api/resume.ts";
 import { authApi, AUTH_TOKEN_KEY } from "../../api/auth.ts";
 import Spinner from "../../component/common/Spinner.tsx";
@@ -31,6 +38,12 @@ interface ProfileData {
   participatingPosts: Post[];
   reviews: Review[];
   resumes: Resume[];
+}
+
+// 프로필 페이지에서 사용할 인터페이스 추가
+interface TogetherPost {
+  postId: number;
+  postTitle: string;
 }
 
 // 더미 데이터 - 로그인한 사용자 정보
@@ -241,6 +254,61 @@ const ProfileEditModal = ({ isOpen, onClose, userData, onUpdate }) => {
   );
 };
 
+// 리뷰 카드 컴포넌트를 분리하여 최적화
+const ReviewCard = React.memo(({ review, userInfo, onEdit, onDelete }) => {
+  // 로컬 스토리지에서 현재 사용자 ID 가져오기
+  const myUserId = localStorage.getItem("myUserId");
+  const currentUserId = myUserId ? Number(myUserId) : null;
+
+  // 이 리뷰를 현재 사용자가 작성했는지 확인
+  const isMyReview = currentUserId && review.reviewer?.userId === currentUserId;
+
+  return (
+    <div className="review-card" key={review.id}>
+      {/* 프로필 이미지 */}
+      <div className="reviewer-image">
+        <img
+          src={
+            review.reviewer?.image ||
+            "https://via.placeholder.com/40x40.png?text=U"
+          }
+          alt="작성자 프로필"
+          onError={(e) => {
+            e.currentTarget.src =
+              "https://via.placeholder.com/40x40.png?text=U";
+          }}
+        />
+      </div>
+      <div className="review-content-wrapper">
+        <div className="reviewer-info">
+          <span className="reviewer-name">
+            {review.reviewer?.nickname || "익명"}
+          </span>
+          {/* 현재 로그인한 사용자가 작성한 리뷰인 경우에만 수정/삭제 버튼 표시 */}
+          {isMyReview && (
+            <div className="review-actions">
+              <button className="edit-btn" onClick={() => onEdit(review)}>
+                수정
+              </button>
+              <button
+                className="delete-btn"
+                onClick={() => onDelete(review.id)}
+              >
+                삭제
+              </button>
+            </div>
+          )}
+        </div>
+        {/* 관련 프로젝트 */}
+        {review.postTitle && (
+          <div className="review-project-title">{review.postTitle}</div>
+        )}
+        <div className="review-text">{review.content}</div>
+      </div>
+    </div>
+  );
+});
+
 const ProfilePage = () => {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -248,29 +316,41 @@ const ProfilePage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
-  // 참여/작성한 모집글 더미 (실제로는 API에서 가져옴)
-  const myPosts = [
-    { id: 1, title: "[서울] Kettodze - 일본 가챠 매장" },
-    { id: 3, title: "AI 기반 추천 시스템 개발" },
-    { id: 5, title: "쇼핑몰 마케팅 전략 기획 스터디" },
-  ];
+  const [profileImageError, setProfileImageError] = useState(false);
+  const [togetherPosts, setTogetherPosts] = useState<TogetherPost[]>([]);
+
   // 리뷰 작성 상태
-  const [reviewPostId, setReviewPostId] = useState(""); // 모집글 id
+  const [reviewPostId, setReviewPostId] = useState<number | "">("");
   const [reviewContent, setReviewContent] = useState("");
-  // 리뷰 작성자 프로필 더미 (실제로는 리뷰 author id 등으로 받아야 함)
-  const reviewerProfileImg = "https://via.placeholder.com/40x40.png?text=U";
+  const [isWritingReview, setIsWritingReview] = useState(false);
+  const [editingReview, setEditingReview] = useState<{
+    id: number;
+    content: string;
+    postId: number;
+  } | null>(null);
+
+  // 리뷰 작성자 프로필 (실제 데이터로 대체)
   const userInfo = authApi.getUserInfo();
   const myId = userInfo ? userInfo.id : null;
-  // 내 프로필 확인 로직 수정 - 본인이 자신의 프로필 페이지에 접근하는 경우 항상 true로 설정
-  const isMyProfile = id ? userData && myId && userData.id === myId : true;
 
+  // 내 프로필 확인 로직 수정
+  // useEffect 내부가 아닌 컴포넌트 렌더링 시점에 계산하되, 필요한 값들이 있을 때만 계산
+  const isMyProfile = useMemo(() => {
+    if (!id) return true; // 내 프로필 페이지
+    if (!userData || !myId) return false; // 데이터가 아직 없거나 로그인 안됨
+    return userData.id === myId; // ID 비교
+  }, [id, userData, myId]);
+
+  // 사용자 데이터 요청 함수
   useEffect(() => {
     const fetchUserData = async () => {
       try {
         let apiResponse: ProfileResponse;
         if (id) {
+          // 특정 사용자 프로필 조회
           apiResponse = await userApi.getUser(Number(id));
         } else {
+          // 내 프로필 조회
           apiResponse = await userApi.getCurrentUser();
         }
 
@@ -283,16 +363,16 @@ const ProfilePage = () => {
 
         // API 응답 데이터를 UserData 형식에 맞게 변환
         const mappedData: ProfileData = {
-          id: apiResponse.profile?.id || 0,
+          id: apiResponse.profile?.userId || 0,
           username:
             apiResponse.profile?.nickname ||
             apiResponse.profile?.name ||
             "사용자",
           profileImage: apiResponse.profile?.image || "/profile.png",
           introduction: apiResponse.profile?.introduction || "",
-          location: "", // API에서 제공하지 않는 경우 빈 문자열로 설정
-          followers: 0, // API에서 제공하지 않는 경우 0으로 설정
-          following: 0, // API에서 제공하지 않는 경우 0으로 설정
+          location: "",
+          followers: 0,
+          following: 0,
           myPosts: apiResponse.authorPosts || [],
           participatingPosts: apiResponse.joinedPosts || [],
           reviews: apiResponse.reviews || [],
@@ -326,10 +406,40 @@ const ProfilePage = () => {
 
   // 로그인하지 않은 경우 내 프로필 접근 시 로그인 페이지로 이동
   useEffect(() => {
-    if (!userInfo && !id) {
+    // 이 부분의 navigate 호출이 렌더링 사이클 중에 상태를 변경하고 무한 반복을 유발할 수 있음
+    // 조건을 명확히 하고 상태를 체크하여 한 번만 호출되도록 수정
+    if (!userInfo && !id && !loading) {
       navigate("/login");
     }
-  }, [userInfo, id, navigate]);
+    // loading 상태를 의존성에 추가하고, 로딩 중에는 리다이렉트하지 않도록 함
+  }, [userInfo, id, navigate, loading]);
+
+  // 리뷰 작성 폼 토글 및 함께한 모집글 목록 로딩
+  const toggleReviewForm = useCallback(async () => {
+    // 리뷰 작성 폼을 열 때만 함께한 모집글 목록 로딩
+    if (!isWritingReview && !isMyProfile && id) {
+      try {
+        // API 호출
+        const response = await userApi.getTogetherPosts(Number(id));
+
+        // 응답 결과를 정렬하여 알파벳순으로 보여줌
+        const sortedPosts = [...response].sort((a, b) =>
+          a.postTitle.localeCompare(b.postTitle)
+        );
+
+        setTogetherPosts(sortedPosts);
+      } catch (err) {
+        console.error("함께한 모집글 목록 조회 에러:", err);
+        showError("함께한 모집글 목록을 불러오는데 실패했습니다.");
+      }
+    }
+
+    // 리뷰 작성 폼 토글
+    setIsWritingReview(!isWritingReview);
+    setReviewContent("");
+    setReviewPostId("");
+    setEditingReview(null);
+  }, [isWritingReview, isMyProfile, id]);
 
   // 프로필 업데이트
   const handleProfileUpdate = (updatedData) => {
@@ -368,32 +478,126 @@ const ProfilePage = () => {
   };
 
   // 리뷰 작성 핸들러
-  const handleReviewSubmit = (e) => {
+  const handleReviewSubmit = async (e) => {
     e.preventDefault();
     if (!reviewContent.trim()) {
       showWarning("리뷰 내용을 입력해주세요.");
       return;
     }
-    const today = new Date();
-    const dateStr = today.toISOString().slice(0, 10);
-    setUserData((prev) => ({
-      ...prev,
-      reviews: [
-        ...prev.reviews,
-        {
-          id: Date.now(),
-          postId: reviewPostId,
-          postTitle:
-            myPosts.find((p) => String(p.id) === reviewPostId)?.title || "",
-          content: reviewContent,
-          date: dateStr,
-        },
-      ],
-    }));
-    setReviewPostId("");
-    setReviewContent("");
-    showSuccess("리뷰가 등록되었습니다.");
+
+    try {
+      if (editingReview) {
+        // 리뷰 수정
+        await reviewApi.updateReview(
+          editingReview.id,
+          typeof reviewPostId === "number" && reviewPostId > 0
+            ? reviewPostId
+            : null,
+          reviewContent
+        );
+
+        // 현재 리뷰 목록 업데이트를 위한 API 호출
+        if (id) {
+          const updatedReviews = await reviewApi.getReviews(Number(id));
+
+          setUserData({
+            ...userData!,
+            reviews: updatedReviews || [],
+          });
+
+          // 캐시 무효화
+          sessionStorage.removeItem(`reviewsCache_${id}`);
+        }
+
+        showSuccess("리뷰가 수정되었습니다.");
+      } else {
+        // 리뷰 등록
+        if (!id) {
+          showError("사용자 ID를 찾을 수 없습니다.");
+          return;
+        }
+
+        // postId가 비어있으면 null로 처리
+        const postIdForApi =
+          typeof reviewPostId === "number" && reviewPostId > 0
+            ? reviewPostId
+            : null;
+
+        await reviewApi.createReview(Number(id), postIdForApi, reviewContent);
+
+        // 리뷰 목록 업데이트를 위한 API 재호출
+        const updatedReviews = await reviewApi.getReviews(Number(id));
+
+        setUserData({
+          ...userData!,
+          reviews: updatedReviews || [],
+        });
+
+        // 캐시 무효화
+        sessionStorage.removeItem(`reviewsCache_${id}`);
+
+        showSuccess("리뷰가 등록되었습니다.");
+      }
+
+      // 폼 초기화
+      setReviewContent("");
+      setReviewPostId("");
+      setIsWritingReview(false);
+      setEditingReview(null);
+    } catch (err) {
+      console.error("리뷰 저장 에러:", err);
+      showError("리뷰 저장에 실패했습니다.");
+    }
   };
+
+  // 리뷰 수정 핸들러 (useCallback으로 메모이제이션)
+  const handleEditReview = useCallback((review) => {
+    setEditingReview({
+      id: review.id,
+      content: review.content,
+      postId: review.postId || 0,
+    });
+    setReviewContent(review.content);
+    setReviewPostId(review.postId || 0);
+    setIsWritingReview(true);
+  }, []);
+
+  // 리뷰 삭제 핸들러 (useCallback으로 메모이제이션)
+  const handleDeleteReview = useCallback(
+    async (reviewId: number) => {
+      const confirmed = await showConfirm(
+        "리뷰 삭제",
+        "정말 삭제하시겠습니까?",
+        "삭제",
+        "취소"
+      );
+
+      if (confirmed) {
+        try {
+          await reviewApi.deleteReview(reviewId);
+
+          if (id) {
+            // 리뷰 목록 업데이트를 위한 API 재호출
+            const updatedReviews = await reviewApi.getReviews(Number(id));
+
+            setUserData((prevUserData) => ({
+              ...prevUserData!,
+              reviews: updatedReviews || [],
+            }));
+
+            // 캐시 무효화
+            sessionStorage.removeItem(`reviewsCache_${id}`);
+          }
+
+          showSuccess("리뷰가 삭제되었습니다.");
+        } catch (err) {
+          console.error("리뷰 삭제 에러:", err);
+          showError("리뷰 삭제에 실패했습니다.");
+        }
+      }
+    },
+    [id]
+  );
 
   // 대표 자기소개서 설정 핸들러
   const handleSetMainResume = async (resumeId: number) => {
@@ -429,6 +633,11 @@ const ProfilePage = () => {
     deadline.setHours(0, 0, 0, 0);
 
     return deadline >= today;
+  };
+
+  // 이미지 로드 오류 처리 핸들러
+  const handleImageError = () => {
+    setProfileImageError(true);
   };
 
   if (loading)
@@ -490,16 +699,24 @@ const ProfilePage = () => {
           <div className="profile-left">
             <div className="profile-image">
               <img
-                src={userData.profileImage || "/profile.png"}
+                src={
+                  profileImageError
+                    ? "/profile.png"
+                    : userData.profileImage || "/profile.png"
+                }
                 alt={`${userData.username} 프로필`}
+                onError={handleImageError}
               />
             </div>
           </div>
           <div className="profile-info">
             <div className="profile-top">
-              <h2 className="profile-name">{userData.username}</h2>
-            </div>
-            <div className="profile-stats">
+              <h2 className="profile-name">
+                {userData.username}
+                {!isMyProfile && (
+                  <span className="profile-username-suffix">님의 프로필</span>
+                )}
+              </h2>
               {isMyProfile && (
                 <button
                   className="edit-profile-btn"
@@ -509,23 +726,19 @@ const ProfilePage = () => {
                 </button>
               )}
             </div>
+            <div className="profile-introduction">
+              {userData.introduction ? (
+                <p>{userData.introduction}</p>
+              ) : (
+                <p className="no-introduction">소개글이 없습니다.</p>
+              )}
+            </div>
           </div>
         </div>
       </div>
 
       {/* 스크롤 형태의 컨텐츠 영역 */}
       <div className="profile-content">
-        {/* 기본 정보 섹션 */}
-        <div className="section">
-          <h3 className="section-title">기본 정보</h3>
-          <div className="info-section">
-            <div className="info-card">
-              <h3>소개</h3>
-              <p>{userData.introduction}</p>
-            </div>
-          </div>
-        </div>
-
         {/* 작성한 포스팅 섹션 */}
         <div className="section">
           <h3 className="section-title">작성한 포스팅</h3>
@@ -552,12 +765,11 @@ const ProfilePage = () => {
                     </div>
                     <div className="post-info">
                       <h4>{post.title}</h4>
-                      <p>{post.content.substring(0, 100)}...</p>
+                      <p>{post.content?.substring(0, 60)}...</p>
                       <div className="post-stats">
                         {isPostRecruiting(post) ? (
                           <span className="post-status">
-                            모집 현황: {post.currentCount || 0}/
-                            {post.headCount || 0}
+                            모집: {post.currentCount || 0}/{post.headCount || 0}
                           </span>
                         ) : (
                           <span className="post-status-closed">모집마감</span>
@@ -600,12 +812,11 @@ const ProfilePage = () => {
                     </div>
                     <div className="post-info">
                       <h4>{post.title}</h4>
-                      <p>{post.content.substring(0, 100)}...</p>
+                      <p>{post.content?.substring(0, 60)}...</p>
                       <div className="post-stats">
                         {isPostRecruiting(post) ? (
                           <span className="post-status">
-                            모집 현황: {post.currentCount || 0}/
-                            {post.headCount || 0}
+                            모집: {post.currentCount || 0}/{post.headCount || 0}
                           </span>
                         ) : (
                           <span className="post-status-closed">모집마감</span>
@@ -624,81 +835,96 @@ const ProfilePage = () => {
 
         {/* 리뷰 섹션 */}
         <div className="section">
-          <h3 className="section-title">받은 리뷰</h3>
+          <div className="section-header">
+            <h3 className="section-title">받은 리뷰</h3>
+            {!isMyProfile && userInfo && (
+              <button
+                className="add-btn"
+                onClick={toggleReviewForm}
+                style={{
+                  backgroundColor: "#FFD54F",
+                  color: "#333333",
+                  boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
+                }}
+              >
+                {isWritingReview ? "취소" : "+ 리뷰 작성"}
+              </button>
+            )}
+          </div>
+
+          {/* 리뷰 작성 폼 */}
+          {isWritingReview && !isMyProfile && userInfo && (
+            <div className="review-form-container">
+              <form onSubmit={handleReviewSubmit} className="review-form">
+                <div className="form-group">
+                  <label htmlFor="postId">관련 프로젝트 (선택)</label>
+                  <select
+                    id="postId"
+                    value={reviewPostId}
+                    onChange={(e) =>
+                      setReviewPostId(
+                        e.target.value ? Number(e.target.value) : ""
+                      )
+                    }
+                    className="form-control"
+                  >
+                    <option value="">프로젝트 선택 (선택사항)</option>
+                    {togetherPosts.length > 0 ? (
+                      togetherPosts.map((post) => (
+                        <option key={post.postId} value={post.postId}>
+                          {post.postTitle}
+                        </option>
+                      ))
+                    ) : (
+                      <option disabled>함께한 프로젝트가 없습니다</option>
+                    )}
+                  </select>
+                  {togetherPosts.length === 0 && (
+                    <small className="form-text text-muted">
+                      함께한 프로젝트가 없어도 리뷰를 작성할 수 있습니다.
+                    </small>
+                  )}
+                </div>
+                <div className="form-group">
+                  <label htmlFor="reviewContent">리뷰 내용</label>
+                  <textarea
+                    id="reviewContent"
+                    value={reviewContent}
+                    onChange={(e) => setReviewContent(e.target.value)}
+                    className="form-control"
+                    rows={4}
+                    placeholder="이 사용자와의 협업 경험을 공유해주세요."
+                  />
+                </div>
+                <div className="form-actions">
+                  <button
+                    type="submit"
+                    className="save-btn"
+                    style={{
+                      backgroundColor: "#FFD54F",
+                      color: "#333333",
+                      boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
+                    }}
+                  >
+                    {editingReview ? "리뷰 수정" : "리뷰 등록"}
+                  </button>
+                </div>
+              </form>
+            </div>
+          )}
+
+          {/* 리뷰 목록 */}
           <div className="reviews-section">
             {reviews.length > 0 ? (
               <div className="reviews-container">
                 {reviews.map((review) => (
-                  <div
-                    className="review-card"
+                  <ReviewCard
                     key={review.id}
-                    style={{
-                      display: "flex",
-                      gap: 16,
-                      background: "#fcfcfc",
-                      borderRadius: 10,
-                      padding: 20,
-                      marginBottom: 18,
-                      boxShadow: "0 1px 4px #0001",
-                      alignItems: "flex-start",
-                    }}
-                  >
-                    {/* 프로필 이미지 */}
-                    <div style={{ flexShrink: 0 }}>
-                      <img
-                        src={
-                          review.reviewer.image ||
-                          "https://via.placeholder.com/40x40.png?text=U"
-                        }
-                        alt="작성자 프로필"
-                        style={{
-                          width: 40,
-                          height: 40,
-                          borderRadius: "50%",
-                          background: "#eee",
-                          objectFit: "cover",
-                        }}
-                      />
-                    </div>
-                    <div style={{ flex: 1 }}>
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 10,
-                          marginBottom: 2,
-                        }}
-                      >
-                        <span style={{ fontWeight: 700, fontSize: 16 }}>
-                          {review.reviewer.nickname || "익명"}
-                        </span>
-                      </div>
-                      {/* 관련 프로젝트 */}
-                      {review.postTitle && (
-                        <div
-                          style={{
-                            color: "#3cb4ac",
-                            fontSize: 13,
-                            fontWeight: 500,
-                            marginBottom: 4,
-                          }}
-                        >
-                          {review.postTitle}
-                        </div>
-                      )}
-                      <div
-                        style={{
-                          fontSize: 15,
-                          color: "#222",
-                          lineHeight: 1.7,
-                          paddingLeft: 0,
-                          marginLeft: 0,
-                        }}
-                      >
-                        {review.content}
-                      </div>
-                    </div>
-                  </div>
+                    review={review}
+                    userInfo={userInfo}
+                    onEdit={handleEditReview}
+                    onDelete={handleDeleteReview}
+                  />
                 ))}
               </div>
             ) : (
