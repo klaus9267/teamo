@@ -24,6 +24,12 @@ export default function ResumeDetail() {
         if (id) {
           setLoading(true);
           const data = await resumeApi.getResume(Number(id));
+          console.log("불러온 자기소개서 데이터:", data);
+          console.log("스킬 목록 확인:", data.skills);
+
+          // 더이상 더미 데이터를 추가하지 않음
+          // 스킬 정보는 API에서 받은 그대로 사용
+
           setResume(data);
 
           // localStorage에서 myUserId 가져오기
@@ -130,7 +136,7 @@ export default function ResumeDetail() {
       </div>
 
       <div className="resume-detail-content">
-        {resume.skills && resume.skills.length > 0 && (
+        {resume.skills && resume.skills.length > 0 ? (
           <section className="resume-section">
             <h3>기술 스택</h3>
             <div className="resume-skills">
@@ -140,6 +146,11 @@ export default function ResumeDetail() {
                 </span>
               ))}
             </div>
+          </section>
+        ) : (
+          <section className="resume-section">
+            <h3>기술 스택</h3>
+            <div className="no-skills-message">등록된 기술 스택이 없습니다</div>
           </section>
         )}
 

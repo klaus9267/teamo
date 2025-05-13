@@ -155,6 +155,7 @@ const ResumeForm = () => {
 
     try {
       setIsSubmitting(true);
+      console.log("폼 제출 시작");
 
       // FormData 생성
       const formData = new FormData();
@@ -164,8 +165,11 @@ const ResumeForm = () => {
         title: title,
         content: content,
         personality: personality,
+        skills: selectedSkills, // 스킬 목록을 request 객체에 포함
         isMain: isMain,
       };
+
+      console.log("자기소개서 제출 데이터:", requestData);
 
       // request 필드에 JSON 형태로 추가
       formData.append("request", JSON.stringify(requestData));
@@ -175,6 +179,8 @@ const ResumeForm = () => {
         formData.append("skills", skill);
       });
 
+      console.log("선택된 스킬 목록:", selectedSkills);
+
       // 파일이 있으면 추가
       if (file) {
         formData.append("file", file);
@@ -182,13 +188,17 @@ const ResumeForm = () => {
 
       if (id) {
         // 기존 이력서 수정
-        await resumeApi.updateResume(Number(id), formData);
+        console.log("자기소개서 수정 요청 전송 (ID: " + id + ")");
+        const result = await resumeApi.updateResume(Number(id), formData);
+        console.log("자기소개서 수정 결과:", result);
         setIsSubmitting(false);
         showSuccess("자기소개서가 수정되었습니다.");
         navigate("/profile");
       } else {
         // 새 이력서 생성
-        await resumeApi.createResume(formData);
+        console.log("새 자기소개서 생성 요청 전송");
+        const result = await resumeApi.createResume(formData);
+        console.log("자기소개서 생성 결과:", result);
         setIsSubmitting(false);
         showSuccess("자기소개서가 저장되었습니다.");
         navigate("/profile");

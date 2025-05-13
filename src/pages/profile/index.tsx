@@ -285,8 +285,8 @@ const ProfilePage = () => {
         const mappedData: ProfileData = {
           id: apiResponse.profile?.id || 0,
           username:
-            apiResponse.profile?.name ||
             apiResponse.profile?.nickname ||
+            apiResponse.profile?.name ||
             "사용자",
           profileImage: apiResponse.profile?.image || "/profile.png",
           introduction: apiResponse.profile?.introduction || "",

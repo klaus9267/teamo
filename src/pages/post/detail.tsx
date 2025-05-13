@@ -91,11 +91,32 @@ export default function PostDetail() {
   };
 
   const fetchApplicants = async (postId) => {
-    if (!postId) return;
+    if (!postId) {
+      console.error("포스트 ID가 없어 지원자 목록을 불러올 수 없습니다.");
+      return;
+    }
 
     try {
+      console.log("지원자 목록 조회 시작. 포스트 ID:", postId);
       const data = await applyApi.getAppliesByPostId(postId);
-      setApplicants(data);
+      console.log("지원자 목록 조회 성공:", data);
+
+      // API 응답 구조 맵핑 - applyApi.getAppliesByPostId에서 반환되는 데이터 구조에 맞게 변환
+      // ApplyListResponse 인터페이스 참조
+      const mappedApplicants = data.map((applicant) => ({
+        id: applicant.applyId,
+        name: applicant.nickname,
+        avatar: applicant.profileImage,
+        resumeId: applicant.resumeId,
+        resumeTitle: "자기소개서", // API에서는 title 필드가 없으므로 기본값 사용
+        resumeContent: applicant.introduction || "내용 없음",
+        skills: applicant.skills || [],
+        applyDate: new Date().toISOString().split("T")[0], // 날짜 정보가 없으므로 현재 날짜 사용
+        isSelected: applicant.isSelected,
+      }));
+
+      console.log("변환된 지원자 목록:", mappedApplicants);
+      setApplicants(mappedApplicants);
 
       // 현재 사용자가 이미 지원했는지 확인
       if (userId) {
@@ -106,6 +127,10 @@ export default function PostDetail() {
       }
     } catch (err) {
       console.error("지원자 목록 조회 에러:", err);
+      if (err.response) {
+        console.error("응답 상태:", err.response.status);
+        console.error("응답 데이터:", err.response.data);
+      }
     }
   };
 
@@ -256,6 +281,16 @@ export default function PostDetail() {
 
   // 지원자 목록 토글 함수
   const toggleApplicantsList = () => {
+    console.log("지원자 목록 토글. 현재 상태:", showApplicantsList);
+
+    // 지원자 목록 표시 전에 항상 최신 데이터 불러오기
+    if (post && post.id) {
+      console.log("지원자 목록 새로고침 시도. 포스트 ID:", post.id);
+      fetchApplicants(post.id);
+    } else {
+      console.error("포스트 ID가 없어 지원자 목록을 불러올 수 없습니다.");
+    }
+
     setShowApplicantsList(!showApplicantsList);
   };
 

@@ -133,6 +133,19 @@ const SocialCallback = () => {
         // 카카오 사용자 정보 요청
         const kakaoUserInfo = await socialApi.getKakaoUserInfo(accessToken);
 
+        // UUID 생성 함수
+        const generateUID = () => {
+          return (
+            "user_" +
+            Date.now().toString(36) +
+            Math.random().toString(36).substr(2, 5)
+          );
+        };
+
+        // 닉네임이 없는 경우를 대비한 기본값 설정
+        const userNickname =
+          kakaoUserInfo.properties?.nickname || generateUID();
+
         // 응답 데이터를 표준 형식으로 변환
         const standardUserInfo: SocialUserInfo = {
           id: kakaoUserInfo.id,
@@ -142,7 +155,7 @@ const SocialCallback = () => {
           properties: kakaoUserInfo.properties,
           kakao_account: kakaoUserInfo.kakao_account,
           email: kakaoUserInfo.kakao_account?.email,
-          name: kakaoUserInfo.properties?.nickname,
+          name: userNickname,
           profile_image: kakaoUserInfo.properties?.profile_image,
         };
 
@@ -247,12 +260,13 @@ const SocialCallback = () => {
           const retrievedUserInfo = await socialApi.getKakaoUserInfo(
             tokenData.access_token
           );
-          console.log("retrievedUserInfo", retrievedUserInfo);
           setUserInfo(retrievedUserInfo);
 
           // 소셜 로그인 백엔드 인증 요청
           const socialLoginPayload = {
-            name: retrievedUserInfo.properties.nickname || "",
+            name:
+              retrievedUserInfo.properties?.nickname ||
+              `user_${retrievedUserInfo.id}`,
             socialId: retrievedUserInfo.id.toString(),
             type: getSocialType(detectedProvider),
           };
