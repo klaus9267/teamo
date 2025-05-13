@@ -418,6 +418,19 @@ const ProfilePage = () => {
     }
   };
 
+  // 모집 중인지 확인하는 함수 추가
+  const isPostRecruiting = (post) => {
+    if (!post.endedAt) return true;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const deadline = new Date(post.endedAt);
+    deadline.setHours(0, 0, 0, 0);
+
+    return deadline >= today;
+  };
+
   if (loading)
     return (
       <div
@@ -527,19 +540,30 @@ const ProfilePage = () => {
                   >
                     <div className="post-thumbnail">
                       <img
-                        src={post.image || "/post-default.png"}
+                        src={
+                          post.image
+                            ? post.image
+                            : isPostRecruiting(post)
+                            ? "/open.png"
+                            : "/closed.png"
+                        }
                         alt={post.title}
-                        style={{
-                          width: "100%",
-                          height: "200px",
-                          objectFit: "cover",
-                        }}
                       />
                     </div>
                     <div className="post-info">
                       <h4>{post.title}</h4>
                       <p>{post.content.substring(0, 100)}...</p>
-                      <span className="post-date">{post.endedAt}</span>
+                      <div className="post-stats">
+                        {isPostRecruiting(post) ? (
+                          <span className="post-status">
+                            모집 현황: {post.currentCount || 0}/
+                            {post.headCount || 0}
+                          </span>
+                        ) : (
+                          <span className="post-status-closed">모집마감</span>
+                        )}
+                        <span className="post-date">{post.endedAt}</span>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -564,19 +588,30 @@ const ProfilePage = () => {
                   >
                     <div className="post-thumbnail">
                       <img
-                        src={post.image || "/post-default.png"}
+                        src={
+                          post.image
+                            ? post.image
+                            : isPostRecruiting(post)
+                            ? "/open.png"
+                            : "/closed.png"
+                        }
                         alt={post.title}
-                        style={{
-                          width: "100%",
-                          height: "200px",
-                          objectFit: "cover",
-                        }}
                       />
                     </div>
                     <div className="post-info">
                       <h4>{post.title}</h4>
                       <p>{post.content.substring(0, 100)}...</p>
-                      <span className="post-date">{post.endedAt}</span>
+                      <div className="post-stats">
+                        {isPostRecruiting(post) ? (
+                          <span className="post-status">
+                            모집 현황: {post.currentCount || 0}/
+                            {post.headCount || 0}
+                          </span>
+                        ) : (
+                          <span className="post-status-closed">모집마감</span>
+                        )}
+                        <span className="post-date">{post.endedAt}</span>
+                      </div>
                     </div>
                   </div>
                 ))}

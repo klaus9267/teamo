@@ -520,7 +520,9 @@ export default function PostDetail() {
           <TeamMembers leader={leader} members={members} />
 
           {/* 댓글 컴포넌트 */}
-          <Comment comments={[]} postId={post?.id} />
+          <div className="post-comments">
+            <Comment postId={Number(id)} />
+          </div>
         </div>
       </div>
 

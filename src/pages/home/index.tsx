@@ -330,6 +330,19 @@ export default function HomePage() {
     navigate("/post/create");
   };
 
+  // 모집 중인지 확인하는 함수 추가
+  const isPostRecruiting = (post) => {
+    if (!post?.endedAt) return true;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const deadline = new Date(post.endedAt);
+    deadline.setHours(0, 0, 0, 0);
+
+    return deadline >= today;
+  };
+
   if (loading) {
     return (
       <div
@@ -478,18 +491,18 @@ export default function HomePage() {
               onClick={() => handlePostClick(post?.id ?? 0)}
               style={{ cursor: "pointer" }}
             >
-              <div
-                className="recruitment-image"
-                style={
-                  post.image
-                    ? {
-                        backgroundImage: `url(${post.image})`,
-                        backgroundSize: "cover",
-                        backgroundPosition: "center",
-                      }
-                    : {}
-                }
-              >
+              <div className="recruitment-image">
+                <img
+                  src={
+                    post?.image
+                      ? post.image
+                      : isRecruiting || isPostRecruiting(post)
+                      ? "/open.png"
+                      : "/closed.png"
+                  }
+                  alt={post?.title}
+                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                />
                 <span className="recruitment-category">
                   {categoryMap[post?.category] || post?.category || "기타"}
                 </span>
@@ -514,9 +527,13 @@ export default function HomePage() {
                   <div className="recruitment-status-container">
                     <div className="status">
                       <span className="status-text">모집 현황:</span>
-                      <span>
-                        {post?.currentCount ?? 0}/{post?.headCount ?? 0}
-                      </span>
+                      {isPostRecruiting(post) ? (
+                        <span>
+                          {post?.currentCount ?? 0}/{post?.headCount ?? 0}
+                        </span>
+                      ) : (
+                        <span className="status-closed">모집마감</span>
+                      )}
                     </div>
                     <div className="deadline">
                       <span className="deadline-text">마감일:</span>
