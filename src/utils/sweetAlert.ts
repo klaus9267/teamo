@@ -45,16 +45,23 @@ export const showWarning = (message: string) => {
 };
 
 // 확인 대화상자 표시
-export const showConfirm = (message: string) => {
+export const showConfirm = (
+  title: string = "확인",
+  message: string,
+  confirmText: string = "확인",
+  cancelText: string = "취소"
+) => {
   return Swal.fire({
     icon: "question",
-    title: "확인",
+    title: title,
     text: message,
     showCancelButton: true,
     confirmButtonColor: "#FFD54F",
     cancelButtonColor: "#d33",
-    confirmButtonText: "확인",
-    cancelButtonText: "취소",
+    confirmButtonText: confirmText,
+    cancelButtonText: cancelText,
+  }).then((result) => {
+    return result.isConfirmed;
   });
 };
 

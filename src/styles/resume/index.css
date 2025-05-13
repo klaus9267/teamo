@@ -236,6 +236,19 @@
   color: #666;
 }
 
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 300px;
+  width: 100%;
+}
+
+.loading-text {
+  display: inline-flex;
+  align-items: center;
+}
+
 /* 반응형 조정 */
 @media (max-width: 768px) {
   .resume-form {
@@ -317,8 +330,29 @@
 }
 
 .file-name {
-  margin-top: 10px;
+  margin-top: 8px;
   font-size: 14px;
-  font-weight: 500;
-  color: #333;
+  color: #4b5563;
+  padding: 8px 12px;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.current-file-link {
+  margin-left: 12px;
+  color: #4b5563;
+  background-color: #e5e7eb;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.current-file-link:hover {
+  background-color: var(--primary-color);
+  color: var(--text-dark);
 }

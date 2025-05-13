@@ -3,6 +3,7 @@ import { useNavigate, useParams, Link } from "react-router-dom";
 import "../../styles/resume/index.css";
 import { resumeApi } from "../../api/resume.ts";
 import { showSuccess, showError, showWarning } from "../../utils/sweetAlert.ts";
+import Spinner from "../../component/common/Spinner.tsx";
 
 const ResumeForm = () => {
   const navigate = useNavigate();
@@ -22,6 +23,7 @@ const ResumeForm = () => {
   const [isMain, setIsMain] = useState(false);
   const [file, setFile] = useState(null);
   const [fileName, setFileName] = useState("");
+  const [currentPortfolio, setCurrentPortfolio] = useState(null);
 
   // 스킬 목록 (실제로는 API에서 가져와야 함)
   const availableSkills = [
@@ -75,30 +77,39 @@ const ResumeForm = () => {
 
   // 편집 모드일 경우 기존 데이터 불러오기
   useEffect(() => {
-    if (isEditing) {
-      // 실제로는 API 호출하여 데이터 불러오기
-      // 예시 데이터
-      setTimeout(() => {
-        const resumeData = {
-          id: 1,
-          title: "프론트엔드 개발자 자기소개서",
-          content:
-            "안녕하세요. 저는 프론트엔드 개발자를 지망하는 김민준입니다.\n\n저는 3년간의 웹 개발 경험을 가지고 있으며, 사용자 중심의 인터페이스 개발에 열정을 가지고 있습니다. JavaScript, React, TypeScript를 주로 사용하며, 특히 Next.js와 같은 프레임워크에도 관심을 가지고 학습하고 있습니다.\n\n주요 프로젝트 경험으로는...",
-          skills: ["JavaScript", "React", "TypeScript", "Node.js"],
-          personality:
-            "프론트엔드 개발자 | UX/UI 디자인 역량 | 새로운 기술에 열려있는 창의적인 문제 해결사",
-          date: "2023-04-20",
-          isMain: false,
-        };
+    const fetchResumeData = async () => {
+      if (isEditing && id) {
+        try {
+          // API 호출하여 데이터 불러오기
+          const data = await resumeApi.getResume(Number(id));
+          console.log("불러온 자기소개서 데이터:", data);
 
-        setTitle(resumeData.title);
-        setContent(resumeData.content);
-        setSelectedSkills(resumeData.skills);
-        setPersonality(resumeData.personality);
-        setIsMain(resumeData.isMain);
+          setTitle(data.title || "");
+          setContent(data.content || "");
+          setSelectedSkills(data.skills || []);
+          setPersonality(data.personality || "");
+          setIsMain(data.isMain || false);
+
+          // 포트폴리오 파일이 있을 경우
+          if (data.fileUrl) {
+            setCurrentPortfolio(data.fileUrl);
+            // 파일 이름 추출
+            const fileNameFromUrl = data.fileUrl.split("/").pop();
+            setFileName(fileNameFromUrl || "첨부된 포트폴리오");
+          }
+
+          setLoading(false);
+        } catch (error) {
+          console.error("자기소개서 데이터 로딩 오류:", error);
+          showError("자기소개서 데이터를 불러오는데 실패했습니다.");
+          setLoading(false);
+        }
+      } else {
         setLoading(false);
-      }, 500);
-    }
+      }
+    };
+
+    fetchResumeData();
   }, [isEditing, id]);
 
   // 스킬 검색창 포커스 시 제안 표시
@@ -128,6 +139,7 @@ const ResumeForm = () => {
     if (selectedFile) {
       setFile(selectedFile);
       setFileName(selectedFile.name);
+      setCurrentPortfolio(null); // 새 파일 선택 시 기존 포트폴리오 파일 정보 초기화
     }
   };
 
@@ -147,17 +159,21 @@ const ResumeForm = () => {
       // FormData 생성
       const formData = new FormData();
 
-      // JSON 데이터를 request 필드 안에 넣기
+      // DTO 형식에 맞게 JSON 데이터 구성
       const requestData = {
         title: title,
         content: content,
         personality: personality,
-        skills: selectedSkills,
         isMain: isMain,
       };
 
       // request 필드에 JSON 형태로 추가
       formData.append("request", JSON.stringify(requestData));
+
+      // 스킬은 별도로 추가 (서버 요청 형식에 맞춤)
+      selectedSkills.forEach((skill) => {
+        formData.append("skills", skill);
+      });
 
       // 파일이 있으면 추가
       if (file) {
@@ -242,7 +258,9 @@ const ResumeForm = () => {
       </div>
 
       {loading ? (
-        <div className="loading">로딩 중...</div>
+        <div className="loading-container">
+          <Spinner size="large" text="자기소개서 로딩 중..." />
+        </div>
       ) : (
         <form onSubmit={handleSubmit} className="resume-form">
           <div className="form-group">
@@ -377,7 +395,25 @@ const ResumeForm = () => {
                 accept=".pdf,.doc,.docx"
               />
               {fileName ? (
-                <div className="file-name">{fileName}</div>
+                <div className="file-name">
+                  {currentPortfolio ? (
+                    <>
+                      <span>현재 파일: {fileName}</span>
+                      {currentPortfolio && (
+                        <a
+                          href={currentPortfolio}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="current-file-link"
+                        >
+                          보기
+                        </a>
+                      )}
+                    </>
+                  ) : (
+                    `새 파일: ${fileName}`
+                  )}
+                </div>
               ) : (
                 <div className="file-placeholder">
                   클릭하여 포트폴리오 파일을 업로드하세요 (PDF, DOC, DOCX)
@@ -407,7 +443,13 @@ const ResumeForm = () => {
               취소
             </button>
             <button type="submit" className="save-btn" disabled={isSubmitting}>
-              {isEditing ? "수정완료" : "등록"}
+              {isSubmitting ? (
+                <span className="loading-text">처리 중...</span>
+              ) : isEditing ? (
+                "수정완료"
+              ) : (
+                "등록"
+              )}
             </button>
           </div>
         </form>
