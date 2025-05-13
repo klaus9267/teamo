@@ -99,12 +99,16 @@ export const resumeApi = {
   // 자기소개서 삭제
   deleteResume: async (id: number) => {
     try {
-      await api.delete(`/api/resumes/${id}`);
+      console.log(`자기소개서 삭제 API 호출: /api/resumes/${id}`);
+      const response = await api.delete(`/api/resumes/${id}`);
+      console.log("자기소개서 삭제 API 응답:", response);
+      return response.data;
     } catch (error: any) {
       console.error(
         "자기소개서 삭제 에러:",
         error.response?.data || error.message
       );
+      console.error("에러 상세 정보:", error);
       throw error;
     }
   },
