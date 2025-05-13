@@ -4,6 +4,8 @@ import "../../styles/main/Main.css";
 import { postApi, Post } from "../../api/post.ts";
 import Spinner from "../../component/common/Spinner.tsx";
 import { authApi } from "../../api/auth.ts";
+import { showInfo } from "../../utils/sweetAlert.ts";
+import LoginModal from "../../component/common/LoginModal.jsx";
 
 // 배너 데이터
 const bannerData = [
@@ -61,6 +63,8 @@ export default function HomePage() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(authApi.isAuthenticated());
 
   // 배너 전환 함수
   const rotateBanner = () => {
@@ -208,12 +212,24 @@ export default function HomePage() {
     for (let i = startPage; i <= endPage; i++) {
       pageNumbers.push(i);
     }
+
+    const activeStyle = {
+      backgroundColor: "#FFD54F",
+      color: "#1b3a4b",
+      borderColor: "#FFD54F",
+    };
+
+    const normalStyle = {
+      color: "#1b3a4b",
+    };
+
     return (
       <div className="pagination">
         <button
           onClick={() => handlePageChange(currentPage - 1)}
           disabled={currentPage === 1}
           className="pagination-btn"
+          style={{ color: "#1b3a4b" }}
         >
           이전
         </button>
@@ -224,6 +240,7 @@ export default function HomePage() {
               className={`pagination-number ${
                 currentPage === 1 ? "active" : ""
               }`}
+              style={currentPage === 1 ? activeStyle : normalStyle}
             >
               1
             </button>
@@ -237,6 +254,7 @@ export default function HomePage() {
             className={`pagination-number ${
               currentPage === number ? "active" : ""
             }`}
+            style={currentPage === number ? activeStyle : normalStyle}
           >
             {number}
           </button>
@@ -251,6 +269,7 @@ export default function HomePage() {
               className={`pagination-number ${
                 currentPage === totalPages ? "active" : ""
               }`}
+              style={currentPage === totalPages ? activeStyle : normalStyle}
             >
               {totalPages}
             </button>
@@ -260,6 +279,7 @@ export default function HomePage() {
           onClick={() => handlePageChange(currentPage + 1)}
           disabled={currentPage === totalPages}
           className="pagination-btn"
+          style={{ color: "#1b3a4b" }}
         >
           다음
         </button>
@@ -301,13 +321,13 @@ export default function HomePage() {
   };
 
   // 팀원 모집하기 버튼 클릭 핸들러
-  const handleCreatePost = () => {
-    if (!authApi.isAuthenticated()) {
-      // 로그인하지 않은 경우 알림 표시
-      alert("팀원 모집하기는 로그인 후 이용 가능합니다.");
-    } else {
-      navigate("/post/create");
+  const handleRecruitClick = () => {
+    if (!isLoggedIn) {
+      showInfo("팀원 모집하기는 로그인 후 이용 가능합니다.");
+      setShowLoginModal(true);
+      return;
     }
+    navigate("/post/create");
   };
 
   if (loading) {
@@ -358,7 +378,7 @@ export default function HomePage() {
           <div className="banner-text">
             <h1>팀원 준비 완료!</h1>
             <h2>팀워크가 필요할 때, Teamo</h2>
-            <button className="create-team-btn" onClick={handleCreatePost}>
+            <button className="create-team-btn" onClick={handleRecruitClick}>
               팀원 모집하기
             </button>
           </div>
@@ -511,17 +531,17 @@ export default function HomePage() {
                         display: "inline-block",
                         border: `1.5px solid ${
                           typeMap[post?.type] === "온라인"
-                            ? "#3cb4ac"
+                            ? "#FFD54F"
                             : typeMap[post?.type] === "오프라인"
                             ? "#888"
-                            : "#f6b93b"
+                            : "#FF9800"
                         }`,
                         color:
                           typeMap[post?.type] === "온라인"
-                            ? "#3cb4ac"
+                            ? "#FFD54F"
                             : typeMap[post?.type] === "오프라인"
                             ? "#888"
-                            : "#f6b93b",
+                            : "#FF9800",
                         background: "#fff",
                         borderRadius: 8,
                         padding: "2px 14px",
@@ -542,6 +562,16 @@ export default function HomePage() {
         {/* 페이지네이션 */}
         <Pagination />
       </section>
+
+      {showLoginModal && (
+        <LoginModal
+          onClose={() => setShowLoginModal(false)}
+          onLogin={() => {
+            setIsLoggedIn(true);
+            navigate("/post/create");
+          }}
+        />
+      )}
     </div>
   );
 }

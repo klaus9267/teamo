@@ -43,7 +43,7 @@
 }
 
 .back-link:hover {
-  color: #3cb4ac;
+  color: var(--primary-color);
 }
 
 .resume-detail-content {
@@ -120,12 +120,12 @@
 }
 
 .edit-btn {
-  background-color: #3cb4ac;
-  color: white;
+  background-color: var(--primary-color);
+  color: var(--text-dark);
 }
 
 .edit-btn:hover {
-  background-color: #2a9d8f;
+  background-color: var(--primary-hover);
 }
 
 .back-btn {

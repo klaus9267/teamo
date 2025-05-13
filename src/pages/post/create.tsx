@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import "../../styles/post/create.css";
 import TechStack from "../../component/post/TechStack.tsx";
 import { postApi } from "../../api/post.ts";
+import { showSuccess, showError, showWarning } from "../../utils/sweetAlert.ts";
 
 const PostCreate = () => {
   const navigate = useNavigate();
@@ -90,12 +91,12 @@ const PostCreate = () => {
 
     // 유효성 검사
     if (!title.trim()) {
-      alert("제목을 입력해주세요.");
+      showWarning("제목을 입력해주세요.");
       return;
     }
 
     if (!content.trim()) {
-      alert("내용을 입력해주세요.");
+      showWarning("내용을 입력해주세요.");
       return;
     }
 
@@ -117,17 +118,17 @@ const PostCreate = () => {
     try {
       // API 호출
       const response = await postApi.createPost(postData);
-      alert("게시글이 등록되었습니다!");
+      showSuccess("게시글이 등록되었습니다!");
 
       // 게시글 목록 페이지로 이동
       navigate("/");
     } catch (error) {
       if (error.response && error.response.status === 401) {
-        alert("로그인이 필요합니다. 다시 로그인 해주세요.");
+        showError("로그인이 필요합니다. 다시 로그인 해주세요.");
         navigate("/login");
         return;
       }
-      alert("게시글 등록에 실패했습니다. 다시 시도해주세요.");
+      showError("게시글 등록에 실패했습니다. 다시 시도해주세요.");
     }
   };
 
@@ -370,17 +371,17 @@ const PostCreate = () => {
                     display: "inline-block",
                     border: `1.5px solid ${
                       projectType === "ONLINE"
-                        ? "#3cb4ac"
+                        ? "#FFD54F"
                         : projectType === "OFFLINE"
                         ? "#888"
-                        : "#f6b93b"
+                        : "#FF9800"
                     }`,
                     color:
                       projectType === "ONLINE"
-                        ? "#3cb4ac"
+                        ? "#FFD54F"
                         : projectType === "OFFLINE"
                         ? "#888"
-                        : "#f6b93b",
+                        : "#FF9800",
                     background: "#fff",
                     borderRadius: 8,
                     padding: "2px 14px",

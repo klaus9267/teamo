@@ -1,43 +1,45 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import React, { useState, useEffect, useRef } from "react";
+import { useNavigate, useParams, Link } from "react-router-dom";
 import axios from "axios";
 import "../../styles/profile/Profile.css";
-import { userApi, User } from "../../api/user.ts";
+import {
+  userApi,
+  ProfileResponse,
+  Post,
+  Review,
+  Resume,
+} from "../../api/user.ts";
+import { resumeApi } from "../../api/resume.ts";
+import { authApi, AUTH_TOKEN_KEY } from "../../api/auth.ts";
+import Spinner from "../../component/common/Spinner.tsx";
+import {
+  showSuccess,
+  showError,
+  showWarning,
+  showConfirm,
+} from "../../utils/sweetAlert.ts";
 
-interface UserData {
+interface ProfileData {
   id: number;
-  name: string;
-  profileImg: string;
-  skills: string[];
-  introduce: string;
-  projects: {
-    id: number;
-    title: string;
-    description: string;
-    date: string;
-    thumbnail: string;
-  }[];
-  reviews: {
-    id: number;
-    author: string;
-    content: string;
-    date: string;
-  }[];
-  resumeList: {
-    id: number;
-    title: string;
-    content: string;
-    date: string;
-  }[];
+  username: string;
+  profileImage: string;
+  introduction: string;
+  location: string;
+  followers: number;
+  following: number;
+  myPosts: Post[];
+  participatingPosts: Post[];
+  reviews: Review[];
+  resumes: Resume[];
 }
 
 // 더미 데이터 - 로그인한 사용자 정보
 const initialUserData = {
   id: 1,
-  name: "리박스",
-  profileImg: "https://via.placeholder.com/150",
+  nickname: "리박스",
+  image: "https://via.placeholder.com/150",
   skills: ["React", "TypeScript", "JavaScript", "HTML/CSS", "Node.js"],
-  introduce:
+  introduction:
     "안녕하세요! 프론트엔드 개발자 리박스입니다. 팀 프로젝트에 관심이 많습니다.",
   projects: [
     {
@@ -74,7 +76,7 @@ const initialUserData = {
     },
   ],
   // 자기소개서 데이터 추가
-  resumeList: [
+  resumes: [
     {
       id: 1,
       title: "웹 개발자 지원 자기소개서",
@@ -92,20 +94,62 @@ const initialUserData = {
   ],
 };
 
-// 프로필 수정 모달 컴포넌트
+// 프로필 수정 모달
 const ProfileEditModal = ({ isOpen, onClose, userData, onUpdate }) => {
-  const [name, setName] = useState(userData.name);
-  const [intro, setIntro] = useState(userData.introduce);
+  const [formData, setFormData] = useState({
+    nickname: userData.nickname,
+    introduction: userData.introduction,
+  });
+  const [imagePreview, setImagePreview] = useState(userData.image);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const fileInputRef = useRef(null);
+  const [imageChanged, setImageChanged] = useState(false);
 
-  const handleSubmit = (e) => {
+  // 이미지 업로드 핸들러
+  const handleImageUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // 파일 객체 직접 저장
+      setImageFile(file);
+      setImageChanged(true);
+
+      // 미리보기용 URL 생성
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // 이미지 변경 버튼 클릭 핸들러
+  const handleImageButtonClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // 프로필 정보 업데이트
-    onUpdate({
-      ...userData,
-      name,
-      introduce: intro,
-    });
-    onClose();
+    try {
+      const response = await userApi.updateUser({
+        nickname: formData.nickname,
+        introduction: formData.introduction,
+        image: imageChanged ? imageFile : null,
+      });
+
+      // 업데이트된 데이터로 UserData 형식에 맞게 변환
+      const updatedUserData = {
+        ...userData,
+        nickname: formData.nickname,
+        introduction: formData.introduction,
+        image: imagePreview, // 미리보기 이미지를 사용하여 UI 즉시 업데이트
+      };
+
+      onUpdate(updatedUserData);
+      onClose();
+    } catch (error) {
+      console.error("프로필 업데이트 오류:", error);
+      showError("프로필 업데이트에 실패했습니다.");
+    }
   };
 
   if (!isOpen) return null;
@@ -124,16 +168,14 @@ const ProfileEditModal = ({ isOpen, onClose, userData, onUpdate }) => {
             <div className="profile-image-upload">
               <div className="profile-image-preview">
                 <img
-                  src={userData.profileImg}
-                  alt={`${userData.name} 프로필`}
-                  style={{
-                    width: 150,
-                    height: 150,
-                    borderRadius: "50%",
-                    objectFit: "cover",
-                  }}
+                  src={imagePreview || "/profile.png"}
+                  alt={`${userData.nickname} 프로필`}
                 />
-                <button type="button" className="edit-image-btn">
+                <button
+                  type="button"
+                  className="edit-image-btn"
+                  onClick={handleImageButtonClick}
+                >
                   <svg
                     viewBox="0 0 24 24"
                     fill="currentColor"
@@ -143,24 +185,35 @@ const ProfileEditModal = ({ isOpen, onClose, userData, onUpdate }) => {
                     <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" />
                   </svg>
                 </button>
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  style={{ display: "none" }}
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                />
               </div>
             </div>
             <div className="form-group">
-              <label htmlFor="name">이름</label>
+              <label htmlFor="nickname">닉네임</label>
               <input
                 type="text"
-                id="name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
+                id="nickname"
+                value={formData.nickname}
+                onChange={(e) =>
+                  setFormData({ ...formData, nickname: e.target.value })
+                }
                 className="form-control"
               />
             </div>
             <div className="form-group">
-              <label htmlFor="intro">소개</label>
+              <label htmlFor="introduction">소개</label>
               <textarea
-                id="intro"
-                value={intro}
-                onChange={(e) => setIntro(e.target.value)}
+                id="introduction"
+                value={formData.introduction}
+                onChange={(e) =>
+                  setFormData({ ...formData, introduction: e.target.value })
+                }
                 className="form-control"
                 rows={3}
               />
@@ -169,7 +222,15 @@ const ProfileEditModal = ({ isOpen, onClose, userData, onUpdate }) => {
               <button type="button" className="cancel-btn" onClick={onClose}>
                 취소
               </button>
-              <button type="submit" className="save-btn">
+              <button
+                type="submit"
+                className="save-btn"
+                style={{
+                  backgroundColor: "#FFD54F",
+                  color: "#333333",
+                  boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
+                }}
+              >
                 저장
               </button>
             </div>
@@ -183,7 +244,7 @@ const ProfileEditModal = ({ isOpen, onClose, userData, onUpdate }) => {
 const ProfilePage = () => {
   const navigate = useNavigate();
   const { id } = useParams();
-  const [userData, setUserData] = useState<UserData | null>(null);
+  const [userData, setUserData] = useState<ProfileData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
@@ -198,55 +259,98 @@ const ProfilePage = () => {
   const [reviewContent, setReviewContent] = useState("");
   // 리뷰 작성자 프로필 더미 (실제로는 리뷰 author id 등으로 받아야 함)
   const reviewerProfileImg = "https://via.placeholder.com/40x40.png?text=U";
+  const userInfo = authApi.getUserInfo();
+  const myId = userInfo ? userInfo.id : null;
+  // 내 프로필 확인 로직 수정 - 본인이 자신의 프로필 페이지에 접근하는 경우 항상 true로 설정
+  const isMyProfile = id ? userData && myId && userData.id === myId : true;
 
   useEffect(() => {
     const fetchUserData = async () => {
       try {
+        let apiResponse: ProfileResponse;
         if (id) {
-          const data = await userApi.getUser(Number(id));
-          setUserData(data);
+          apiResponse = await userApi.getUser(Number(id));
         } else {
-          const data = await userApi.getCurrentUser();
-          setUserData(data);
+          apiResponse = await userApi.getCurrentUser();
         }
+
+        // API 응답 데이터를 UserData 형식에 맞게 변환
+        const mappedData: ProfileData = {
+          id: apiResponse.id,
+          username: apiResponse.username,
+          profileImage:
+            apiResponse.profileImage || "/images/default-profile.png",
+          introduction: apiResponse.introduction || "",
+          location: apiResponse.location || "",
+          followers: apiResponse.followers || 0,
+          following: apiResponse.following || 0,
+          myPosts: apiResponse.myPosts || [],
+          participatingPosts: apiResponse.participatingPosts || [],
+          reviews: apiResponse.reviews || [],
+          resumes: apiResponse.resumes || [],
+        };
+
+        setUserData(mappedData);
         setLoading(false);
       } catch (err) {
+        console.error("프로필 데이터 로딩 에러:", err);
         setError("사용자 정보를 불러오는데 실패했습니다.");
+        // 토큰 제거 및 메인 페이지로 리다이렉트
+        if (!id) {
+          // 내 프로필인 경우에만 토큰 제거 (다른 사용자 프로필 조회 실패는 제외)
+          localStorage.removeItem(AUTH_TOKEN_KEY);
+          localStorage.removeItem("token");
+          navigate("/"); // 메인 페이지로 리다이렉트
+        }
         setLoading(false);
       }
     };
 
     fetchUserData();
-  }, [id]);
+  }, [id, navigate]);
+
+  // 로그인하지 않은 경우 내 프로필 접근 시 로그인 페이지로 이동
+  useEffect(() => {
+    if (!userInfo && !id) {
+      navigate("/login");
+    }
+  }, [userInfo, id, navigate]);
 
   // 프로필 업데이트
   const handleProfileUpdate = (updatedData) => {
     setUserData(updatedData);
-    alert("프로필이 수정되었습니다.");
+    showSuccess("프로필이 수정되었습니다.");
   };
 
   // 자기소개서 삭제
-  const handleDeleteResume = (id) => {
-    if (window.confirm("정말 삭제하시겠습니까?")) {
-      // 자기소개서 삭제 처리
-      const updatedResumeList = userData.resumeList.filter(
-        (resume) => resume.id !== id
-      );
+  const handleDeleteResume = (resumeId: number) => {
+    showConfirm("정말 삭제하시겠습니까?").then((result) => {
+      if (result.isConfirmed) {
+        // 자기소개서 삭제 API 호출 추가 필요
+        // TODO: 백엔드 연동 시 API 호출 추가
+        try {
+          const updatedResumes =
+            userData?.resumes.filter((resume) => resume.id !== resumeId) || [];
 
-      setUserData({
-        ...userData,
-        resumeList: updatedResumeList,
-      });
+          setUserData({
+            ...userData!,
+            resumes: updatedResumes,
+          });
 
-      alert("자기소개서가 삭제되었습니다.");
-    }
+          showSuccess("자기소개서가 삭제되었습니다.");
+        } catch (err) {
+          console.error("자기소개서 삭제 에러:", err);
+          showError("자기소개서 삭제에 실패했습니다.");
+        }
+      }
+    });
   };
 
   // 리뷰 작성 핸들러
   const handleReviewSubmit = (e) => {
     e.preventDefault();
     if (!reviewContent.trim()) {
-      alert("리뷰 내용을 입력해주세요.");
+      showWarning("리뷰 내용을 입력해주세요.");
       return;
     }
     const today = new Date();
@@ -267,12 +371,82 @@ const ProfilePage = () => {
     }));
     setReviewPostId("");
     setReviewContent("");
-    alert("리뷰가 등록되었습니다.");
+    showSuccess("리뷰가 등록되었습니다.");
   };
 
-  if (loading) return <div>로딩 중...</div>;
-  if (error) return <div>{error}</div>;
+  // 대표 자기소개서 설정 핸들러
+  const handleSetMainResume = async (resumeId: number) => {
+    try {
+      await resumeApi.setMainResume(resumeId);
+
+      // 상태 업데이트
+      const updatedResumes = userData?.resumes.map((resume) => ({
+        ...resume,
+        isMain: resume.id === resumeId,
+      }));
+
+      setUserData({
+        ...userData!,
+        resumes: updatedResumes,
+      });
+
+      showSuccess("대표 자기소개서가 설정되었습니다.");
+    } catch (err) {
+      console.error("대표 자기소개서 설정 에러:", err);
+      showError("대표 자기소개서 설정에 실패했습니다.");
+    }
+  };
+
+  if (loading)
+    return (
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "80vh",
+          width: "100%",
+        }}
+      >
+        <Spinner size="large" text="로딩중입니다" />
+      </div>
+    );
+  if (error)
+    return (
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "80vh",
+          width: "100%",
+        }}
+      >
+        <p>{error}</p>
+        <button
+          onClick={() => navigate("/")}
+          style={{
+            marginTop: "20px",
+            padding: "10px 20px",
+            backgroundColor: "#FFD54F",
+            color: "#1b3a4b",
+            border: "none",
+            borderRadius: "5px",
+            cursor: "pointer",
+          }}
+        >
+          메인 페이지로 이동
+        </button>
+      </div>
+    );
   if (!userData) return <div>사용자를 찾을 수 없습니다.</div>;
+
+  // 배열 필드 안전 처리
+  const authorPosts = userData.myPosts ?? [];
+  const joinedPosts = userData.participatingPosts ?? [];
+  const reviews = userData.reviews ?? [];
+  const resumes = userData.resumes ?? [];
 
   return (
     <div className="profile-container">
@@ -282,28 +456,24 @@ const ProfilePage = () => {
           <div className="profile-left">
             <div className="profile-image">
               <img
-                src={userData.profileImg}
-                alt={`${userData.name} 프로필`}
-                style={{
-                  width: 150,
-                  height: 150,
-                  borderRadius: "50%",
-                  objectFit: "cover",
-                }}
+                src={userData.profileImage || "/profile.png"}
+                alt={`${userData.username} 프로필`}
               />
             </div>
           </div>
           <div className="profile-info">
             <div className="profile-top">
-              <h2 className="profile-name">{userData.name}</h2>
+              <h2 className="profile-name">{userData.username}</h2>
             </div>
             <div className="profile-stats">
-              <button
-                className="edit-profile-btn"
-                onClick={() => setIsProfileModalOpen(true)}
-              >
-                프로필 수정
-              </button>
+              {isMyProfile && (
+                <button
+                  className="edit-profile-btn"
+                  onClick={() => setIsProfileModalOpen(true)}
+                >
+                  프로필 수정
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -317,30 +487,38 @@ const ProfilePage = () => {
           <div className="info-section">
             <div className="info-card">
               <h3>소개</h3>
-              <p>{userData.introduce}</p>
+              <p>{userData.introduction}</p>
             </div>
           </div>
         </div>
 
-        {/* 포스팅 섹션 */}
+        {/* 작성한 포스팅 섹션 */}
         <div className="section">
-          <h3 className="section-title">포스팅</h3>
+          <h3 className="section-title">작성한 포스팅</h3>
           <div className="posts-section">
-            {userData.projects.length > 0 ? (
+            {authorPosts.length > 0 ? (
               <div className="posts-container">
-                {userData.projects.map((project) => (
+                {authorPosts.map((post) => (
                   <div
                     className="post-card"
-                    key={project.id}
-                    onClick={() => navigate(`/post/${project.id}`)}
+                    key={post.id}
+                    onClick={() => navigate(`/post/${post.id}`)}
                   >
                     <div className="post-thumbnail">
-                      <img src={project.thumbnail} alt={project.title} />
+                      <img
+                        src={post.image || "/post-default.png"}
+                        alt={post.title}
+                        style={{
+                          width: "100%",
+                          height: "200px",
+                          objectFit: "cover",
+                        }}
+                      />
                     </div>
                     <div className="post-info">
-                      <h4>{project.title}</h4>
-                      <p>{project.description}</p>
-                      <span className="post-date">{project.date}</span>
+                      <h4>{post.title}</h4>
+                      <p>{post.content.substring(0, 100)}...</p>
+                      <span className="post-date">{post.endedAt}</span>
                     </div>
                   </div>
                 ))}
@@ -351,11 +529,40 @@ const ProfilePage = () => {
           </div>
         </div>
 
-        {/* 활동 섹션 */}
+        {/* 참여 중인 포스팅 섹션 */}
         <div className="section">
-          <h3 className="section-title">활동</h3>
-          <div className="activity-section">
-            <div className="no-content">최근 활동 내역이 없습니다.</div>
+          <h3 className="section-title">참여 중인 포스팅</h3>
+          <div className="posts-section">
+            {joinedPosts.length > 0 ? (
+              <div className="posts-container">
+                {joinedPosts.map((post) => (
+                  <div
+                    className="post-card"
+                    key={post.id}
+                    onClick={() => navigate(`/post/${post.id}`)}
+                  >
+                    <div className="post-thumbnail">
+                      <img
+                        src={post.image || "/post-default.png"}
+                        alt={post.title}
+                        style={{
+                          width: "100%",
+                          height: "200px",
+                          objectFit: "cover",
+                        }}
+                      />
+                    </div>
+                    <div className="post-info">
+                      <h4>{post.title}</h4>
+                      <p>{post.content.substring(0, 100)}...</p>
+                      <span className="post-date">{post.endedAt}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="no-content">참여 중인 포스팅이 없습니다.</div>
+            )}
           </div>
         </div>
 
@@ -363,9 +570,9 @@ const ProfilePage = () => {
         <div className="section">
           <h3 className="section-title">받은 리뷰</h3>
           <div className="reviews-section">
-            {userData.reviews.length > 0 ? (
+            {reviews.length > 0 ? (
               <div className="reviews-container">
-                {userData.reviews.map((review) => (
+                {reviews.map((review) => (
                   <div
                     className="review-card"
                     key={review.id}
@@ -383,7 +590,10 @@ const ProfilePage = () => {
                     {/* 프로필 이미지 */}
                     <div style={{ flexShrink: 0 }}>
                       <img
-                        src={reviewerProfileImg}
+                        src={
+                          review.reviewer.image ||
+                          "https://via.placeholder.com/40x40.png?text=U"
+                        }
                         alt="작성자 프로필"
                         style={{
                           width: 40,
@@ -404,11 +614,7 @@ const ProfilePage = () => {
                         }}
                       >
                         <span style={{ fontWeight: 700, fontSize: 16 }}>
-                          {review.author || "익명"}
-                        </span>
-                        {/* 별점 제거됨 */}
-                        <span style={{ color: "#888", fontSize: 13 }}>
-                          {review.date}
+                          {review.reviewer.nickname || "익명"}
                         </span>
                       </div>
                       {/* 관련 프로젝트 */}
@@ -443,83 +649,30 @@ const ProfilePage = () => {
               <div className="no-content">받은 리뷰가 없습니다.</div>
             )}
           </div>
-          {/* 리뷰 작성 폼 */}
-          <form
-            onSubmit={handleReviewSubmit}
-            className="review-form"
-            style={{
-              marginTop: 24,
-              background: "#f9f9f9",
-              borderRadius: 8,
-              padding: 20,
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
-                marginBottom: 10,
-              }}
-            >
-              <select
-                value={reviewPostId}
-                onChange={(e) => setReviewPostId(e.target.value)}
-                style={{
-                  width: 180,
-                  minWidth: 120,
-                  maxWidth: 220,
-                  padding: 7,
-                  borderRadius: 4,
-                  border: "1px solid #ddd",
-                  fontSize: 15,
-                }}
-              >
-                <option value="">관련 프로젝트(선택)</option>
-                {myPosts.map((post) => (
-                  <option key={post.id} value={post.id}>
-                    {post.title}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <textarea
-              placeholder="리뷰 내용을 입력해주세요. (필수)"
-              value={reviewContent}
-              onChange={(e) => setReviewContent(e.target.value)}
-              style={{
-                width: "100%",
-                minHeight: 60,
-                padding: 8,
-                borderRadius: 4,
-                border: "1px solid #ddd",
-                marginBottom: 10,
-              }}
-              required
-            />
-            <div style={{ textAlign: "right" }}>
-              <button type="submit" className="add-btn">
-                리뷰 등록
-              </button>
-            </div>
-          </form>
         </div>
 
         {/* 자기소개서 섹션 */}
         <div className="section">
           <div className="section-header">
             <h3 className="section-title">자기소개서</h3>
-            <button
-              className="add-btn"
-              onClick={() => navigate("/profile/resume/new")}
-            >
-              + 작성하기
-            </button>
+            {isMyProfile && (
+              <button
+                className="add-btn"
+                onClick={() => navigate("/profile/resume/new")}
+                style={{
+                  backgroundColor: "#FFD54F",
+                  color: "#333333",
+                  boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
+                }}
+              >
+                + 작성하기
+              </button>
+            )}
           </div>
           <div className="resume-section">
-            {userData.resumeList.length > 0 ? (
+            {resumes.length > 0 ? (
               <div className="resume-container">
-                {userData.resumeList.map((resume) => (
+                {resumes.map((resume) => (
                   <div
                     className="resume-card"
                     key={resume.id}
@@ -527,7 +680,9 @@ const ProfilePage = () => {
                   >
                     <div className="resume-header">
                       <h4>{resume.title}</h4>
-                      <span className="resume-date">{resume.date}</span>
+                      {resume.isMain && (
+                        <span className="resume-main-badge">대표</span>
+                      )}
                     </div>
                     <p className="resume-content">
                       {resume.content.length > 150
@@ -537,25 +692,39 @@ const ProfilePage = () => {
                     <div className="word-count">
                       {resume.content.length}/3000
                     </div>
-                    <div
-                      className="resume-actions"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <button
-                        className="edit-btn"
-                        onClick={() =>
-                          navigate(`/profile/resume/edit/${resume.id}`)
-                        }
+                    {isMyProfile && (
+                      <div
+                        className="resume-actions"
+                        onClick={(e) => e.stopPropagation()}
                       >
-                        수정
-                      </button>
-                      <button
-                        className="delete-btn"
-                        onClick={() => handleDeleteResume(resume.id)}
-                      >
-                        삭제
-                      </button>
-                    </div>
+                        {!resume.isMain && (
+                          <button
+                            className="main-btn"
+                            onClick={() => handleSetMainResume(resume.id)}
+                          >
+                            대표 설정
+                          </button>
+                        )}
+                        <button
+                          className="edit-btn"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/profile/resume/edit/${resume.id}`);
+                          }}
+                        >
+                          수정
+                        </button>
+                        <button
+                          className="delete-btn"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteResume(resume.id);
+                          }}
+                        >
+                          삭제
+                        </button>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>

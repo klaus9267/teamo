@@ -1,13 +1,15 @@
 /* 헤더 CSS 파일에서 정의한 변수와 동일하게 사용 */
 :root {
-  --primary-color: #3cb4ac; /* 청록색 */
-  --primary-hover: #2a9d8f; /* 클릭/호버 시 더 어두운 청록색 */
+  --primary-color: #ffd54f; /* 밝은 노란색 */
+  --primary-hover: #ffc107; /* 클릭/호버 시 더 진한 노란색 */
   --text-dark: #1b3a4b; /* 어두운 테마 텍스트 색상 */
   --text-light: #ffffff; /* 밝은 테마 텍스트 색상 */
-  --background-light: #f5f9f9; /* 연한 배경색 */
+  --background-light: #fff8e1; /* 연한 노란색 배경 */
   --border-color: #e5e7eb; /* 경계선 색상 */
   --error-color: #ef4444; /* 에러/필수 항목 색상 */
   --optional-color: #6b7280; /* 선택 항목 색상 */
+  --secondary-color: #ff9800; /* profile.png의 주황색에 맞춘 두 번째 색상 */
+  --secondary-hover: #f57c00; /* 두 번째 색상의 호버 효과 */
 }
 
 .modal-backdrop {
@@ -203,7 +205,7 @@
 .form-group select:focus {
   outline: none;
   border-color: var(--primary-color);
-  box-shadow: 0 0 0 2px rgba(60, 180, 172, 0.2);
+  box-shadow: 0 0 0 2px rgba(255, 213, 79, 0.2);
 }
 
 .form-group input::placeholder {
@@ -242,7 +244,7 @@
 .submit-button {
   width: 100%;
   background-color: var(--primary-color);
-  color: white;
+  color: var(--text-dark);
   border: none;
   border-radius: 8px;
   padding: 12px;

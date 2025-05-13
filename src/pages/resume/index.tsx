@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import "../../styles/resume/index.css";
+import { resumeApi } from "../../api/resume.ts";
+import { showSuccess, showError, showWarning } from "../../utils/sweetAlert.ts";
 
 const ResumeForm = () => {
   const navigate = useNavigate();
@@ -16,6 +18,10 @@ const ResumeForm = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [loading, setLoading] = useState(isEditing);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isMain, setIsMain] = useState(false);
+  const [file, setFile] = useState(null);
+  const [fileName, setFileName] = useState("");
 
   // 스킬 목록 (실제로는 API에서 가져와야 함)
   const availableSkills = [
@@ -32,6 +38,33 @@ const ResumeForm = () => {
     "Git",
     "SQL",
   ];
+
+  // 스킬 아이콘 매핑
+  const skillIcons = {
+    JavaScript:
+      "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg",
+    React:
+      "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg",
+    TypeScript:
+      "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/typescript/typescript-original.svg",
+    "Node.js":
+      "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nodejs/nodejs-original.svg",
+    "HTML/CSS":
+      "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/html5/html5-original.svg",
+    Python:
+      "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg",
+    Java: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/java/java-original.svg",
+    Spring:
+      "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/spring/spring-original.svg",
+    AWS: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/amazonwebservices/amazonwebservices-original.svg",
+    Docker:
+      "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/docker/docker-original.svg",
+    Git: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/git/git-original.svg",
+    SQL: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/mysql/mysql-original.svg",
+  };
+
+  // 기본 아이콘
+  const defaultIcon = "/icons/question-mark.svg";
 
   // 검색어에 따른 필터링된 스킬 목록
   const filteredSkills = availableSkills.filter(
@@ -55,12 +88,14 @@ const ResumeForm = () => {
           personality:
             "프론트엔드 개발자 | UX/UI 디자인 역량 | 새로운 기술에 열려있는 창의적인 문제 해결사",
           date: "2023-04-20",
+          isMain: false,
         };
 
         setTitle(resumeData.title);
         setContent(resumeData.content);
         setSelectedSkills(resumeData.skills);
         setPersonality(resumeData.personality);
+        setIsMain(resumeData.isMain);
         setLoading(false);
       }, 500);
     }
@@ -87,35 +122,73 @@ const ResumeForm = () => {
     setSelectedSkills(selectedSkills.filter((s) => s !== skill));
   };
 
+  // 파일 업로드 처리
+  const handleFileChange = (e) => {
+    const selectedFile = e.target.files[0];
+    if (selectedFile) {
+      setFile(selectedFile);
+      setFileName(selectedFile.name);
+    }
+  };
+
   // 폼 제출 처리
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     // 유효성 검사
     if (!title.trim() || !content.trim()) {
-      alert("제목과 내용을 입력해주세요.");
+      showWarning("제목과 내용을 입력해주세요.");
       return;
     }
 
-    // 데이터 구성
-    const resumeData = {
-      title,
-      content,
-      skills: selectedSkills,
-      personality,
-      date: new Date().toISOString().split("T")[0],
-    };
-
     try {
-      // 저장 완료 후 프로필 페이지로 이동
-      alert(
-        isEditing
-          ? "자기소개서가 수정되었습니다."
-          : "자기소개서가 저장되었습니다."
-      );
-      navigate("/profile");
+      setIsSubmitting(true);
+
+      // FormData 생성
+      const formData = new FormData();
+
+      // JSON 데이터를 request 필드 안에 넣기
+      const requestData = {
+        title: title,
+        content: content,
+        personality: personality,
+        skills: selectedSkills,
+        isMain: isMain,
+      };
+
+      // request 필드에 JSON 형태로 추가
+      formData.append("request", JSON.stringify(requestData));
+
+      // 파일이 있으면 추가
+      if (file) {
+        formData.append("file", file);
+      }
+
+      if (id) {
+        // 기존 이력서 수정
+        await resumeApi.updateResume(Number(id), formData);
+        setIsSubmitting(false);
+        showSuccess("자기소개서가 수정되었습니다.");
+        navigate("/profile");
+      } else {
+        // 새 이력서 생성
+        await resumeApi.createResume(formData);
+        setIsSubmitting(false);
+        showSuccess("자기소개서가 저장되었습니다.");
+        navigate("/profile");
+      }
     } catch (error) {
-      alert("자기소개서 저장에 실패했습니다. 다시 시도해주세요.");
+      console.error("Error saving resume:", error);
+      setIsSubmitting(false);
+
+      // 401 Unauthorized 에러는 config.ts의 인터셉터에서 처리됨
+      // 그 외의 에러는 여기서 처리
+      if (error.response && error.response.status !== 401) {
+        showError("자기소개서 저장에 실패했습니다. 다시 시도해주세요.");
+      } else if (!error.response) {
+        // 응답이 없는 경우 (네트워크 에러 등)
+        showError("서버 연결에 실패했습니다. 인터넷 연결을 확인해주세요.");
+      }
     }
   };
 
@@ -193,6 +266,15 @@ const ResumeForm = () => {
               <div className="selected-skills">
                 {selectedSkills.map((skill) => (
                   <span key={skill} className="skill-tag selected">
+                    <img
+                      src={skillIcons[skill] || defaultIcon}
+                      alt={skill}
+                      style={{
+                        width: "16px",
+                        height: "16px",
+                        marginRight: "5px",
+                      }}
+                    />
                     {skill}
                     <button
                       type="button"
@@ -240,6 +322,15 @@ const ResumeForm = () => {
                       className="skill-suggestion-item"
                       onClick={() => handleSelectSkill(skill)}
                     >
+                      <img
+                        src={skillIcons[skill] || defaultIcon}
+                        alt={skill}
+                        style={{
+                          width: "16px",
+                          height: "16px",
+                          marginRight: "8px",
+                        }}
+                      />
                       {skill}
                     </button>
                   ))}
@@ -276,6 +367,37 @@ const ResumeForm = () => {
             <div className="word-count">{content.length}/3000</div>
           </div>
 
+          <div className="file-upload-container">
+            <label className="file-upload-label">포트폴리오 파일 첨부</label>
+            <div className="file-input-wrapper">
+              <input
+                type="file"
+                className="file-input"
+                onChange={handleFileChange}
+                accept=".pdf,.doc,.docx"
+              />
+              {fileName ? (
+                <div className="file-name">{fileName}</div>
+              ) : (
+                <div className="file-placeholder">
+                  클릭하여 포트폴리오 파일을 업로드하세요 (PDF, DOC, DOCX)
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="main-resume-option">
+            <input
+              type="checkbox"
+              id="isMain"
+              checked={isMain}
+              onChange={(e) => setIsMain(e.target.checked)}
+            />
+            <label htmlFor="isMain">
+              이 자기소개서를 대표 자기소개서로 설정
+            </label>
+          </div>
+
           <div className="form-actions">
             <button
               type="button"
@@ -284,7 +406,7 @@ const ResumeForm = () => {
             >
               취소
             </button>
-            <button type="submit" className="save-btn">
+            <button type="submit" className="save-btn" disabled={isSubmitting}>
               {isEditing ? "수정완료" : "등록"}
             </button>
           </div>

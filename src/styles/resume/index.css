@@ -37,7 +37,7 @@
 }
 
 .back-link:hover {
-  color: #3cb4ac;
+  color: var(--primary-color);
 }
 
 .resume-form {
@@ -74,8 +74,8 @@
 
 .form-control:focus {
   outline: none;
-  border-color: #3cb4ac;
-  box-shadow: 0 0 0 3px rgba(60, 180, 172, 0.2);
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(255, 213, 79, 0.2);
 }
 
 .content-editor {
@@ -171,15 +171,15 @@
 }
 
 .skill-tag.selected {
-  background-color: #3cb4ac;
-  color: white;
-  border-color: #3cb4ac;
+  background-color: var(--primary-color);
+  color: var(--text-dark);
+  border-color: var(--primary-color);
 }
 
 .remove-skill {
   background: none;
   border: none;
-  color: white;
+  color: var(--text-dark);
   margin-left: 6px;
   cursor: pointer;
   font-size: 16px;
@@ -217,13 +217,14 @@
 }
 
 .save-btn {
-  background-color: #3cb4ac;
-  color: white;
+  background-color: #ffd54f;
+  color: #333333;
   border: none;
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .save-btn:hover {
-  background-color: #2a9d8f;
+  background-color: #ffc107;
 }
 
 .loading {
@@ -250,4 +251,74 @@
   .save-btn {
     width: 100%;
   }
+}
+
+/* 대표 자기소개서 설정 체크박스 */
+.main-resume-option {
+  display: flex;
+  align-items: center;
+  margin-top: 15px;
+  gap: 8px;
+}
+
+.main-resume-option input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+.main-resume-option label {
+  font-size: 14px;
+  color: #333;
+  cursor: pointer;
+}
+
+/* 포트폴리오 파일 업로드 영역 */
+.file-upload-container {
+  margin-top: 20px;
+}
+
+.file-upload-label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #333;
+}
+
+.file-input-wrapper {
+  position: relative;
+  border: 2px dashed #e5e7eb;
+  border-radius: 6px;
+  padding: 20px;
+  text-align: center;
+  background-color: #f9fafb;
+  cursor: pointer;
+  transition: border-color 0.3s, background-color 0.3s;
+}
+
+.file-input-wrapper:hover {
+  border-color: #ffd54f;
+  background-color: #fff8e1;
+}
+
+.file-input {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.file-placeholder {
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.file-name {
+  margin-top: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
 }
