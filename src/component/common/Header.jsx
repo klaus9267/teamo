@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import LoginModal from "./LoginModal.jsx";
-import "../../styles/common/Header.css";
-import { authApi } from "../../api/auth.ts";
-import { showInfo } from "../../utils/sweetAlert.ts";
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import LoginModal from './LoginModal.jsx';
+import '../../styles/common/Header.css';
+import { authApi } from '../../api/auth.ts';
+import { showInfo } from '../../utils/sweetAlert.ts';
 
 const Header = () => {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
@@ -32,9 +32,9 @@ const Header = () => {
       checkAuthStatus();
     };
 
-    window.addEventListener("storage", handleStorageChange);
+    window.addEventListener('storage', handleStorageChange);
     return () => {
-      window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener('storage', handleStorageChange);
     };
   }, []);
 
@@ -50,6 +50,12 @@ const Header = () => {
     setIsLoggedIn(true);
     const info = authApi.getUserInfo();
     setUserInfo(info);
+
+    // 사용자 ID를 localStorage에 저장
+    if (info && info.id) {
+      localStorage.setItem('myUserId', String(info.id));
+    }
+
     closeLoginModal();
   };
 
@@ -60,16 +66,16 @@ const Header = () => {
   };
 
   const goToProfile = () => {
-    navigate("/profile");
+    navigate('/profile');
   };
 
   const handleCreateBtn = () => {
     if (!isLoggedIn) {
-      showInfo("팀원 모집하기는 로그인 후 이용 가능합니다.");
+      showInfo('팀원 모집하기는 로그인 후 이용 가능합니다.');
       setIsLoginModalOpen(true);
       return;
     }
-    navigate("/post/create");
+    navigate('/post/create');
   };
 
   return (
@@ -88,11 +94,7 @@ const Header = () => {
               <Link to="/hub" className="nav-link">
                 허브
               </Link>
-              <span
-                className="nav-link"
-                onClick={handleCreateBtn}
-                style={{ cursor: "pointer" }}
-              >
+              <span className="nav-link" onClick={handleCreateBtn} style={{ cursor: 'pointer' }}>
                 팀원 모집하기
               </span>
             </nav>
@@ -100,11 +102,7 @@ const Header = () => {
               <div className="user-menu">
                 <button className="profile-btn" onClick={goToProfile}>
                   <div className="profile-btn-content">
-                    <img
-                      src={userInfo?.profileImage || "/profile.png"}
-                      alt="프로필"
-                      className="profile-btn-image"
-                    />
+                    <img src={userInfo?.profileImage || '/profile.png'} alt="프로필" className="profile-btn-image" />
                     <span>프로필</span>
                   </div>
                 </button>
@@ -121,9 +119,7 @@ const Header = () => {
         </div>
       </header>
 
-      {isLoginModalOpen && (
-        <LoginModal onClose={closeLoginModal} onLogin={handleLogin} />
-      )}
+      {isLoginModalOpen && <LoginModal onClose={closeLoginModal} onLogin={handleLogin} />}
     </>
   );
 };
