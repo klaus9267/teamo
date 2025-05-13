@@ -44,7 +44,6 @@ export const applyApi = {
   // 모집글 지원하기
   apply: async (applyData: ApplyRequest) => {
     try {
-      console.log("모집글 지원 API 호출:", applyData);
       const response = await api.post<ApplyResponse>("/api/applies", applyData);
       return response.data;
     } catch (error: any) {

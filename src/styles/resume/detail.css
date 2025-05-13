@@ -213,6 +213,13 @@
   max-width: 600px;
 }
 
+.no-skills-message {
+  color: #6b7280;
+  font-size: 14px;
+  padding: 10px 0;
+  font-style: italic;
+}
+
 /* 반응형 조정 */
 @media (max-width: 768px) {
   .resume-detail-content {

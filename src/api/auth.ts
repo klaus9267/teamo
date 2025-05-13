@@ -25,6 +25,7 @@ export interface SocialLoginRequest {
 }
 
 export interface UserInfo {
+  id?: number;
   username: string;
   name: string;
   email: string;

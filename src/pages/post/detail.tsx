@@ -54,6 +54,8 @@ export default function PostDetail() {
   const [resumes, setResumes] = useState([]);
   const [resumesLoading, setResumesLoading] = useState(false);
   const [resumesError, setResumesError] = useState(null);
+  const [applyLoading, setApplyLoading] = useState(false);
+  const [submitLoading, setSubmitLoading] = useState(false);
 
   // API 연동을 위한 함수들
   const fetchPost = async (postId) => {
@@ -71,16 +73,11 @@ export default function PostDetail() {
     try {
       setResumesLoading(true);
       setResumesError(null);
-      console.log("자기소개서 목록 불러오기 시작");
       const data = await resumeApi.getResumes();
-      console.log("자기소개서 목록 불러오기 성공:", data);
       setResumes(data);
     } catch (err) {
       console.error("자기소개서 목록 불러오기 실패:", err);
-      console.log("에러 상세 정보:", JSON.stringify(err, null, 2));
       if (err.response) {
-        console.log("에러 응답 상태:", err.response.status);
-        console.log("에러 응답 데이터:", err.response.data);
       }
       setResumesError("자기소개서를 불러오는데 실패했습니다.");
       // 빈 배열로 설정하여 에러 발생 시에도 UI 표시 가능
@@ -91,11 +88,29 @@ export default function PostDetail() {
   };
 
   const fetchApplicants = async (postId) => {
-    if (!postId) return;
+    if (!postId) {
+      console.error("포스트 ID가 없어 지원자 목록을 불러올 수 없습니다.");
+      return;
+    }
 
     try {
       const data = await applyApi.getAppliesByPostId(postId);
-      setApplicants(data);
+
+      // API 응답 구조 맵핑 - applyApi.getAppliesByPostId에서 반환되는 데이터 구조에 맞게 변환
+      // ApplyListResponse 인터페이스 참조
+      const mappedApplicants = data.map((applicant) => ({
+        id: applicant.applyId,
+        name: applicant.nickname,
+        avatar: applicant.profileImage,
+        resumeId: applicant.resumeId,
+        resumeTitle: "자기소개서", // API에서는 title 필드가 없으므로 기본값 사용
+        resumeContent: applicant.introduction || "내용 없음",
+        skills: applicant.skills || [],
+        applyDate: new Date().toISOString().split("T")[0], // 날짜 정보가 없으므로 현재 날짜 사용
+        isSelected: applicant.isSelected,
+      }));
+
+      setApplicants(mappedApplicants);
 
       // 현재 사용자가 이미 지원했는지 확인
       if (userId) {
@@ -106,6 +121,10 @@ export default function PostDetail() {
       }
     } catch (err) {
       console.error("지원자 목록 조회 에러:", err);
+      if (err.response) {
+        console.error("응답 상태:", err.response.status);
+        console.error("응답 데이터:", err.response.data);
+      }
     }
   };
 
@@ -135,10 +154,13 @@ export default function PostDetail() {
   // post와 userId가 모두 로드된 후 글 작성자 및 지원 상태 확인
   useEffect(() => {
     if (post && userId) {
-      setIsAuthor(post.userId === userId);
+      const isUserAuthor = post.userId === userId;
+      setIsAuthor(isUserAuthor);
 
-      // 지원자 목록 조회 (내가 작성한 글이거나 지원 여부 확인 필요할 때)
-      fetchApplicants(post.id);
+      // 지원자 목록 조회 (내가 작성한 글인 경우에만)
+      if (isUserAuthor && post.id) {
+        fetchApplicants(post.id);
+      }
     }
   }, [post, userId]);
 
@@ -176,11 +198,6 @@ export default function PostDetail() {
 
   // 지원하기 함수
   const handleApply = () => {
-    console.log("지원하기 버튼 클릭");
-    console.log("로그인 상태:", authApi.isAuthenticated());
-    console.log("토큰:", authApi.getToken());
-    console.log("저장된 myUserId:", localStorage.getItem("myUserId"));
-
     if (!post) {
       showWarning(
         "게시글 정보를 불러오는 중입니다. 잠시 후 다시 시도해주세요."
@@ -203,11 +220,12 @@ export default function PostDetail() {
     }
 
     // 모달 표시 전에 자기소개서 로드
-    fetchResumes();
-
-    // 모달 표시
-    console.log("지원하기 모달 열기");
-    setShowApplyModal(true);
+    setApplyLoading(true);
+    fetchResumes().finally(() => {
+      setApplyLoading(false);
+      // 모달 표시
+      setShowApplyModal(true);
+    });
   };
 
   // 지원 제출 함수
@@ -228,6 +246,7 @@ export default function PostDetail() {
     }
 
     try {
+      setSubmitLoading(true);
       await applyApi.apply({
         postId: post.id,
         resumeId: selectedResume,
@@ -238,17 +257,20 @@ export default function PostDetail() {
       setApplicationStatus("applied");
       setShowApplyModal(false);
 
-      // 지원자 목록 새로고침
-      fetchApplicants(post.id);
+      // 작성자인 경우에만 지원자 목록 새로고침
+      if (isAuthor) {
+        fetchApplicants(post.id);
+      }
     } catch (error) {
       console.error("지원 제출 에러:", error);
       showError("지원에 실패했습니다.");
+    } finally {
+      setSubmitLoading(false);
     }
   };
 
   // 모달 닫기 함수
   const handleCloseModal = () => {
-    console.log("지원하기 모달 닫기");
     setShowApplyModal(false);
     setSelectedResume(null);
     setMotivationText("");
@@ -256,6 +278,13 @@ export default function PostDetail() {
 
   // 지원자 목록 토글 함수
   const toggleApplicantsList = () => {
+    // 지원자 목록 표시 전에 항상 최신 데이터 불러오기
+    if (post && post.id) {
+      fetchApplicants(post.id);
+    } else {
+      console.error("포스트 ID가 없어 지원자 목록을 불러올 수 없습니다.");
+    }
+
     setShowApplicantsList(!showApplicantsList);
   };
 
@@ -485,7 +514,9 @@ export default function PostDetail() {
           <TeamMembers leader={leader} members={members} />
 
           {/* 댓글 컴포넌트 */}
-          <Comment comments={[]} postId={post?.id} />
+          <div className="post-comments">
+            <Comment postId={Number(id)} />
+          </div>
         </div>
       </div>
 
@@ -574,8 +605,16 @@ export default function PostDetail() {
                 합류한 {post?.category ?? "프로젝트"}입니다
               </div>
             ) : (
-              <button onClick={handleApply} className="apply-button">
-                지원하기
+              <button
+                onClick={handleApply}
+                className="apply-button"
+                disabled={applyLoading}
+              >
+                {applyLoading ? (
+                  <Spinner size="small" color="#1B3A4B" inButton={true} />
+                ) : (
+                  "지원하기"
+                )}
               </button>
             )}
           </div>
@@ -683,9 +722,15 @@ export default function PostDetail() {
                   <button
                     className="apply-submit-btn"
                     onClick={handleSubmitApplication}
-                    disabled={!selectedResume || !motivationText.trim()}
+                    disabled={
+                      !selectedResume || !motivationText.trim() || submitLoading
+                    }
                   >
-                    지원하기
+                    {submitLoading ? (
+                      <Spinner size="small" color="#1B3A4B" inButton={true} />
+                    ) : (
+                      "지원하기"
+                    )}
                   </button>
                 </div>
               </div>

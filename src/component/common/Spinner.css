@@ -3,31 +3,25 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 20px;
-  width: auto;
-  position: relative;
 }
 
 .spinner {
   border: 3px solid rgba(0, 0, 0, 0.1);
+  border-top-color: #3cb4ac;
   border-radius: 50%;
-  border-top: 3px solid #3cb4ac;
+  width: 36px;
+  height: 36px;
   animation: spin 0.8s linear infinite;
-  margin-bottom: 12px;
 }
 
 .spinner-text {
-  font-size: 16px;
+  margin-top: 8px;
+  font-size: 14px;
   color: #555;
-  margin: 0;
-  font-weight: 500;
 }
 
 @keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
+  to {
     transform: rotate(360deg);
   }
 }
@@ -56,3 +50,20 @@
   }
 }
 */
+
+/* 버튼 내 스피너 특수 스타일 */
+.in-button {
+  padding: 0;
+  margin: 0;
+  height: auto;
+  line-height: 0;
+}
+
+.in-button .spinner {
+  margin: 0;
+  padding: 0;
+  line-height: 0;
+  width: 16px;
+  height: 16px;
+  border-width: 2px;
+}
