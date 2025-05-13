@@ -1,9 +1,9 @@
-import { createContext, useState, useEffect } from "react";
-import "./App.css";
-import Header from "./component/common/Header";
-import Router from "./component/Router.tsx";
-import { authApi } from "./api/auth.ts";
-import { userApi } from "./api/user.ts";
+import { createContext, useState, useEffect } from 'react';
+import './App.css';
+import Header from './component/common/Header';
+import Router from './component/Router.tsx';
+import { authApi } from './api/auth.ts';
+import { userApi } from './api/user.ts';
 
 // 인증 컨텍스트 생성
 export const AuthContext = createContext();
@@ -20,6 +20,16 @@ function App() {
       setIsAuthenticated(authenticated);
 
       if (authenticated) {
+        // 먼저 토큰에서 사용자 정보 추출하여 userId 저장
+        const userInfo = authApi.getUserInfo();
+        if (userInfo && userInfo.id) {
+          // 사용자 기본 정보 설정
+          setUser(userInfo);
+
+          // userId를 localStorage에 바로 저장 (API 오류에 대비)
+          localStorage.setItem('myUserId', String(userInfo.id));
+        }
+
         try {
           // API를 통해 내 프로필 정보 가져오기
           const profileData = await userApi.getCurrentUser();
@@ -35,21 +45,17 @@ function App() {
 
             // userId를 localStorage에 저장
             if (profileData.profile.userId) {
-              localStorage.setItem(
-                "myUserId",
-                String(profileData.profile.userId)
-              );
+              localStorage.setItem('myUserId', String(profileData.profile.userId));
             }
           }
         } catch (error) {
-          console.error("프로필 정보 불러오기 실패:", error);
+          console.error('프로필 정보 불러오기 실패:', error);
           // 실패 시 fallback으로 JWT 토큰 정보 사용
-          const userInfo = authApi.getUserInfo();
-          setUser(userInfo);
+          // 이미 위에서 기본 정보를 설정했으므로 추가 작업 불필요
         }
       } else {
         // 로그인 상태가 아니면 localStorage의 userId 제거
-        localStorage.removeItem("myUserId");
+        localStorage.removeItem('myUserId');
       }
 
       setLoading(false);
@@ -59,7 +65,7 @@ function App() {
   }, []);
 
   // 로그인 핸들러
-  const login = (userData) => {
+  const login = userData => {
     setIsAuthenticated(true);
     setUser(userData);
 
@@ -70,7 +76,7 @@ function App() {
   // 로그아웃 핸들러
   const logout = () => {
     authApi.logout();
-    localStorage.removeItem("myUserId");
+    localStorage.removeItem('myUserId');
     setIsAuthenticated(false);
     setUser(null);
   };
@@ -92,14 +98,11 @@ function App() {
           });
 
           if (profileData.profile.userId) {
-            localStorage.setItem(
-              "myUserId",
-              String(profileData.profile.userId)
-            );
+            localStorage.setItem('myUserId', String(profileData.profile.userId));
           }
         }
       } catch (error) {
-        console.error("프로필 정보 다시 불러오기 실패:", error);
+        console.error('프로필 정보 다시 불러오기 실패:', error);
       }
     }
   };

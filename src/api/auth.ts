@@ -1,4 +1,4 @@
-import api from "./config.ts";
+import api from './config.ts';
 
 export interface SignUpRequest {
   username: string;
@@ -31,13 +31,13 @@ export interface UserInfo {
   email: string;
 }
 
-export const AUTH_TOKEN_KEY = "token";
+export const AUTH_TOKEN_KEY = 'token';
 
 export const authApi = {
   // 회원가입
   signUp: async (data: SignUpRequest) => {
     try {
-      const response = await api.post("/auth/signup", data);
+      const response = await api.post('/auth/signup', data);
       return response.data;
     } catch (error: any) {
       throw error;
@@ -47,13 +47,15 @@ export const authApi = {
   // 로그인
   login: async (data: LoginRequest) => {
     try {
-      const response = await api.post("/auth/login", data);
+      const response = await api.post('/auth/login', data);
       const { token } = response.data;
       if (token) {
         localStorage.setItem(AUTH_TOKEN_KEY, token);
+        localStorage.setItem('token', token);
       }
       return response.data;
     } catch (error: any) {
+      console.error(error);
       throw error;
     }
   },
@@ -61,17 +63,15 @@ export const authApi = {
   // 소셜 로그인: 인증 코드로 로그인 처리
   socialLogin: async (data: SocialLoginRequest) => {
     try {
-      const response = await api.post(
-        `/auth/oauth2/callback/${data.provider}`,
-        {
-          code: data.code,
-          state: data.state,
-          redirectUri: data.redirectUri,
-        }
-      );
+      const response = await api.post(`/auth/oauth2/callback/${data.provider}`, {
+        code: data.code,
+        state: data.state,
+        redirectUri: data.redirectUri,
+      });
       const { token } = response.data;
       if (token) {
         localStorage.setItem(AUTH_TOKEN_KEY, token);
+        localStorage.setItem('token', token);
       }
       return response.data;
     } catch (error: any) {
@@ -80,11 +80,7 @@ export const authApi = {
   },
 
   // 소셜 로그인: 액세스 토큰으로 로그인 처리
-  socialLoginWithToken: async (
-    provider: string,
-    accessToken: string,
-    userInfo?: any
-  ) => {
+  socialLoginWithToken: async (provider: string, accessToken: string, userInfo?: any) => {
     try {
       const response = await api.post(`/auth/social-login/${provider}`, {
         accessToken,
@@ -93,6 +89,7 @@ export const authApi = {
       const { token } = response.data;
       if (token) {
         localStorage.setItem(AUTH_TOKEN_KEY, token);
+        localStorage.setItem('token', token);
       }
       return response.data;
     } catch (error: any) {
@@ -103,7 +100,7 @@ export const authApi = {
   // 비밀번호 변경
   changePassword: async (data: PasswordChangeRequest) => {
     try {
-      const response = await api.patch("/auth/password", data);
+      const response = await api.patch('/auth/password', data);
       return response.data;
     } catch (error: any) {
       throw error;
@@ -113,7 +110,7 @@ export const authApi = {
   // 로그아웃
   logout: () => {
     localStorage.removeItem(AUTH_TOKEN_KEY);
-    localStorage.removeItem("token");
+    localStorage.removeItem('token');
     sessionStorage.clear();
     window.location.reload();
   },
@@ -135,13 +132,13 @@ export const authApi = {
 
     try {
       // JWT 토큰은 header.payload.signature 형태로 되어 있음
-      const base64Url = token.split(".")[1]; // payload 부분만 추출
-      const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+      const base64Url = token.split('.')[1]; // payload 부분만 추출
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
       const jsonPayload = decodeURIComponent(
         atob(base64)
-          .split("")
-          .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
-          .join("")
+          .split('')
+          .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+          .join('')
       );
 
       return JSON.parse(jsonPayload);

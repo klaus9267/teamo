@@ -664,3 +664,297 @@ div {
   font-size: 14px;
   font-weight: 500;
 }
+
+/* 지원자 모달 스타일 */
+.applicants-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.applicants-modal {
+  background-color: white;
+  border-radius: 12px;
+  width: 80%;
+  max-width: 900px;
+  max-height: 90vh;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+}
+
+.applicants-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.applicants-modal-header h2 {
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.modal-close-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #666;
+}
+
+.applicants-modal-content {
+  padding: 20px;
+  overflow-y: auto;
+  max-height: calc(90vh - 70px);
+}
+
+.no-applicants-message {
+  text-align: center;
+  color: #666;
+  padding: 40px 0;
+}
+
+.applicants-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.applicant-card {
+  background-color: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.applicant-header {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.applicant-score {
+  margin-bottom: 8px;
+}
+
+.ai-score {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.high-score {
+  background-color: #e3f7e8;
+  color: #28a745;
+}
+
+.medium-score {
+  background-color: #fff6e5;
+  color: #ffc107;
+}
+
+.low-score {
+  background-color: #ffe6e6;
+  color: #dc3545;
+}
+
+.applicant-profile {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.applicant-avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.applicant-info {
+  flex: 1;
+}
+
+.applicant-name {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.applicant-skills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.skill-tag {
+  background-color: #f0f0f0;
+  padding: 4px 10px;
+  border-radius: 16px;
+  font-size: 13px;
+  color: #555;
+}
+
+.applicant-details {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.applicant-section {
+  margin-bottom: 10px;
+}
+
+.applicant-section h4 {
+  font-size: 15px;
+  font-weight: 600;
+  color: #444;
+  margin: 0 0 8px 0;
+}
+
+.applicant-section p {
+  margin: 0;
+  line-height: 1.5;
+  color: #555;
+}
+
+/* AI 요약 및 추천 이유 섹션 */
+.ai-summary-section,
+.ai-reason-section {
+  background-color: #f8f9fa;
+  padding: 12px;
+  border-radius: 8px;
+}
+
+.ai-summary-section {
+  border-left: 3px solid #6c757d;
+}
+
+.ai-reason-section {
+  border-left: 3px solid #28a745;
+}
+
+.portfolio-link {
+  display: inline-block;
+  color: #1976d2;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.portfolio-link:hover {
+  text-decoration: underline;
+}
+
+.applicant-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.accept-button,
+.reject-button {
+  padding: 8px 20px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: background-color 0.2s;
+}
+
+.accept-button {
+  background-color: #e3f7e8;
+  color: #28a745;
+}
+
+.accept-button:hover {
+  background-color: #c8efd3;
+}
+
+.reject-button {
+  background-color: #fff0f0;
+  color: #dc3545;
+}
+
+.reject-button:hover {
+  background-color: #ffe6e6;
+}
+
+.selected-badge,
+.rejected-badge {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.selected-badge {
+  background-color: #e3f7e8;
+  color: #28a745;
+}
+
+.rejected-badge {
+  background-color: #f8f9fa;
+  color: #6c757d;
+}
+
+/* 넓은 모달 및 그리드 스타일 */
+.wider-modal {
+  width: 90%;
+  max-width: 1200px;
+}
+
+.applicants-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+/* 반응형 그리드 */
+@media (max-width: 992px) {
+  .applicants-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .wider-modal {
+    width: 90%;
+    max-width: 800px;
+  }
+}
+
+/* 기존 .applicants-list 스타일 유지 (다른 곳에서 사용될 수 있음) */
+.applicants-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* 포트폴리오 없음 메시지 */
+.no-portfolio-message {
+  color: #9ca3af;
+  font-style: italic;
+  font-size: 14px;
+}
+
+/* 지원 동기 섹션 */
+.applicant-section h4 + p {
+  line-height: 1.5;
+  margin: 0;
+  color: #555;
+}
