@@ -880,3 +880,44 @@ span {
     grid-template-columns: 1fr;
   }
 }
+
+.main-container {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.header-section {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.main-title {
+  font-size: 2.5rem;
+  color: #333;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.main-description {
+  font-size: 1.2rem;
+  color: #666;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.banner-image-container {
+  width: 100%;
+  margin-bottom: 30px;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.main-banner-image {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+}

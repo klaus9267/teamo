@@ -385,200 +385,215 @@ export default function HomePage() {
   }
 
   return (
-    <div className="home-container">
-      <section className="banner-section">
-        <div className="banner-left">
-          <div className="banner-text">
-            <h1>팀원 준비 완료!</h1>
-            <h2>팀워크가 필요할 때, Teamo</h2>
-            <button className="create-team-btn" onClick={handleRecruitClick}>
-              팀원 모집하기
-            </button>
-          </div>
-        </div>
+    <div className="main-container">
+      {/* 메인 배너 이미지 추가 */}
+      <div className="banner-image-container">
+        <img src="/banner.png" alt="메인 배너" className="main-banner-image" />
+      </div>
 
-        <div
-          className="banner-stack"
-          onMouseEnter={handleMouseEnter}
-          onMouseLeave={handleMouseLeave}
-        >
-          {getOrderedBanners().map((banner, index) => (
-            <div
-              key={banner.id}
-              className={`banner-card ${
-                isTransitioning ? "transitioning" : ""
-              } ${
-                index === bannerData.length - 1
-                  ? "front"
-                  : index === bannerData.length - 2
-                  ? "middle"
-                  : "back"
-              }`}
-              style={{
-                backgroundColor: banner.color,
-                transform: `translateY(${-index * 20}px) scale(${
-                  index === bannerData.length - 1
-                    ? 1
-                    : index === bannerData.length - 2
-                    ? 0.95
-                    : 0.9
-                })`,
-                zIndex: index,
-              }}
-            >
-              <div className="banner-card-content">
-                <h3>{banner.title}</h3>
-                <p>{banner.subtitle}</p>
-              </div>
+      <div className="home-container">
+        <section className="banner-section">
+          <div className="banner-left">
+            <div className="banner-text">
+              <h1>팀원 준비 완료!</h1>
+              <h2>팀워크가 필요할 때, Teamo</h2>
+              <button className="create-team-btn" onClick={handleRecruitClick}>
+                팀원 모집하기
+              </button>
             </div>
-          ))}
-        </div>
-
-        <div className="banner-dots">
-          {bannerData.map((_, index) => (
-            <span
-              key={index}
-              className={`dot ${index === currentBannerIndex ? "active" : ""}`}
-              onClick={() => changeBanner(index)}
-            />
-          ))}
-        </div>
-      </section>
-
-      <section className="recruitment-section">
-        <div className="category-filter-row">
-          <div className="category-filters">
-            {["전체", "프로젝트", "공모전", "해커톤", "스터디"].map(
-              (category) => (
-                <button
-                  key={category}
-                  className={`category-btn ${
-                    selectedCategory === category ? "active" : ""
-                  }`}
-                  onClick={() => setSelectedCategory(category)}
-                >
-                  {category}
-                </button>
-              )
-            )}
           </div>
-        </div>
-        <div className="recruitment-row-bottom">
-          <select
-            value={selectedType}
-            onChange={(e) => setSelectedType(e.target.value)}
-          >
-            <option value="">진행 방식</option>
-            <option value="온라인">온라인</option>
-            <option value="오프라인">오프라인</option>
-            <option value="혼합">혼합</option>
-          </select>
-          <label className="checkbox-label">
-            <input
-              type="checkbox"
-              checked={isRecruiting}
-              onChange={(e) => setIsRecruiting(e.target.checked)}
-            />
-            모집중
-          </label>
-        </div>
 
-        <div className="recruitment-list">
-          {currentPosts.map((post) => (
-            <div
-              key={post?.id || Math.random()}
-              className="recruitment-card"
-              onClick={() => handlePostClick(post?.id ?? 0)}
-              style={{ cursor: "pointer" }}
-            >
-              <div className="recruitment-image">
-                <img
-                  src={
-                    post?.image
-                      ? post.image
-                      : isRecruiting || isPostRecruiting(post)
-                      ? "/open.png"
-                      : "/closed.png"
-                  }
-                  alt={post?.title}
-                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                />
-                <span className="recruitment-category">
-                  {categoryMap[post?.category] || post?.category || "기타"}
-                </span>
-              </div>
-              <div className="recruitment-content">
-                <h3>{post?.title || "제목 없음"}</h3>
-                <div className="recruitment-meta">
-                  <div className="tech-stack">
-                    {(post?.skills || []).slice(0, 5).map((tech) => (
-                      <span key={tech} className="tech-tag">
-                        {tech}
-                      </span>
-                    ))}
-                    {(post?.skills?.length || 0) > 5 && (
-                      <span className="tech-tag">
-                        +{post.skills.length - 5}
-                      </span>
-                    )}
-                  </div>
+          <div
+            className="banner-stack"
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+          >
+            {getOrderedBanners().map((banner, index) => (
+              <div
+                key={banner.id}
+                className={`banner-card ${
+                  isTransitioning ? "transitioning" : ""
+                } ${
+                  index === bannerData.length - 1
+                    ? "front"
+                    : index === bannerData.length - 2
+                    ? "middle"
+                    : "back"
+                }`}
+                style={{
+                  backgroundColor: banner.color,
+                  transform: `translateY(${-index * 20}px) scale(${
+                    index === bannerData.length - 1
+                      ? 1
+                      : index === bannerData.length - 2
+                      ? 0.95
+                      : 0.9
+                  })`,
+                  zIndex: index,
+                }}
+              >
+                <div className="banner-card-content">
+                  <h3>{banner.title}</h3>
+                  <p>{banner.subtitle}</p>
                 </div>
-                <div className="recruitment-stats">
-                  <div className="recruitment-status-container">
-                    <div className="status">
-                      <span className="status-text">모집 현황:</span>
-                      {isPostRecruiting(post) ? (
-                        <span>
-                          {post?.currentCount ?? 0}/{post?.headCount ?? 0}
+              </div>
+            ))}
+          </div>
+
+          <div className="banner-dots">
+            {bannerData.map((_, index) => (
+              <span
+                key={index}
+                className={`dot ${
+                  index === currentBannerIndex ? "active" : ""
+                }`}
+                onClick={() => changeBanner(index)}
+              />
+            ))}
+          </div>
+        </section>
+
+        <section className="recruitment-section">
+          <div className="category-filter-row">
+            <div className="category-filters">
+              {["전체", "프로젝트", "공모전", "해커톤", "스터디"].map(
+                (category) => (
+                  <button
+                    key={category}
+                    className={`category-btn ${
+                      selectedCategory === category ? "active" : ""
+                    }`}
+                    onClick={() => setSelectedCategory(category)}
+                  >
+                    {category}
+                  </button>
+                )
+              )}
+            </div>
+          </div>
+          <div className="recruitment-row-bottom">
+            <select
+              value={selectedType}
+              onChange={(e) => setSelectedType(e.target.value)}
+            >
+              <option value="">진행 방식</option>
+              <option value="온라인">온라인</option>
+              <option value="오프라인">오프라인</option>
+              <option value="혼합">혼합</option>
+            </select>
+            <label className="checkbox-label">
+              <input
+                type="checkbox"
+                checked={isRecruiting}
+                onChange={(e) => setIsRecruiting(e.target.checked)}
+              />
+              모집중
+            </label>
+          </div>
+
+          <div className="recruitment-list">
+            {currentPosts.map((post) => (
+              <div
+                key={post?.id || Math.random()}
+                className="recruitment-card"
+                onClick={() => handlePostClick(post?.id ?? 0)}
+                style={{ cursor: "pointer" }}
+              >
+                <div className="recruitment-image">
+                  <img
+                    src={
+                      post?.image
+                        ? post.image
+                        : isRecruiting || isPostRecruiting(post)
+                        ? "/open.png"
+                        : "/closed.png"
+                    }
+                    alt={post?.title}
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                    }}
+                  />
+                  <span className="recruitment-category">
+                    {categoryMap[post?.category] || post?.category || "기타"}
+                  </span>
+                </div>
+                <div className="recruitment-content">
+                  <h3>{post?.title || "제목 없음"}</h3>
+                  <div className="recruitment-meta">
+                    <div className="tech-stack">
+                      {(post?.skills || []).slice(0, 5).map((tech) => (
+                        <span key={tech} className="tech-tag">
+                          {tech}
                         </span>
-                      ) : (
-                        <span className="status-closed">모집마감</span>
+                      ))}
+                      {(post?.skills?.length || 0) > 5 && (
+                        <span className="tech-tag">
+                          +{post.skills.length - 5}
+                        </span>
                       )}
                     </div>
-                    <div className="deadline">
-                      <span className="deadline-text">마감일:</span>
-                      <span className="deadline-date">
-                        {formatDate(post?.endedAt)}
+                  </div>
+                  <div className="recruitment-stats">
+                    <div className="recruitment-status-container">
+                      <div className="status">
+                        <span className="status-text">모집 현황:</span>
+                        {isPostRecruiting(post) ? (
+                          <span>
+                            {post?.currentCount ?? 0}/{post?.headCount ?? 0}
+                          </span>
+                        ) : (
+                          <span className="status-closed">모집마감</span>
+                        )}
+                      </div>
+                      <div className="deadline">
+                        <span className="deadline-text">마감일:</span>
+                        <span className="deadline-date">
+                          {formatDate(post?.endedAt)}
+                        </span>
+                      </div>
+                    </div>
+                    <div
+                      style={{ marginTop: 6, fontSize: 14, fontWeight: 600 }}
+                    >
+                      <span
+                        style={{
+                          display: "inline-block",
+                          border: `1.5px solid ${
+                            typeMap[post?.type] === "온라인"
+                              ? "#FFD54F"
+                              : typeMap[post?.type] === "오프라인"
+                              ? "#888"
+                              : "#FF9800"
+                          }`,
+                          color:
+                            typeMap[post?.type] === "온라인"
+                              ? "#FFD54F"
+                              : typeMap[post?.type] === "오프라인"
+                              ? "#888"
+                              : "#FF9800",
+                          background: "#fff",
+                          borderRadius: 8,
+                          padding: "2px 14px",
+                          fontSize: 13,
+                          fontWeight: 600,
+                          letterSpacing: 0.5,
+                        }}
+                      >
+                        {typeMap[post?.type] || post?.type || "미정"}
                       </span>
                     </div>
                   </div>
-                  <div style={{ marginTop: 6, fontSize: 14, fontWeight: 600 }}>
-                    <span
-                      style={{
-                        display: "inline-block",
-                        border: `1.5px solid ${
-                          typeMap[post?.type] === "온라인"
-                            ? "#FFD54F"
-                            : typeMap[post?.type] === "오프라인"
-                            ? "#888"
-                            : "#FF9800"
-                        }`,
-                        color:
-                          typeMap[post?.type] === "온라인"
-                            ? "#FFD54F"
-                            : typeMap[post?.type] === "오프라인"
-                            ? "#888"
-                            : "#FF9800",
-                        background: "#fff",
-                        borderRadius: 8,
-                        padding: "2px 14px",
-                        fontSize: 13,
-                        fontWeight: 600,
-                        letterSpacing: 0.5,
-                      }}
-                    >
-                      {typeMap[post?.type] || post?.type || "미정"}
-                    </span>
-                  </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
 
-        {/* 페이지네이션 */}
-        <Pagination />
-      </section>
+          {/* 페이지네이션 */}
+          <Pagination />
+        </section>
+      </div>
 
       {showLoginModal && (
         <LoginModal

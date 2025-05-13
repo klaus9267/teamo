@@ -38,17 +38,11 @@ const Comment: React.FC<CommentProps> = ({ postId }) => {
     }
   }, [userInfo]);
 
-  console.log("현재 로그인 사용자 정보:", {
-    userInfo,
-    myUserId: localStorage.getItem("myUserId"),
-  });
-
   // 댓글 목록 조회
   const fetchComments = async () => {
     try {
       setLoading(true);
       const data = await commentApi.getComments(postId);
-      console.log("조회된 댓글 목록:", data);
 
       // 계층 구조로 변환
       const commentMap = new Map<number, CommentResponse>();
@@ -105,7 +99,6 @@ const Comment: React.FC<CommentProps> = ({ postId }) => {
         postId: postId,
       };
 
-      console.log("댓글 작성 - 현재 로그인 사용자 정보:", userInfo);
       await commentApi.createComment(commentData);
       showSuccess("댓글이 등록되었습니다.");
       setNewComment("");
@@ -207,13 +200,6 @@ const Comment: React.FC<CommentProps> = ({ postId }) => {
   const isCommentOwner = (commentUserId?: number) => {
     const storedUserId = localStorage.getItem("myUserId");
     const myUserId = storedUserId ? Number(storedUserId) : currentUserId;
-
-    console.log("댓글 소유자 확인:", {
-      commentUserId,
-      storedUserId,
-      currentUserId,
-      isOwner: myUserId && commentUserId && myUserId === commentUserId,
-    });
 
     return myUserId && commentUserId && myUserId === commentUserId;
   };
