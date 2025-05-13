@@ -2,39 +2,72 @@ import React, { useState, useEffect, ReactNode, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 import "../../styles/hub/Hub.css";
-import { developerApi, Developer } from "../../api/developer.ts";
+import { resumeApi } from "../../api/resume.ts";
+import Spinner from "../../component/common/Spinner.tsx";
+
+// 대표 이력서 타입 정의
+interface MainResume {
+  id: number;
+  title: string;
+  content: string;
+  date: string;
+  skills: string[];
+  personality: string;
+  isMain: boolean;
+  userId: number;
+  userName?: string;
+  userProfileImage?: string;
+  portfolio?: string;
+  profile?: {
+    id: number;
+    name: string;
+    introduction: string;
+    image: string;
+    nickname: string;
+    userId: number;
+  };
+}
 
 const HubPage = () => {
-  const [developers, setDevelopers] = useState<Developer[]>([]);
+  const [mainResumes, setMainResumes] = useState<MainResume[]>([]);
   const [loading, setLoading] = useState(true);
+  const [resumeLoading, setResumeLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [resumeError, setResumeError] = useState<string | null>(null);
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [currentPage, setCurrentPage] = useState(1);
   const [allSkills, setAllSkills] = useState<string[]>([]);
-  const developersPerPage = 16;
+  const resumesPerPage = 16;
   const sidebarRef = useRef<HTMLDivElement>(null);
   const initialTopPosition = 100; // 처음 위치 (px)
 
-  // API 연동을 위한 함수
-  const fetchDevelopers = async () => {
+  // 대표 이력서 목록 조회를 위한 함수
+  const fetchMainResumes = async () => {
     try {
-      const data = await developerApi.getDevelopers();
-      setDevelopers(data);
+      setResumeLoading(true);
+      // api/resumes/main 엔드포인트 사용
+      const mainResumeList = await resumeApi.getMainResumes();
+      setMainResumes(mainResumeList);
+
       // 모든 기술 스택 목록 계산 (중복 제거)
       const skills = Array.from(
-        new Set(data.flatMap((dev) => dev.skills))
+        new Set(mainResumeList.flatMap((resume) => resume.skills))
       ).sort();
       setAllSkills(skills);
+
+      setResumeLoading(false);
       setLoading(false);
     } catch (err) {
-      setError("개발자 목록을 불러오는데 실패했습니다.");
+      console.error("대표 자기소개서 목록을 불러오는데 실패했습니다:", err);
+      setResumeError("대표 자기소개서 목록을 불러오는데 실패했습니다.");
+      setResumeLoading(false);
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchDevelopers();
+    fetchMainResumes();
   }, []);
 
   // 스크롤 이벤트 처리
@@ -52,29 +85,28 @@ const HubPage = () => {
 
   // 필터링 로직
   useEffect(() => {
-    let filteredDevs = developers;
+    let filteredResumes = [...mainResumes];
 
     // 스킬 필터링
     if (selectedSkills.length > 0) {
-      filteredDevs = filteredDevs.filter((dev) =>
-        selectedSkills.every((skill) => dev.skills.includes(skill))
+      filteredResumes = filteredResumes.filter((resume) =>
+        selectedSkills.every((skill) => resume.skills.includes(skill))
       );
     }
 
     // 검색어 필터링
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
-      filteredDevs = filteredDevs.filter(
-        (dev) =>
-          dev.name.toLowerCase().includes(term) ||
-          dev.role.toLowerCase().includes(term) ||
-          dev.company.toLowerCase().includes(term) ||
-          dev.description.toLowerCase().includes(term) ||
-          dev.skills.some((skill) => skill.toLowerCase().includes(term))
+      filteredResumes = filteredResumes.filter(
+        (resume) =>
+          resume.title.toLowerCase().includes(term) ||
+          resume.content.toLowerCase().includes(term) ||
+          (resume.userName && resume.userName.toLowerCase().includes(term)) ||
+          resume.skills.some((skill) => skill.toLowerCase().includes(term))
       );
     }
 
-    setDevelopers(filteredDevs);
+    setMainResumes(filteredResumes);
     setCurrentPage(1); // 필터링 시 첫 페이지로 이동
   }, [selectedSkills, searchTerm]);
 
@@ -87,16 +119,16 @@ const HubPage = () => {
     }
   };
 
-  // 현재 페이지에 표시할 개발자 계산
-  const indexOfLastDeveloper = currentPage * developersPerPage;
-  const indexOfFirstDeveloper = indexOfLastDeveloper - developersPerPage;
-  const currentDevelopers = developers.slice(
-    indexOfFirstDeveloper,
-    indexOfLastDeveloper
+  // 현재 페이지에 표시할 이력서 계산
+  const indexOfLastResume = currentPage * resumesPerPage;
+  const indexOfFirstResume = indexOfLastResume - resumesPerPage;
+  const currentResumes = mainResumes.slice(
+    indexOfFirstResume,
+    indexOfLastResume
   );
 
   // 페이지 수 계산
-  const totalPages = Math.ceil(developers.length / developersPerPage);
+  const totalPages = Math.ceil(mainResumes.length / resumesPerPage);
 
   // 페이지 변경 함수
   const paginate = (pageNumber: number) => {
@@ -210,66 +242,87 @@ const HubPage = () => {
         container.classList.remove("scrollable");
       }
     });
-  }, [developers, currentPage]);
+  }, [mainResumes, currentPage]);
 
   return (
     <div className="hub-container">
       <div className="hub-title">
-        <h1>개발자 허브</h1>
-        <p>기술 스택별로 개발자를 찾아보세요</p>
+        <h1>자기소개서 허브</h1>
+        <p>개발자들의 대표 자기소개서를 확인해보세요</p>
       </div>
 
       <div className="hub-content-wrapper">
         <div className="hub-main-content">
-          <div className="developer-list">
-            {currentDevelopers.length > 0 ? (
-              currentDevelopers.map((dev) => (
+          {resumeLoading ? (
+            <div className="loading-container">
+              <Spinner size="medium" color="#FFD43B" />
+              <p>대표 자기소개서 목록을 불러오는 중입니다...</p>
+            </div>
+          ) : resumeError ? (
+            <div className="error-message">
+              <p>{resumeError}</p>
+            </div>
+          ) : currentResumes.length > 0 ? (
+            <div className="resume-list">
+              {currentResumes.map((resume) => (
                 <Link
-                  to={`/profile/${dev.id}`}
-                  key={dev.id}
-                  className="developer-card"
+                  to={`/profile/resume/${resume.id}`}
+                  key={resume.id}
+                  className="resume-card"
                 >
-                  <div className="developer-info">
-                    <div className="profile-image">
-                      <img src={dev.profileImg} alt={`${dev.name} 프로필`} />
-                    </div>
-                    <div className="developer-details">
-                      <div className="name-badge">
-                        <h3>{dev.name}</h3>
-                      </div>
-                      <p className="description">{dev.description}</p>
-                      <div
-                        className="skills"
-                        ref={(el) => {
-                          if (el) {
-                            // 스크롤이 필요한지 실시간으로 확인
-                            if (el.scrollHeight > el.clientHeight) {
-                              el.classList.add("scrollable");
-                            } else {
-                              el.classList.remove("scrollable");
-                            }
-                          }
+                  <div className="resume-card-content">
+                    <div className="resume-profile">
+                      <img
+                        src={
+                          resume.profile?.image ||
+                          resume.userProfileImage ||
+                          "/profile.png"
+                        }
+                        alt="프로필"
+                        className="resume-profile-image"
+                        onError={(e) => {
+                          e.currentTarget.src = "/profile.png";
                         }}
-                      >
-                        {dev.skills.map((skill, index) => (
-                          <span className="skill-tag" key={index}>
+                      />
+                    </div>
+                    <div className="resume-info">
+                      <p className="resume-position">{resume.title}</p>
+                      <p className="resume-company">
+                        {resume.profile?.nickname ||
+                          resume.userName ||
+                          "개발자"}
+                      </p>
+                      <p className="resume-description">
+                        {resume.content.length > 80
+                          ? `${resume.content.substring(0, 80)}...`
+                          : resume.content}
+                      </p>
+                    </div>
+                    <div className="resume-tag-list">
+                      {resume.skills &&
+                        resume.skills.slice(0, 4).map((skill, index) => (
+                          <span key={index} className="resume-skill-tag">
                             {skill}
                           </span>
                         ))}
-                      </div>
+                      {resume.skills && resume.skills.length > 4 && (
+                        <span className="resume-skill-tag more-tag">
+                          +{resume.skills.length - 4}
+                        </span>
+                      )}
                     </div>
                   </div>
                 </Link>
-              ))
-            ) : (
-              <div className="no-results">
-                <p>해당 조건에 맞는 개발자가 없습니다.</p>
-              </div>
-            )}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <div className="no-results">
+              <p>등록된 대표 이력서가 없습니다.</p>
+            </div>
+          )}
 
-          {/* 페이지네이션 */}
-          {developers.length > developersPerPage && (
+          {/* 16개 이하여도 항상 페이지네이션 표시 */}
+          {mainResumes.length > 0 && (
             <div className="pagination">{renderPaginationButtons()}</div>
           )}
         </div>
@@ -279,7 +332,7 @@ const HubPage = () => {
             <div className="search-box">
               <input
                 type="text"
-                placeholder="직무·스킬 검색"
+                placeholder="이력서·스킬 검색"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />

@@ -1,4 +1,5 @@
 import api from "./config.ts";
+import axios from "axios";
 
 export interface ProfileResponse {
   profile: {
@@ -148,6 +149,79 @@ export const userApi = {
       return response.data;
     } catch (error: any) {
       console.error("리뷰 작성 에러:", error.response?.data || error.message);
+      throw error;
+    }
+  },
+
+  // 함께한 모집글 목록 조회 API 추가
+  getTogetherPosts: async (userId: number) => {
+    try {
+      // 백엔드 API가 404를 리턴하면 빈 배열로, 그 외 오류는 예외로 처리하는 로직
+      const response = await api.get(`/api/posts/${userId}/together`, {
+        validateStatus: function (status) {
+          return (status >= 200 && status < 300) || status === 404; // 404는 빈 배열로 처리
+        },
+      });
+
+      // 성공적인 응답일 경우만 데이터 반환
+      if (response.status === 200) {
+        return response.data || [];
+      }
+
+      // 404 등의 경우는 빈 배열 반환
+      return [];
+    } catch (error) {
+      console.error("함께한 모집글 목록 조회 에러:", error);
+      return [];
+    }
+  },
+};
+
+// 리뷰 API 추가
+export const reviewApi = {
+  // 리뷰 목록 조회
+  getReviews: async (userId: number) => {
+    try {
+      const response = await api.get(`/api/reviews/${userId}`);
+      return response.data || [];
+    } catch (error) {
+      console.error("리뷰 목록 조회 에러:", error);
+      return [];
+    }
+  },
+
+  // 리뷰 등록
+  createReview: async (
+    revieweeId: number,
+    postId: number | null,
+    content: string
+  ) => {
+    const response = await api.post(`/api/reviews/${revieweeId}`, {
+      postId,
+      content,
+    });
+
+    return response.data;
+  },
+
+  // 리뷰 수정
+  updateReview: async (
+    reviewId: number,
+    postId: number | null,
+    content: string
+  ) => {
+    await api.patch(`/api/reviews/${reviewId}`, {
+      postId,
+      content,
+    });
+  },
+
+  // 리뷰 삭제
+  deleteReview: async (reviewId: number) => {
+    try {
+      const response = await api.delete(`/api/reviews/${reviewId}`);
+      return response;
+    } catch (error) {
       throw error;
     }
   },

@@ -1,10 +1,33 @@
 /* 자기소개서 상세 페이지 스타일 */
+.resume-detail-outer {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  padding-top: 20px;
+  box-sizing: border-box;
+}
+
 .resume-detail-container {
   width: 100%;
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 40px 20px;
-  font-family: "Noto Sans KR", sans-serif;
+  max-width: 760px;
+  margin-right: 340px; /* 사이드바 너비+여백만큼 공간 확보 */
+  padding: 0 24px;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 2px 16px rgba(255, 213, 79, 0.06);
+  border: 1px solid #e5e7eb;
+  box-sizing: border-box;
+  overflow-x: hidden; /* 내용이 컨테이너를 벗어나지 않도록 설정 */
+}
+
+.resume-detail-main {
+  padding: 40px 0 40px 0;
+  width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden; /* 내용이 메인 영역을 벗어나지 않도록 설정 */
 }
 
 .resume-header {
@@ -12,7 +35,11 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  text-align: center;
+  width: 100%;
+}
+
+.resume-header-content {
+  width: 100%;
 }
 
 .resume-title {
@@ -20,7 +47,7 @@
   font-weight: 600;
   color: #333;
   margin-bottom: 20px;
-  text-align: center;
+  text-align: left;
   width: 100%;
 }
 
@@ -232,5 +259,263 @@
 
   .resume-content {
     font-size: 15px;
+  }
+}
+
+/* 프로필 배너 스타일 */
+.profile-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  margin-bottom: 20px;
+  border: 1px solid #eaeaea;
+}
+
+.profile-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 16px;
+  background-color: #f9fafb;
+  border-radius: 8px;
+  text-align: center;
+  transition: all 0.2s ease;
+}
+
+.profile-info:hover {
+  background-color: #f3f4f6;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+}
+
+.profile-image {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 12px;
+  border: 2px solid #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.profile-text {
+  width: 100%;
+}
+
+.profile-text-center {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.profile-name {
+  font-weight: 600;
+  font-size: 18px;
+  color: #333;
+  margin: 0 0 4px 0;
+}
+
+.profile-nickname {
+  font-size: 14px;
+  color: #6b7280;
+  margin: 0 0 8px 0;
+}
+
+.profile-introduction {
+  font-size: 14px;
+  color: #4b5563;
+  margin: 5px 0 0 0;
+  line-height: 1.5;
+  max-height: 90px;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  text-overflow: ellipsis;
+  white-space: normal;
+  text-align: left;
+}
+
+.banner-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.banner-edit-btn {
+  background-color: #ffd43b;
+  color: #333;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.banner-edit-btn:hover {
+  background-color: #ffc107;
+}
+
+.banner-delete-btn {
+  background-color: #f8f9fa;
+  color: #dc2626;
+  border: 1px solid #dc2626;
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.banner-delete-btn:hover {
+  background-color: #fee2e2;
+}
+
+/* 사이드바 고정 레이아웃 */
+.resume-detail-aside {
+  position: fixed;
+  width: 280px; /* 사이드바 너비 */
+  right: calc(50% - 580px); /* 계산된 위치에 고정 */
+  top: 120px; /* 상단에서 여백 */
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  z-index: 100; /* 다른 요소 위에 표시되도록 z-index 증가 */
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-height: calc(100vh - 140px); /* 높이 제한, 여백 확보 */
+  overflow-y: auto;
+  transition: all 0.2s ease-in-out;
+  box-sizing: border-box;
+}
+
+.aside-divider {
+  width: 100%;
+  height: 1px;
+  background: #e5e7eb;
+  margin: 4px 0;
+  border: none;
+}
+
+.aside-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #888;
+  margin-bottom: 10px;
+}
+
+.aside-stack-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.aside-stack-tag {
+  display: inline-flex;
+  padding: 5px 10px;
+  background-color: #f5f5f5;
+  color: #555;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.aside-no-stacks {
+  color: #888;
+  font-size: 14px;
+  font-style: italic;
+}
+
+.aside-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.aside-edit-btn {
+  width: 100%;
+  padding: 10px 0;
+  background-color: #ffd43b;
+  color: #333;
+  border: none;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.aside-edit-btn:hover {
+  background-color: #ffc107;
+}
+
+.aside-delete-btn {
+  width: 100%;
+  padding: 10px 0;
+  background-color: #f8f9fa;
+  color: #dc2626;
+  border: 1px solid #dc2626;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.aside-delete-btn:hover {
+  background-color: #fee2e2;
+}
+
+/* 반응형 레이아웃 */
+@media (max-width: 1400px) {
+  .resume-detail-aside {
+    right: 40px; /* 화면 오른쪽에 고정 */
+  }
+
+  .resume-detail-container {
+    margin-right: 320px;
+  }
+}
+
+@media (max-width: 1200px) {
+  .resume-detail-aside {
+    right: 40px; /* 화면 오른쪽에 고정 */
+  }
+
+  .resume-detail-container {
+    margin-right: 320px;
+  }
+}
+
+@media (max-width: 1100px) {
+  .resume-detail-outer {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .resume-detail-container {
+    margin-right: 0;
+    margin-bottom: 32px;
+    max-width: 100%;
+    padding: 0 16px;
+  }
+
+  .resume-detail-aside {
+    position: static;
+    margin: 0 auto 32px auto;
+    width: 100%;
+    max-width: 760px;
+    right: auto;
+    top: auto;
   }
 }

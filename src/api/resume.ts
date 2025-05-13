@@ -1,16 +1,28 @@
 import api from "./config.ts";
 
+export interface Profile {
+  id: number;
+  name: string;
+  introduction: string;
+  image: string;
+  nickname: string;
+  userId: number;
+}
+
 export interface Resume {
   id: number;
   title: string;
   content: string;
-  date: string;
+  date?: string;
   skills: string[];
   personality: string;
   isMain?: boolean;
+  portfolio?: string;
+  profile?: Profile;
+  userId?: number;
+  // 이전 필드들 (호환성 유지)
   file?: File;
   fileUrl?: string;
-  userId?: number;
 }
 
 export const resumeApi = {
@@ -22,6 +34,20 @@ export const resumeApi = {
     } catch (error: any) {
       console.error(
         "자기소개서 목록 조회 에러:",
+        error.response?.data || error.message
+      );
+      throw error;
+    }
+  },
+
+  // 대표 자기소개서 목록 조회
+  getMainResumes: async () => {
+    try {
+      const response = await api.get<Resume[]>("/api/resumes/main");
+      return response.data;
+    } catch (error: any) {
+      console.error(
+        "대표 자기소개서 목록 조회 에러:",
         error.response?.data || error.message
       );
       throw error;
