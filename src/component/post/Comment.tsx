@@ -132,7 +132,7 @@ const Comment: React.FC<CommentProps> = ({ postId }) => {
   };
 
   // 댓글 수정 모드 전환
-  const handleEditStart = (comment: CommentResponse) => {
+  const handleEditStart = (comment: CommentWithReplies) => {
     setEditMode(comment.id);
     setEditContent(comment.content);
   };
@@ -177,11 +177,16 @@ const Comment: React.FC<CommentProps> = ({ postId }) => {
   };
 
   // 댓글 소유자인지 확인
-  const isCommentOwner = (commentUserId?: number) => {
+  const isCommentOwner = (comment?: CommentWithReplies) => {
     const storedUserId = localStorage.getItem("myUserId");
     const myUserId = storedUserId ? Number(storedUserId) : currentUserId;
 
-    return myUserId && commentUserId && myUserId === commentUserId;
+    // profile 객체를 통해 userId 확인
+    return (
+      myUserId &&
+      comment?.profile?.userId &&
+      myUserId === comment.profile.userId
+    );
   };
 
   // 날짜 포맷팅 함수
@@ -213,13 +218,18 @@ const Comment: React.FC<CommentProps> = ({ postId }) => {
     <div key={comment.id} className={`comment ${isReply ? "reply" : ""}`}>
       <div className="comment-avatar">
         <img
-          src={comment.profileImage || "https://via.placeholder.com/40"}
-          alt={`${comment.username} avatar`}
+          src={comment.profile?.image || "/profile.png"}
+          alt={`${comment.profile?.nickname || "사용자"} avatar`}
+          onError={(e) => {
+            e.currentTarget.src = "/profile.png";
+          }}
         />
       </div>
       <div className="comment-content">
         <div className="comment-header">
-          <span className="comment-author">{comment.username}</span>
+          <span className="comment-author">
+            {comment.profile?.nickname || "사용자"}
+          </span>
           <span className="comment-date">{formatDate(comment.createdAt)}</span>
         </div>
 
@@ -259,7 +269,7 @@ const Comment: React.FC<CommentProps> = ({ postId }) => {
             </button>
           )}
 
-          {isCommentOwner(comment.userId) && (
+          {isCommentOwner(comment) && (
             <>
               <button
                 onClick={() => handleEditStart(comment)}

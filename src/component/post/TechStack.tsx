@@ -403,6 +403,31 @@ const TechStack = ({ technologies = [], onSelectTech }: TechStackProps) => {
     }
   };
 
+  // 편집 기능이 필요 없는 경우 (게시글 상세보기 등)
+  if (!onSelectTech) {
+    return (
+      <div className="tech-stack-section">
+        <h3 className="tech-stack-title">기술/언어</h3>
+        {technologies.length === 0 ? (
+          <p className="no-tech-message">선택된 기술 스택이 없습니다.</p>
+        ) : (
+          <div className="tech-stack-icons">
+            {technologies.map((tech) => (
+              <div key={tech} className="tech-icon-wrapper">
+                <img
+                  src={techIcons[tech] || defaultIcon}
+                  alt={tech}
+                  className="tech-icon"
+                />
+                <span className="tech-name">{`#${tech}`}</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+
   if (!technologies || technologies.length === 0) {
     return (
       <div className="tech-stack-section">
