@@ -57,6 +57,11 @@ export default function PostDetail() {
   const [applyLoading, setApplyLoading] = useState(false);
   const [submitLoading, setSubmitLoading] = useState(false);
 
+  // 지원자 상세정보 모달 관련 상태
+  const [showApplicantDetailModal, setShowApplicantDetailModal] =
+    useState(false);
+  const [selectedApplicant, setSelectedApplicant] = useState(null);
+
   // API 연동을 위한 함수들
   const fetchPost = async (postId) => {
     try {
@@ -318,6 +323,18 @@ export default function PostDetail() {
     setShowApplicantsList(!showApplicantsList);
   };
 
+  // 지원자 상세정보 모달 열기 함수
+  const openApplicantDetail = (applicant) => {
+    setSelectedApplicant(applicant);
+    setShowApplicantDetailModal(true);
+  };
+
+  // 지원자 상세정보 모달 닫기 함수
+  const closeApplicantDetail = () => {
+    setShowApplicantDetailModal(false);
+    setSelectedApplicant(null);
+  };
+
   if (loading) {
     return (
       <div
@@ -504,6 +521,20 @@ export default function PostDetail() {
                                     )}
                                 </div>
                               </div>
+                            </div>
+                            <div className="applicant-buttons">
+                              <button
+                                className="detail-button"
+                                onClick={() => openApplicantDetail(applicant)}
+                              >
+                                상세정보
+                              </button>
+                              <Link
+                                to={`/profile/${applicant.userId}`}
+                                className="profile-button"
+                              >
+                                프로필로 이동
+                              </Link>
                             </div>
                           </div>
 
@@ -958,6 +989,182 @@ export default function PostDetail() {
                     )}
                   </button>
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* 지원자 상세정보 모달 */}
+      {showApplicantDetailModal && selectedApplicant && (
+        <div className="applicant-detail-modal-overlay">
+          <div className="applicant-detail-modal">
+            <div className="applicant-detail-modal-header">
+              <h2>{selectedApplicant.nickname}님의 상세정보</h2>
+              <button
+                className="modal-close-btn"
+                onClick={closeApplicantDetail}
+              >
+                ×
+              </button>
+            </div>
+            <div className="applicant-detail-modal-content">
+              <div className="applicant-detail-top">
+                <div className="applicant-detail-profile">
+                  <img
+                    src={selectedApplicant.profileImage || "/profile.png"}
+                    alt={`${selectedApplicant.nickname} 프로필`}
+                    className="applicant-detail-avatar"
+                    onError={(e) => {
+                      e.currentTarget.src = "/profile.png";
+                    }}
+                  />
+                  <div className="applicant-detail-info">
+                    <div className="applicant-detail-name">
+                      {selectedApplicant.nickname}
+                    </div>
+                    {selectedApplicant.aiScore && (
+                      <div
+                        className={`ai-score ${
+                          selectedApplicant.aiScore > 80
+                            ? "high-score"
+                            : selectedApplicant.aiScore > 60
+                            ? "medium-score"
+                            : "low-score"
+                        }`}
+                      >
+                        AI 추천 {selectedApplicant.aiScore}점
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="applicant-detail-section">
+                <h3>기술 스택</h3>
+                <div className="applicant-detail-skills">
+                  {selectedApplicant.resume &&
+                  selectedApplicant.resume.skills &&
+                  selectedApplicant.resume.skills.length > 0 ? (
+                    <div className="applicant-detail-skills-list">
+                      {selectedApplicant.resume.skills.map((skill, index) => (
+                        <span key={index} className="detail-skill-tag">
+                          {skill}
+                        </span>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="no-data-message">
+                      등록된 기술 스택이 없습니다.
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <div className="applicant-detail-section">
+                <h3>자기소개</h3>
+                <div className="applicant-detail-content">
+                  {selectedApplicant.resume &&
+                  selectedApplicant.resume.content ? (
+                    <p>{selectedApplicant.resume.content}</p>
+                  ) : (
+                    <p className="no-data-message">자기소개 내용이 없습니다.</p>
+                  )}
+                </div>
+              </div>
+
+              {selectedApplicant.reason && (
+                <div className="applicant-detail-section">
+                  <h3>지원 동기</h3>
+                  <div className="applicant-detail-content">
+                    <p>{selectedApplicant.reason}</p>
+                  </div>
+                </div>
+              )}
+
+              {selectedApplicant.resume &&
+                selectedApplicant.resume.personality && (
+                  <div className="applicant-detail-section">
+                    <h3>성향</h3>
+                    <div className="applicant-detail-content">
+                      <p>{selectedApplicant.resume.personality}</p>
+                    </div>
+                  </div>
+                )}
+
+              {selectedApplicant.aiSummary && (
+                <div className="applicant-detail-section ai-detail-summary-section">
+                  <h3>AI 요약</h3>
+                  <div className="applicant-detail-content">
+                    <p>{selectedApplicant.aiSummary}</p>
+                  </div>
+                </div>
+              )}
+
+              {selectedApplicant.aiReason && (
+                <div className="applicant-detail-section ai-detail-reason-section">
+                  <h3>AI 추천 이유</h3>
+                  <div className="applicant-detail-content">
+                    <p>{selectedApplicant.aiReason}</p>
+                  </div>
+                </div>
+              )}
+
+              <div className="applicant-detail-section">
+                <h3>포트폴리오</h3>
+                {selectedApplicant.resume &&
+                selectedApplicant.resume.portfolio &&
+                selectedApplicant.resume.portfolio !== "NULL" &&
+                selectedApplicant.resume.portfolio !== "null" ? (
+                  <a
+                    href={selectedApplicant.resume.portfolio}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="portfolio-link"
+                  >
+                    포트폴리오 바로가기
+                  </a>
+                ) : (
+                  <p className="no-data-message">포트폴리오가 없습니다.</p>
+                )}
+              </div>
+
+              <div className="applicant-detail-actions">
+                {selectedApplicant.isSelected === "PASS" ? (
+                  <div className="selected-badge">합격</div>
+                ) : selectedApplicant.isSelected === "FAIL" ? (
+                  <div className="rejected-badge">불합격</div>
+                ) : (
+                  <>
+                    <button
+                      className="accept-button"
+                      onClick={() =>
+                        handleApplicantAction(
+                          selectedApplicant.applyId,
+                          "accept"
+                        )
+                      }
+                    >
+                      합격
+                    </button>
+                    <button
+                      className="reject-button"
+                      onClick={() =>
+                        handleApplicantAction(
+                          selectedApplicant.applyId,
+                          "reject"
+                        )
+                      }
+                    >
+                      불합격
+                    </button>
+                  </>
+                )}
+                <button
+                  className="close-detail-button"
+                  onClick={closeApplicantDetail}
+                >
+                  닫기
+                </button>
               </div>
             </div>
           </div>
