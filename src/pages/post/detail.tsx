@@ -623,12 +623,14 @@ export default function PostDetail() {
           </div>
         </div>
       </div>
-
-      {/* 오른쪽 배너 */}
+      {/* 오른쪽 배너 */}{" "}
       <aside className="post-detail-aside">
+        {" "}
         {leader && (
           <>
+            {" "}
             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              {" "}
               <Link
                 to={`/profile/${leader.id ?? 0}`}
                 style={{
@@ -638,79 +640,137 @@ export default function PostDetail() {
                   color: "inherit",
                 }}
               >
+                {" "}
                 <img
                   src={leader.avatar ?? "https://via.placeholder.com/40"}
                   alt="리더 프로필"
                   style={{ width: 48, height: 48, borderRadius: "50%" }}
-                />
+                />{" "}
                 <div>
-                  <div style={{ fontWeight: 600 }}>{leader.name ?? "팀장"}</div>
+                  {" "}
+                  <div style={{ fontWeight: 600 }}>
+                    {leader.name ?? "팀장"}
+                  </div>{" "}
                   <div style={{ fontSize: 13, color: "#888" }}>
-                    {leader.email ?? "이메일 정보 없음"}
-                  </div>
-                </div>
-              </Link>
-            </div>
-            <div className="aside-divider" />
+                    {" "}
+                    {leader.email ?? "이메일 정보 없음"}{" "}
+                  </div>{" "}
+                </div>{" "}
+              </Link>{" "}
+            </div>{" "}
+            <div className="aside-divider" />{" "}
           </>
-        )}
+        )}{" "}
         <div>
-          <div style={{ fontSize: 14, color: "#888" }}>모집 마감일</div>
-          <div style={{ fontWeight: 600 }}>{post?.endedAt || "미정"}</div>
-        </div>
-        <div className="aside-divider" />
+          {" "}
+          <div style={{ fontSize: 14, color: "#888" }}>모집 마감일</div>{" "}
+          <div style={{ fontWeight: 600 }}>{post?.endedAt || "미정"}</div>{" "}
+        </div>{" "}
+        <div className="aside-divider" />{" "}
         <div>
-          <div style={{ fontSize: 14, color: "#888" }}>진행 방식</div>
+          {" "}
+          <div style={{ fontSize: 14, color: "#888" }}>진행 방식</div>{" "}
           <div style={{ fontWeight: 600 }}>
-            {post?.type === "ONLINE" && "온라인"}
-            {post?.type === "OFFLINE" && "오프라인"}
-            {post?.type === "MIX" && "혼합"}
-            {!post?.type && "미정"}
-          </div>
-        </div>
-        <div className="aside-divider" />
+            {" "}
+            {post?.type === "ONLINE" && "온라인"}{" "}
+            {post?.type === "OFFLINE" && "오프라인"}{" "}
+            {post?.type === "MIX" && "혼합"} {!post?.type && "미정"}{" "}
+          </div>{" "}
+        </div>{" "}
+        <div className="aside-divider" />{" "}
         <div>
-          <div style={{ fontSize: 14, color: "#888" }}>모집 완료</div>
+          {" "}
+          <div style={{ fontSize: 14, color: "#888" }}>모집 완료</div>{" "}
           <div style={{ fontWeight: 600 }}>
-            {post?.currentCount ?? 0} / {post?.headCount ?? 0}
-          </div>
-        </div>
-        <div className="aside-divider" />
+            {" "}
+            {post?.currentCount ?? 0} / {post?.headCount ?? 0}{" "}
+          </div>{" "}
+        </div>{" "}
+        <div className="aside-divider" />{" "}
         <div>
-          <div style={{ fontSize: 14, color: "#888" }}>기술 스택</div>
+          {" "}
+          <div style={{ fontSize: 14, color: "#888" }}>기술 스택</div>{" "}
           <div
-            style={{
-              display: "flex",
-              flexWrap: "wrap",
-              gap: 8,
-              marginTop: 6,
-            }}
+            style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 6 }}
           >
+            {" "}
             {(post?.skills ?? []).map((tech) => (
               <span className="tech-tag" key={tech}>
-                {tech}
+                {" "}
+                {tech}{" "}
               </span>
-            ))}
-          </div>
-        </div>
-
-        {/* 지원하기/지원자 확인 버튼 */}
-        <div className="aside-divider" />
+            ))}{" "}
+          </div>{" "}
+        </div>{" "}
+        {/* 지원하기/지원자 확인 버튼 */} <div className="aside-divider" />{" "}
         {isAuthor ? (
-          <button onClick={toggleApplicantsList} className="apply-button">
-            지원자 목록 확인
-          </button>
+          <>
+            {" "}
+            <button onClick={toggleApplicantsList} className="apply-button">
+              {" "}
+              지원자 목록 확인{" "}
+            </button>{" "}
+            <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
+              {" "}
+              <button
+                onClick={() => navigate(`/post/edit/${post?.id}`)}
+                style={{
+                  flex: 1,
+                  padding: "10px",
+                  backgroundColor: "#3498db",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "4px",
+                  cursor: "pointer",
+                }}
+              >
+                {" "}
+                수정{" "}
+              </button>{" "}
+              <button
+                onClick={() => {
+                  if (window.confirm("정말로 이 게시글을 삭제하시겠습니까?")) {
+                    postApi
+                      .deletePost(post?.id)
+                      .then(() => {
+                        showSuccess("게시글이 삭제되었습니다.");
+                        navigate("/");
+                      })
+                      .catch((err) => {
+                        console.error("게시글 삭제 실패:", err);
+                        showError("게시글 삭제에 실패했습니다.");
+                      });
+                  }
+                }}
+                style={{
+                  flex: 1,
+                  padding: "10px",
+                  backgroundColor: "#e74c3c",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "4px",
+                  cursor: "pointer",
+                }}
+              >
+                {" "}
+                삭제{" "}
+              </button>{" "}
+            </div>{" "}
+          </>
         ) : (
           <div>
+            {" "}
             {applicationStatus === "applied" ? (
               <div className="applied-status">이미 지원한 모집글입니다</div>
             ) : applicationStatus === "accepted" ? (
               <div className="accepted-status">
-                합류한 {post?.category ?? "프로젝트"}입니다
+                {" "}
+                합류한 {post?.category ?? "프로젝트"}입니다{" "}
               </div>
             ) : isDeadlinePassed ? (
               <div className="deadline-passed-status">
-                모집이 마감되었습니다
+                {" "}
+                모집이 마감되었습니다{" "}
               </div>
             ) : (
               <button
@@ -718,17 +778,17 @@ export default function PostDetail() {
                 className="apply-button"
                 disabled={applyLoading || isDeadlinePassed}
               >
+                {" "}
                 {applyLoading ? (
                   <Spinner size="small" color="#1B3A4B" inButton={true} />
                 ) : (
                   "지원하기"
-                )}
+                )}{" "}
               </button>
-            )}
+            )}{" "}
           </div>
         )}
       </aside>
-
       {/* 지원하기 모달 */}
       {showApplyModal && (
         <div className="apply-modal-overlay">

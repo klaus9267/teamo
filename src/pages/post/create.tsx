@@ -1,12 +1,18 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import "../../styles/post/create.css";
 import TechStack from "../../component/post/TechStack.tsx";
 import { postApi } from "../../api/post.ts";
 import { showSuccess, showError, showWarning } from "../../utils/sweetAlert.ts";
+import Spinner from "../../component/common/Spinner.tsx";
 
 const PostCreate = () => {
   const navigate = useNavigate();
+  const { id } = useParams(); // URL에서 id 파라미터 가져오기
+  const isEditMode = !!id; // id가 있으면 수정 모드
+
+  // 로딩 상태 관리
+  const [loading, setLoading] = useState(isEditMode);
 
   // 오늘 날짜를 YYYY-MM-DD 형식으로 얻기
   const today = new Date().toISOString().split("T")[0];
@@ -42,6 +48,12 @@ const PostCreate = () => {
     { value: "MIX", label: "혼합" },
   ];
 
+  // API 카테고리 값을 프론트엔드 카테고리 값으로 변환하는 함수
+  const mapApiCategoryToFrontend = (apiCategory) => {
+    const option = postTypeOptions.find((opt) => opt.apiValue === apiCategory);
+    return option ? option.value : "사이드프로젝트"; // 기본값은 사이드프로젝트
+  };
+
   // 프론트엔드 카테고리 값을 백엔드 API 카테고리 값으로 변환하는 함수
   const mapCategoryToApiValue = (frontendCategory) => {
     const option = postTypeOptions.find(
@@ -49,6 +61,49 @@ const PostCreate = () => {
     );
     return option ? option.apiValue : "PROJECT"; // 기본값은 PROJECT
   };
+
+  // 수정 모드인 경우 게시글 데이터 가져오기
+  useEffect(() => {
+    if (isEditMode) {
+      const fetchPostData = async () => {
+        try {
+          setLoading(true);
+          const postData = await postApi.getPost(Number(id));
+
+          // 폼 데이터 채우기
+          setTitle(postData.title || "");
+          setContent(postData.content || "");
+          setPostType(mapApiCategoryToFrontend(postData.category));
+          setProjectType(postData.type || "ONLINE");
+          setMemberCount(postData.headCount || 1);
+          setPreference(postData.requirementPersonality || "");
+
+          // 날짜 형식 변환 (YYYY.MM.DD -> YYYY-MM-DD)
+          if (postData.endedAt) {
+            const formattedDate = postData.endedAt.replace(/\./g, "-");
+            setEndDate(formattedDate);
+          }
+
+          // 기술 스택 설정
+          if (postData.skills && Array.isArray(postData.skills)) {
+            setTechStack(postData.skills);
+          }
+
+          // 이미지 미리보기 설정
+          if (postData.image) {
+            setImagePreview(postData.image);
+          }
+        } catch (error) {
+          console.error("게시글 데이터 불러오기 실패:", error);
+          showError("게시글 데이터를 불러오는데 실패했습니다.");
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      fetchPostData();
+    }
+  }, [id, isEditMode]);
 
   // 이미지 업로드 처리
   const handleImageUpload = (e) => {
@@ -100,42 +155,77 @@ const PostCreate = () => {
       return;
     }
 
-    // 서버에 데이터 전송
-    const postData = {
-      title,
-      content,
-      headCount: memberCount,
-      image: imageFile, // base64 이미지 대신 파일 객체 전달
-      requirementPersonality: preference,
-      endedAt: endDate,
-      category: mapCategoryToApiValue(postType),
-      type: projectType, // 진행 방식(ONLINE, OFFLINE, MIX)
-      skills: techStack,
-      matchedUsers: [],
-      currentCount: 0,
-    };
-
     try {
-      // API 호출
-      const response = await postApi.createPost(postData);
-      showSuccess("게시글이 등록되었습니다!");
-
-      // 게시글 목록 페이지로 이동
-      navigate("/");
+      if (isEditMode) {
+        // 수정 모드일 경우 updatePost API 호출
+        const updateData = {
+          title,
+          content,
+          headCount: memberCount,
+          image: imageFile, // base64 이미지 대신 파일 객체 전달
+          requirementPersonality: preference,
+          endedAt: endDate,
+          category: mapCategoryToApiValue(postType),
+          type: projectType, // 진행 방식(ONLINE, OFFLINE, MIX)
+          skills: techStack,
+        };
+        await postApi.updatePost(Number(id), updateData);
+        showSuccess("게시글이 수정되었습니다!");
+        navigate(`/post/${id}`);
+      } else {
+        // 생성 모드일 경우 createPost API 호출
+        const createData = {
+          title,
+          content,
+          headCount: memberCount,
+          image: imageFile, // base64 이미지 대신 파일 객체 전달
+          requirementPersonality: preference,
+          endedAt: endDate,
+          category: mapCategoryToApiValue(postType),
+          type: projectType, // 진행 방식(ONLINE, OFFLINE, MIX)
+          skills: techStack,
+          matchedUsers: [],
+          currentCount: 0,
+        };
+        await postApi.createPost(createData);
+        showSuccess("게시글이 등록되었습니다!");
+        navigate("/");
+      }
     } catch (error) {
       if (error.response && error.response.status === 401) {
         showError("로그인이 필요합니다. 다시 로그인 해주세요.");
         navigate("/login");
         return;
       }
-      showError("게시글 등록에 실패했습니다. 다시 시도해주세요.");
+      showError(
+        `게시글 ${
+          isEditMode ? "수정" : "등록"
+        }에 실패했습니다. 다시 시도해주세요.`
+      );
     }
   };
+
+  // 로딩 중일 때 스피너 표시
+  if (loading) {
+    return (
+      <div
+        className="post-create-loading"
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "70vh",
+        }}
+      >
+        <Spinner size="large" text="게시글 정보를 불러오는 중입니다" />
+      </div>
+    );
+  }
 
   return (
     <div className="post-create-container">
       <div className="page-header">
-        <h1>프로젝트 모집 글쓰기</h1>
+        <h1>{isEditMode ? "프로젝트 모집 글 수정" : "프로젝트 모집 글쓰기"}</h1>
         <p>팀원을 모집하고 함께 성장할 수 있는 프로젝트를 시작해보세요.</p>
       </div>
 
@@ -315,7 +405,7 @@ const PostCreate = () => {
               취소
             </button>
             <button type="submit" className="submit-btn">
-              작성 완료
+              {isEditMode ? "수정 완료" : "작성 완료"}
             </button>
           </div>
         </form>

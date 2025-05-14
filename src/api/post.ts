@@ -109,7 +109,54 @@ export const postApi = {
   // 게시글 수정
   updatePost: async (id: number, postData: Partial<Post>) => {
     try {
-      const response = await api.put<Post>(`/api/posts/${id}`, postData);
+      // FormData 객체 생성
+      const formData = new FormData();
+
+      // 일반 필드 추가 (있는 경우에만)
+      if (postData.title) formData.append("title", postData.title);
+      if (postData.content) formData.append("content", postData.content);
+      if (postData.headCount)
+        formData.append("headCount", postData.headCount.toString());
+      if (postData.requirementPersonality !== undefined)
+        formData.append(
+          "requirementPersonality",
+          postData.requirementPersonality || ""
+        );
+      if (postData.endedAt) formData.append("endedAt", postData.endedAt);
+      if (postData.category) formData.append("category", postData.category);
+      if (postData.type) formData.append("type", postData.type);
+
+      // 스킬 배열 추가 (있는 경우에만)
+      if (postData.skills && Array.isArray(postData.skills)) {
+        postData.skills.forEach((skill) => {
+          formData.append("skills", skill);
+        });
+      }
+
+      // 이미지 처리
+      if (postData.image) {
+        // 이미지가 File 객체인 경우
+        if (typeof postData.image !== "string" && "name" in postData.image) {
+          formData.append("image", postData.image as File);
+        }
+        // 이미지가 base64 문자열인 경우
+        else if (
+          typeof postData.image === "string" &&
+          postData.image.startsWith("data:")
+        ) {
+          const blob = await (await fetch(postData.image)).blob();
+          const file = new File([blob], "image.png", { type: "image/png" });
+          formData.append("image", file);
+        }
+      }
+
+      // multipart/form-data로 PATCH 요청 전송
+      const response = await api.patch<Post>(`/api/posts/${id}`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
       return response.data;
     } catch (error: any) {
       console.error("게시글 수정 에러:", error.response?.data || error.message);
