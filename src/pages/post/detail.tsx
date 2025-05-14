@@ -29,8 +29,7 @@ interface MatchedUser {
   userId?: number;
   nickname?: string;
   image?: string;
-  skills?: string[];
-  isLeader?: boolean;
+  introduction?: string;
 }
 
 export default function PostDetail() {
