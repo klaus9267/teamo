@@ -824,6 +824,11 @@ div {
   margin: 0;
   line-height: 1.5;
   color: #555;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
 }
 
 /* AI 요약 및 추천 이유 섹션 */
@@ -902,8 +907,8 @@ div {
 }
 
 .rejected-badge {
-  background-color: #f8f9fa;
-  color: #6c757d;
+  background-color: #ffe6e6;
+  color: #dc3545;
 }
 
 /* 넓은 모달 및 그리드 스타일 */
@@ -949,4 +954,52 @@ div {
   line-height: 1.5;
   margin: 0;
   color: #555;
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 0;
+  gap: 16px;
+  text-align: center;
+}
+
+.loading-container p {
+  color: #666;
+  font-size: 14px;
+  margin: 0;
+}
+
+.error-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 20px;
+  text-align: center;
+  background-color: #fff0f0;
+  border-radius: 8px;
+  margin: 20px 0;
+}
+
+.error-message p {
+  color: #dc3545;
+  margin-bottom: 16px;
+}
+
+.retry-button {
+  background-color: #f8f9fa;
+  color: #dc3545;
+  border: 1px solid #dc3545;
+  border-radius: 4px;
+  padding: 8px 16px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.retry-button:hover {
+  background-color: #ffe6e6;
 }

@@ -1,7 +1,7 @@
-import React from 'react';
-import '../../styles/post/TeamMembers.css';
-import { Link } from 'react-router-dom';
-import Spinner from '../common/Spinner.tsx';
+import React from "react";
+import "../../styles/post/TeamMembers.css";
+import { Link } from "react-router-dom";
+import Spinner from "../common/Spinner.tsx";
 
 interface MemberType {
   id?: number;
@@ -28,11 +28,11 @@ const TeamMembers: React.FC<TeamMembersProps> = ({ leader, members }) => {
           <div
             className="member-info"
             style={{
-              display: 'flex',
-              justifyContent: 'center',
-              padding: '20px 0',
-              color: '#6b7280',
-              fontSize: '14px',
+              display: "flex",
+              justifyContent: "center",
+              padding: "20px 0",
+              color: "#6b7280",
+              fontSize: "14px",
             }}
           >
             아직 팀원이 없습니다
@@ -49,18 +49,25 @@ const TeamMembers: React.FC<TeamMembersProps> = ({ leader, members }) => {
         <Link
           to={`/profile/${leader.id ?? 0}`}
           style={{
-            display: 'flex',
-            alignItems: 'center',
-            textDecoration: 'none',
-            color: 'inherit',
-            width: '100%',
+            display: "flex",
+            alignItems: "center",
+            textDecoration: "none",
+            color: "inherit",
+            width: "100%",
           }}
         >
           <div className="member-avatar-container">
-            <img src={leader.avatar ?? '/assets/default-avatar.png'} alt={leader.name ?? '팀장'} className="member-avatar" />
+            <img
+              src={leader.avatar ?? "/profile.png"}
+              alt={leader.name ?? "팀장"}
+              className="member-avatar"
+              onError={(e) => {
+                e.currentTarget.src = "/profile.png";
+              }}
+            />
           </div>
           <div className="member-info">
-            <div className="member-name">{leader.name ?? '팀장'}</div>
+            <div className="member-name">{leader.name ?? "팀장"}</div>
           </div>
         </Link>
       </div>
@@ -74,18 +81,25 @@ const TeamMembers: React.FC<TeamMembersProps> = ({ leader, members }) => {
                 <Link
                   to={`/profile/${member?.id ?? 0}`}
                   style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    textDecoration: 'none',
-                    color: 'inherit',
-                    width: '100%',
+                    display: "flex",
+                    alignItems: "center",
+                    textDecoration: "none",
+                    color: "inherit",
+                    width: "100%",
                   }}
                 >
                   <div className="member-avatar-container">
-                    <img src={member?.avatar ?? '/assets/default-avatar.png'} alt={member?.name ?? '멤버'} className="member-avatar" />
+                    <img
+                      src={member?.avatar ?? "/profile.png"}
+                      alt={member?.name ?? "멤버"}
+                      className="member-avatar"
+                      onError={(e) => {
+                        e.currentTarget.src = "/profile.png";
+                      }}
+                    />
                   </div>
                   <div className="member-info">
-                    <div className="member-name">{member?.name ?? '멤버'}</div>
+                    <div className="member-name">{member?.name ?? "멤버"}</div>
                     <div className="member-skills">
                       {member?.skills?.map((skill, index) => (
                         <span key={index} className="skill-tag">
