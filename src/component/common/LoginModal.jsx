@@ -194,7 +194,7 @@ const LoginModal = ({ onClose, onLogin }) => {
             >
               카카오 로그인
             </button>
-            <button
+            {/* <button
               className="social-button google-button"
               onClick={() => {
                 // 구글 로그인 설정
@@ -231,7 +231,7 @@ const LoginModal = ({ onClose, onLogin }) => {
               }}
             >
               Github 로그인
-            </button>
+            </button> */}
           </div>
 
           <div className="divider">
