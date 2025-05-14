@@ -26,6 +26,22 @@ import {
   showConfirm,
 } from "../../utils/sweetAlert.ts";
 
+// 스피너 애니메이션을 위한 스타일
+const spinnerStyle = `
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+`;
+
+// 스타일 요소 추가
+if (typeof document !== "undefined") {
+  const styleElement = document.createElement("style");
+  styleElement.type = "text/css";
+  styleElement.appendChild(document.createTextNode(spinnerStyle));
+  document.head.appendChild(styleElement);
+}
+
 interface ProfileData {
   id: number;
   username: string;
@@ -318,6 +334,12 @@ const ProfilePage = () => {
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [profileImageError, setProfileImageError] = useState(false);
   const [togetherPosts, setTogetherPosts] = useState<TogetherPost[]>([]);
+  // 대표 설정 로딩 상태를 추적하는 상태 추가
+  const [loadingMainResumeId, setLoadingMainResumeId] = useState<number | null>(
+    null
+  );
+  // 삭제 중인 자기소개서 ID를 추적하는 상태 추가
+  const [deletingResumeId, setDeletingResumeId] = useState<number | null>(null);
 
   // 리뷰 작성 상태
   const [reviewPostId, setReviewPostId] = useState<number | "">("");
@@ -457,8 +479,11 @@ const ProfilePage = () => {
     );
 
     if (confirmed) {
-      // 자기소개서 삭제 API 호출 추가 필요
+      // 삭제 로딩 상태 설정
+      setDeletingResumeId(resumeId);
+
       try {
+        // 자기소개서 삭제 API 호출
         await resumeApi.deleteResume(resumeId);
 
         const updatedResumes =
@@ -473,6 +498,9 @@ const ProfilePage = () => {
       } catch (err) {
         console.error("자기소개서 삭제 에러:", err);
         showError("자기소개서 삭제에 실패했습니다.");
+      } finally {
+        // 삭제 로딩 상태 초기화
+        setDeletingResumeId(null);
       }
     }
   };
@@ -602,7 +630,39 @@ const ProfilePage = () => {
   // 대표 자기소개서 설정 핸들러
   const handleSetMainResume = async (resumeId: number) => {
     try {
-      await resumeApi.setMainResume(resumeId);
+      // 로딩 상태 설정
+      setLoadingMainResumeId(resumeId);
+
+      // 목록에서 해당 자기소개서 데이터 찾기
+      const resumeData = userData?.resumes.find(
+        (resume) => resume.id === resumeId
+      );
+
+      if (!resumeData) {
+        showError("자기소개서 정보를 찾을 수 없습니다.");
+        setLoadingMainResumeId(null);
+        return;
+      }
+
+      // 기존 데이터를 그대로 유지하면서 isMain 속성만 true로 설정
+      const updateData = {
+        ...resumeData,
+        isMain: true,
+      };
+
+      // FormData 객체 생성
+      const formData = new FormData();
+
+      // JSON 데이터를 문자열로 변환하여 'request' 파트에 추가
+      formData.append(
+        "request",
+        new Blob([JSON.stringify(updateData)], {
+          type: "application/json",
+        })
+      );
+
+      // 수정 API 호출
+      await resumeApi.updateResume(resumeId, formData);
 
       // 상태 업데이트
       const updatedResumes = userData?.resumes.map((resume) => ({
@@ -619,6 +679,9 @@ const ProfilePage = () => {
     } catch (err) {
       console.error("대표 자기소개서 설정 에러:", err);
       showError("대표 자기소개서 설정에 실패했습니다.");
+    } finally {
+      // 로딩 상태 초기화
+      setLoadingMainResumeId(null);
     }
   };
 
@@ -959,31 +1022,143 @@ const ProfilePage = () => {
                     className="resume-card"
                     key={resume.id}
                     onClick={() => navigate(`/profile/resume/${resume.id}`)}
+                    style={{
+                      position: "relative",
+                      overflow: "hidden",
+                      boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                      borderRadius: "4px",
+                      border: "1px solid #eaeaea",
+                    }}
                   >
-                    <div className="resume-header">
-                      <h4>{resume.title}</h4>
-                      {resume.isMain && (
-                        <span className="resume-main-badge">대표</span>
-                      )}
+                    <div
+                      className="resume-header"
+                      style={{
+                        width: "100%",
+                        backgroundColor: resume.isMain
+                          ? "#FFECB3"
+                          : "transparent",
+                        borderRadius: resume.isMain ? "4px 4px 0 0" : "0",
+                        marginBottom: "0",
+                        paddingBottom: "10px",
+                        borderBottom: "1px solid #eaeaea",
+                      }}
+                    >
+                      {" "}
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          padding: "10px 15px 0 15px",
+                        }}
+                      >
+                        {" "}
+                        {resume.isMain && (
+                          <span
+                            className="resume-main-badge"
+                            style={{
+                              marginRight: "8px",
+                              backgroundColor: "#FFD54F",
+                              color: "#333",
+                              padding: "2px 8px",
+                              fontSize: "11px",
+                              borderRadius: "4px",
+                              fontWeight: "bold",
+                            }}
+                          >
+                            {" "}
+                            대표{" "}
+                          </span>
+                        )}{" "}
+                        <h4
+                          style={{
+                            margin: 0,
+                            flex: 1,
+                            whiteSpace: "nowrap",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            color: resume.isMain ? "#333" : "inherit",
+                            fontSize: "14px",
+                            paddingRight: "10px",
+                          }}
+                        >
+                          {" "}
+                          {resume.title}{" "}
+                        </h4>{" "}
+                      </div>{" "}
                     </div>
-                    <p className="resume-content">
-                      {resume.content.length > 150
-                        ? `${resume.content.substring(0, 150)}...`
-                        : resume.content}
+                    <p
+                      className="resume-content"
+                      style={{
+                        height: "4.5em",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        display: "-webkit-box",
+                        WebkitLineClamp: 3,
+                        WebkitBoxOrient: "vertical",
+                        marginBottom: "30px",
+                        fontSize: "13px",
+                        padding: "15px 15px 0 15px",
+                      }}
+                    >
+                      {" "}
+                      {resume.content}{" "}
                     </p>
-                    <div className="word-count">
-                      {resume.content.length}/3000
+                    <div
+                      className="word-count"
+                      style={{
+                        position: "absolute",
+                        bottom: "10px",
+                        left: "16px",
+                        fontSize: "12px",
+                        color: "#666",
+                      }}
+                    >
+                      {" "}
+                      {resume.content.length}/1000{" "}
                     </div>
                     {isMyProfile && (
                       <div
                         className="resume-actions"
                         onClick={(e) => e.stopPropagation()}
+                        style={{
+                          position: "absolute",
+                          bottom: "10px",
+                          right: "16px",
+                          display: "flex",
+                          gap: "8px",
+                        }}
                       >
                         {!resume.isMain && (
                           <button
                             className="main-btn"
                             onClick={() => handleSetMainResume(resume.id)}
+                            disabled={loadingMainResumeId === resume.id}
+                            style={{
+                              padding: "3px 8px",
+                              fontSize: "12px",
+                              // backgroundColor: "#FFD54F",
+                              color: "#333",
+                              border: "none",
+                              borderRadius: "4px",
+                              cursor: "pointer",
+                            }}
                           >
+                            {loadingMainResumeId === resume.id ? (
+                              <div
+                                className="spinner"
+                                style={{
+                                  width: "12px",
+                                  height: "12px",
+                                  border: "2px solid rgba(255, 255, 255, 0.3)",
+                                  borderTop: "2px solid #FFFFFF",
+                                  borderRadius: "50%",
+                                  animation: "spin 1s linear infinite",
+                                  display: "inline-block",
+                                  marginRight: "5px",
+                                  verticalAlign: "middle",
+                                }}
+                              ></div>
+                            ) : null}
                             대표 설정
                           </button>
                         )}
@@ -992,6 +1167,15 @@ const ProfilePage = () => {
                           onClick={(e) => {
                             e.stopPropagation();
                             navigate(`/profile/resume/edit/${resume.id}`);
+                          }}
+                          style={{
+                            padding: "3px 8px",
+                            fontSize: "12px",
+                            backgroundColor: "#3498db",
+                            color: "white",
+                            border: "none",
+                            borderRadius: "4px",
+                            cursor: "pointer",
                           }}
                         >
                           수정
@@ -1002,7 +1186,37 @@ const ProfilePage = () => {
                             e.stopPropagation();
                             handleDeleteResume(resume.id);
                           }}
+                          disabled={deletingResumeId === resume.id}
+                          style={{
+                            padding: "3px 8px",
+                            fontSize: "12px",
+                            backgroundColor: "#e74c3c",
+                            color: "white",
+                            border: "none",
+                            borderRadius: "4px",
+                            cursor:
+                              deletingResumeId === resume.id
+                                ? "wait"
+                                : "pointer",
+                            opacity: deletingResumeId === resume.id ? 0.7 : 1,
+                          }}
                         >
+                          {deletingResumeId === resume.id ? (
+                            <div
+                              className="spinner"
+                              style={{
+                                width: "10px",
+                                height: "10px",
+                                border: "2px solid rgba(255, 255, 255, 0.3)",
+                                borderTop: "2px solid #FFFFFF",
+                                borderRadius: "50%",
+                                animation: "spin 1s linear infinite",
+                                display: "inline-block",
+                                marginRight: "3px",
+                                verticalAlign: "middle",
+                              }}
+                            ></div>
+                          ) : null}
                           삭제
                         </button>
                       </div>

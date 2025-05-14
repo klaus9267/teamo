@@ -56,8 +56,8 @@ export const showConfirm = (
     title: title,
     text: message,
     showCancelButton: true,
-    confirmButtonColor: "#FFD54F",
-    cancelButtonColor: "#d33",
+    confirmButtonColor: "#e74c3c",
+    cancelButtonColor: "#95a5a6",
     confirmButtonText: confirmText,
     cancelButtonText: cancelText,
   }).then((result) => {
