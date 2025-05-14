@@ -3,11 +3,20 @@ import api from "./config.ts";
 export interface CommentResponse {
   id: number;
   content: string;
-  username: string;
   createdAt: string;
+  parentCommentId?: number;
+  profile?: {
+    id?: number;
+    name?: string;
+    introduction?: string;
+    image?: string;
+    nickname?: string;
+    userId?: number;
+  };
+  // 이전 버전 호환성을 위한 필드들 (선택적)
+  username?: string;
   profileImage?: string;
   userId?: number;
-  parentCommentId?: number;
   children?: CommentResponse[];
 }
 

@@ -203,41 +203,33 @@ div {
 }
 
 .applied-status {
-  width: 100%;
-  padding: 12px;
-  background-color: #f3f4f6;
-  color: #4b5563;
-  border: 1px solid #e5e7eb;
-  border-radius: 6px;
+  background-color: #ff9800;
+  color: white;
+  font-size: 14px;
+  padding: 10px 15px;
+  border-radius: 4px;
   text-align: center;
-  font-weight: 500;
-  cursor: default;
-  display: block;
-  height: 44px;
-  box-sizing: border-box;
-  margin-top: 15px;
-  line-height: 20px;
-  font-size: 16px;
-  letter-spacing: -0.3px;
+  margin-top: 10px;
 }
 
 .accepted-status {
-  width: 100%;
-  padding: 12px;
-  background-color: #fff8e1;
-  color: #ff9800;
-  border: 1px solid #ff9800;
-  border-radius: 6px;
+  background-color: #4caf50;
+  color: white;
+  font-size: 14px;
+  padding: 10px 15px;
+  border-radius: 4px;
   text-align: center;
-  font-weight: 500;
-  cursor: default;
-  display: block;
-  height: 44px;
-  box-sizing: border-box;
-  margin-top: 15px;
-  line-height: 20px;
-  font-size: 16px;
-  letter-spacing: -0.3px;
+  margin-top: 10px;
+}
+
+.deadline-passed-status {
+  background-color: #9e9e9e;
+  color: white;
+  font-size: 14px;
+  padding: 10px 15px;
+  border-radius: 4px;
+  text-align: center;
+  margin-top: 10px;
 }
 
 /* 지원자 목록 관련 스타일 */

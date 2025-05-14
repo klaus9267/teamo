@@ -71,20 +71,6 @@ export const resumeApi = {
   // 자기소개서 작성
   createResume: async (resumeData: FormData | Omit<Resume, "id" | "date">) => {
     try {
-      console.log("자기소개서 생성 요청 데이터:", resumeData);
-
-      // FormData 내용 로깅
-      if (resumeData instanceof FormData) {
-        console.log("FormData 내용:");
-        for (let pair of resumeData.entries()) {
-          console.log(pair[0] + ": " + pair[1]);
-        }
-
-        // skills 확인
-        const skills = resumeData.getAll("skills");
-        console.log("전송되는 스킬 목록:", skills);
-      }
-
       const config = {
         headers: {
           "Content-Type":
@@ -99,7 +85,6 @@ export const resumeApi = {
         resumeData,
         config
       );
-      console.log("자기소개서 생성 응답:", response.data);
       return response.data;
     } catch (error: any) {
       console.error(
@@ -113,20 +98,6 @@ export const resumeApi = {
   // 자기소개서 수정
   updateResume: async (id: number, resumeData: FormData | Partial<Resume>) => {
     try {
-      console.log("자기소개서 수정 요청 데이터:", resumeData);
-
-      // FormData 내용 로깅
-      if (resumeData instanceof FormData) {
-        console.log("FormData 내용:");
-        for (let pair of resumeData.entries()) {
-          console.log(pair[0] + ": " + pair[1]);
-        }
-
-        // skills 확인
-        const skills = resumeData.getAll("skills");
-        console.log("전송되는 스킬 목록:", skills);
-      }
-
       const config = {
         headers: {
           "Content-Type":
@@ -141,7 +112,6 @@ export const resumeApi = {
         resumeData,
         config
       );
-      console.log("자기소개서 수정 응답:", response.data);
       return response.data;
     } catch (error: any) {
       console.error(
@@ -155,9 +125,7 @@ export const resumeApi = {
   // 자기소개서 삭제
   deleteResume: async (id: number) => {
     try {
-      console.log(`자기소개서 삭제 API 호출: /api/resumes/${id}`);
       const response = await api.delete(`/api/resumes/${id}`);
-      console.log("자기소개서 삭제 API 응답:", response);
       return response.data;
     } catch (error: any) {
       console.error(

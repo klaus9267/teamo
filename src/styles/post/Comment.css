@@ -85,6 +85,21 @@
   border-bottom: 1px solid #f5f5f5;
 }
 
+/* 답글 그룹 내 마지막 요소에는 경계선 제거 */
+.replies .comment.reply:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+/* 답글 그룹 전체 스타일 - 마지막 경계선 추가 */
+.replies {
+  margin-top: 15px;
+  margin-bottom: 5px;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
 .comment-avatar {
   flex-shrink: 0;
   width: 40px;
@@ -161,6 +176,8 @@
 
 .reply-form {
   margin: 15px 0;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .reply-textarea {
@@ -173,17 +190,20 @@
   font-family: inherit;
   font-size: 0.9rem;
   margin-bottom: 10px;
+  box-sizing: border-box;
 }
 
 .reply-submit-btn {
   background-color: #ffd54f;
   color: #333;
   border: none;
-  padding: 8px 16px;
-  border-radius: 4px;
+  padding: 10px 20px;
   cursor: pointer;
-  font-size: 0.85rem;
+  font-weight: 500;
+  font-size: 0.9rem;
   float: right;
+  margin: 10px;
+  border-radius: 0;
 }
 
 .reply-submit-btn:hover {
@@ -250,8 +270,4 @@
 
 .comments-error {
   color: #e74c3c;
-}
-
-.replies {
-  margin-top: 15px;
 }
