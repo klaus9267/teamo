@@ -392,7 +392,7 @@ export default function HomePage() {
       </div>
 
       <div className="home-container">
-        <section className="banner-section">
+        {/* <section className="banner-section">
           <div className="banner-left">
             <div className="banner-text">
               <h1>팀원 준비 완료!</h1>
@@ -451,7 +451,7 @@ export default function HomePage() {
               />
             ))}
           </div>
-        </section>
+        </section> */}
 
         <section className="recruitment-section">
           <div className="category-filter-row">
