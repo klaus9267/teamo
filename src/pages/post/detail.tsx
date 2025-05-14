@@ -192,9 +192,23 @@ export default function PostDetail() {
       if (action === "accept") {
         await applyApi.selectApplicant(applyId, true);
         showSuccess("지원자가 승인되었습니다.");
+
+        // 상태 업데이트
+        setApplicants((prev) =>
+          prev.map((app) =>
+            app.applyId === applyId ? { ...app, isSelected: "PASS" } : app
+          )
+        );
       } else {
         await applyApi.selectApplicant(applyId, false);
         showSuccess("지원자가 거절되었습니다.");
+
+        // 상태 업데이트
+        setApplicants((prev) =>
+          prev.map((app) =>
+            app.applyId === applyId ? { ...app, isSelected: "FAIL" } : app
+          )
+        );
       }
 
       // 지원자 목록 새로고침
@@ -348,9 +362,10 @@ export default function PostDetail() {
       ? {
           id: leaderUser.userId ?? 0,
           name: leaderUser.nickname ?? "팀장",
-          avatar: leaderUser.image ?? "https://via.placeholder.com/40",
-          email: "팀장@example.com", // 이메일 정보가 없으므로 임의 값 사용
+          avatar: leaderUser.image ?? "/profile.png",
+          email: leaderUser.email ?? "팀장@example.com", // 이메일 정보가 없으면 임의 값 사용
           isLeader: true,
+          skills: [], // API에서 skills 필드가 없기 때문에 빈 배열로 설정
         }
       : null;
   };
@@ -370,13 +385,19 @@ export default function PostDetail() {
       .map((user) => ({
         id: user?.userId ?? 0,
         name: user?.nickname ?? "멤버",
-        avatar: user?.image ?? "https://via.placeholder.com/40",
-        skills: user?.skills ?? [],
+        avatar: user?.image ?? "/profile.png",
+        email: user?.email ?? "이메일 정보 없음",
+        skills: [], // API에서 skills 필드가 없기 때문에 빈 배열로 설정
       }));
   };
 
   const leader = getLeader(post?.matchedUsers);
   const members = getMembers(post?.matchedUsers, leader?.id);
+
+  // 디버깅 로그
+  console.log("matchedUsers:", post?.matchedUsers);
+  console.log("leader:", leader);
+  console.log("members:", members);
 
   return (
     <div className="post-detail-outer">
@@ -420,7 +441,22 @@ export default function PostDetail() {
                 </div>
 
                 <div className="applicants-modal-content">
-                  {applicants.length === 0 ? (
+                  {loading ? (
+                    <div className="loading-container">
+                      <Spinner size="medium" color="#FFD43B" />
+                      <p>지원자 목록을 불러오는 중입니다...</p>
+                    </div>
+                  ) : error ? (
+                    <div className="error-message">
+                      <p>{error}</p>
+                      <button
+                        onClick={() => fetchApplicants(post.id)}
+                        className="retry-button"
+                      >
+                        다시 시도
+                      </button>
+                    </div>
+                  ) : applicants.length === 0 ? (
                     <p className="no-applicants-message">
                       아직 지원자가 없습니다.
                     </p>
@@ -477,7 +513,12 @@ export default function PostDetail() {
                               <h4>자기소개</h4>
                               <p>
                                 {applicant.resume && applicant.resume.content
-                                  ? applicant.resume.content
+                                  ? applicant.resume.content.length > 150
+                                    ? `${applicant.resume.content.substring(
+                                        0,
+                                        150
+                                      )}...`
+                                    : applicant.resume.content
                                   : "자기소개 내용이 없습니다."}
                               </p>
                             </div>
@@ -534,12 +575,10 @@ export default function PostDetail() {
                           </div>
 
                           <div className="applicant-actions">
-                            {applicant.isSelected !== undefined ? (
-                              applicant.isSelected ? (
-                                <div className="selected-badge">선발됨</div>
-                              ) : (
-                                <div className="rejected-badge">거절됨</div>
-                              )
+                            {applicant.isSelected === "PASS" ? (
+                              <div className="selected-badge">합격</div>
+                            ) : applicant.isSelected === "FAIL" ? (
+                              <div className="rejected-badge">불합격</div>
                             ) : (
                               <>
                                 <button
@@ -551,7 +590,7 @@ export default function PostDetail() {
                                     )
                                   }
                                 >
-                                  승인
+                                  합격
                                 </button>
                                 <button
                                   className="reject-button"
@@ -562,7 +601,7 @@ export default function PostDetail() {
                                     )
                                   }
                                 >
-                                  거절
+                                  불합격
                                 </button>
                               </>
                             )}
@@ -663,9 +702,12 @@ export default function PostDetail() {
               >
                 {" "}
                 <img
-                  src={leader.avatar ?? "https://via.placeholder.com/40"}
+                  src={leader.avatar ?? "/profile.png"}
                   alt="리더 프로필"
                   style={{ width: 48, height: 48, borderRadius: "50%" }}
+                  onError={(e) => {
+                    e.currentTarget.src = "/profile.png";
+                  }}
                 />{" "}
                 <div>
                   {" "}

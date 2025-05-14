@@ -42,6 +42,7 @@ export const postApi = {
   getPost: async (id: number) => {
     try {
       const response = await api.get<Post>(`/api/posts/${id}`);
+      console.log(response.data);
       return response.data;
     } catch (error: any) {
       console.error(
