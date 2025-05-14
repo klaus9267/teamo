@@ -15,6 +15,7 @@ function Router() {
     <Routes>
       <Route path="/" element={<HomePage />}></Route>
       <Route path="/post/create" element={<PostCreate />} />
+      <Route path="/post/edit/:id" element={<PostCreate />} />
       <Route path="/post/:id/applicants" element={<ApplicantsPage />} />
       <Route path="/post/:id" element={<PostDetail />} />
       <Route path="/hub" element={<HubPage />} />
