@@ -46,6 +46,7 @@ export default function PostDetail() {
   const [showApplicantsList, setShowApplicantsList] = useState(false);
   const [applicants, setApplicants] = useState([]);
   const [userId, setUserId] = useState(null as number | null);
+  const [isDeadlinePassed, setIsDeadlinePassed] = useState(false);
 
   // 지원 모달 관련 상태
   const [showApplyModal, setShowApplyModal] = useState(false);
@@ -62,6 +63,17 @@ export default function PostDetail() {
     try {
       const data = await postApi.getPost(postId);
       setPost(data);
+
+      // 모집 마감일 체크
+      if (data.endedAt) {
+        const endDate = new Date(data.endedAt);
+        const today = new Date();
+        // 날짜 비교 (시간은 무시하고 날짜만 비교)
+        today.setHours(0, 0, 0, 0);
+        endDate.setHours(0, 0, 0, 0);
+        setIsDeadlinePassed(today > endDate);
+      }
+
       setLoading(false);
     } catch (err) {
       setError("게시글을 불러오는데 실패했습니다.");
@@ -201,6 +213,12 @@ export default function PostDetail() {
       showWarning(
         "게시글 정보를 불러오는 중입니다. 잠시 후 다시 시도해주세요."
       );
+      return;
+    }
+
+    // 마감일 확인
+    if (isDeadlinePassed) {
+      showWarning("모집 마감일이 지난 게시글입니다.");
       return;
     }
 
@@ -690,11 +708,15 @@ export default function PostDetail() {
               <div className="accepted-status">
                 합류한 {post?.category ?? "프로젝트"}입니다
               </div>
+            ) : isDeadlinePassed ? (
+              <div className="deadline-passed-status">
+                모집이 마감되었습니다
+              </div>
             ) : (
               <button
                 onClick={handleApply}
                 className="apply-button"
-                disabled={applyLoading}
+                disabled={applyLoading || isDeadlinePassed}
               >
                 {applyLoading ? (
                   <Spinner size="small" color="#1B3A4B" inButton={true} />
