@@ -86,7 +86,7 @@ const ResumeForm = () => {
 
           setTitle(data.title || "");
           setContent(data.content || "");
-          setSelectedSkills(data.skills || []);
+          setSelectedSkills(Array.from(new Set(data.skills || [])));
           setPersonality(data.personality || "");
           setIsMain(data.isMain || false);
 
@@ -292,8 +292,8 @@ const ResumeForm = () => {
             <label>기술 스택</label>
             <div className="skills-search-container" ref={searchInputRef}>
               <div className="selected-skills">
-                {selectedSkills.map((skill) => (
-                  <span key={skill} className="skill-tag selected">
+                {selectedSkills.map((skill, idx) => (
+                  <span key={`${skill}-${idx}`} className="skill-tag selected">
                     <img
                       src={skillIcons[skill] || defaultIcon}
                       alt={skill}

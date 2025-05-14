@@ -13,8 +13,13 @@ interface CommentProps {
   postId: number;
 }
 
+// API 응답 타입 확장
+interface CommentWithReplies extends CommentResponse {
+  replies?: CommentWithReplies[];
+}
+
 const Comment: React.FC<CommentProps> = ({ postId }) => {
-  const [comments, setComments] = useState<CommentResponse[]>([]);
+  const [comments, setComments] = useState<CommentWithReplies[]>([]);
   const [newComment, setNewComment] = useState("");
   const [activeReplyId, setActiveReplyId] = useState<number | null>(null);
   const [replyContent, setReplyContent] = useState("");
@@ -43,32 +48,7 @@ const Comment: React.FC<CommentProps> = ({ postId }) => {
     try {
       setLoading(true);
       const data = await commentApi.getComments(postId);
-
-      // 계층 구조로 변환
-      const commentMap = new Map<number, CommentResponse>();
-      const rootComments: CommentResponse[] = [];
-
-      // 먼저 모든 댓글을 맵에 저장
-      data.forEach((comment) => {
-        commentMap.set(comment.id, {
-          ...comment,
-          children: [],
-        });
-      });
-
-      // 부모-자식 관계 설정
-      data.forEach((comment) => {
-        if (comment.parentCommentId) {
-          const parentComment = commentMap.get(comment.parentCommentId);
-          if (parentComment && parentComment.children) {
-            parentComment.children.push(commentMap.get(comment.id) || comment);
-          }
-        } else {
-          rootComments.push(commentMap.get(comment.id) || comment);
-        }
-      });
-
-      setComments(rootComments);
+      setComments(data as CommentWithReplies[]);
       setLoading(false);
     } catch (err: any) {
       console.error("댓글 목록 조회 오류:", err);
@@ -221,15 +201,15 @@ const Comment: React.FC<CommentProps> = ({ postId }) => {
   const getTotalCommentCount = () => {
     let count = comments?.length ?? 0;
     comments?.forEach((comment) => {
-      if (comment?.children) {
-        count += comment.children.length;
+      if (comment?.replies && Array.isArray(comment.replies)) {
+        count += comment.replies.length;
       }
     });
     return count;
   };
 
   // 댓글 컴포넌트 (재귀 렌더링)
-  const renderComment = (comment: CommentResponse, isReply = false) => (
+  const renderComment = (comment: CommentWithReplies, isReply = false) => (
     <div key={comment.id} className={`comment ${isReply ? "reply" : ""}`}>
       <div className="comment-avatar">
         <img
@@ -314,9 +294,9 @@ const Comment: React.FC<CommentProps> = ({ postId }) => {
           </form>
         )}
 
-        {comment.children && comment.children.length > 0 && (
+        {comment.replies && comment.replies.length > 0 && (
           <div className="replies">
-            {comment.children.map((reply) => renderComment(reply, true))}
+            {comment.replies.map((reply) => renderComment(reply, true))}
           </div>
         )}
       </div>
