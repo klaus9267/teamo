@@ -94,9 +94,10 @@ export default function ResumeDetail() {
 
   // 줄바꿈을 처리하는 함수
   const formatContent = (text) => {
+    if (!text) return null;
     return text.split("\n").map((line, idx) => (
       <React.Fragment key={idx}>
-        {line}
+        {line || " "}
         <br />
       </React.Fragment>
     ));
@@ -132,20 +133,36 @@ export default function ResumeDetail() {
               </svg>
               자기소개서 목록으로 돌아가기
             </Link>
-            <h1 className="resume-title">{resume.title}</h1>
+            <h1
+              className="resume-title"
+              style={{
+                whiteSpace: "normal",
+                wordBreak: "break-word",
+                overflowWrap: "break-word",
+                maxWidth: "100%",
+                overflow: "visible",
+              }}
+            >
+              {" "}
+              {resume.title}{" "}
+            </h1>
           </div>
 
           <div className="resume-detail-content">
             {resume.skills && resume.skills.length > 0 ? (
               <section className="resume-section">
-                <h3>기술 스택</h3>
+                {" "}
+                <h3>기술 스택</h3>{" "}
                 <div className="resume-skills">
-                  {resume.skills.map((skill, index) => (
+                  {" "}
+                  {/* 중복 제거하여 기술 스택 표시 */}{" "}
+                  {Array.from(new Set(resume.skills)).map((skill, index) => (
                     <span key={index} className="skill-tag">
-                      {skill}
+                      {" "}
+                      {skill}{" "}
                     </span>
-                  ))}
-                </div>
+                  ))}{" "}
+                </div>{" "}
               </section>
             ) : (
               <section className="resume-section">
@@ -165,8 +182,18 @@ export default function ResumeDetail() {
 
             <section className="resume-section">
               <h3>자기소개서 내용</h3>
-              <div className="resume-content">
-                {formatContent(resume.content)}
+              <div
+                className="resume-content"
+                style={{
+                  whiteSpace: "pre-wrap",
+                  wordBreak: "break-word",
+                  overflowWrap: "break-word",
+                  maxWidth: "100%",
+                  overflow: "visible",
+                }}
+              >
+                {" "}
+                {formatContent(resume.content)}{" "}
               </div>
             </section>
 
