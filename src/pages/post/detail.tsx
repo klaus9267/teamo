@@ -384,6 +384,27 @@ export default function PostDetail() {
         <div className="post-detail-main">
           <h1 style={{ textAlign: "left" }}>{post?.title}</h1>
 
+          {/* 게시글 이미지 표시 */}
+          {post?.image && (
+            <div className="post-image-container" style={{ margin: "24px 0" }}>
+              <img
+                src={post.image}
+                alt="게시글 이미지"
+                style={{
+                  width: "100%",
+                  maxHeight: "500px",
+                  objectFit: "cover",
+                  borderRadius: "8px",
+                  boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
+                }}
+                onError={(e) => {
+                  e.currentTarget.style.display = "none";
+                  console.error("이미지 로드 실패:", post.image);
+                }}
+              />
+            </div>
+          )}
+
           {/* 지원자 목록 모달 섹션 - 분리하여 화면 전체에 모달로 표시 */}
           {isAuthor && showApplicantsList && (
             <div className="applicants-modal-overlay">

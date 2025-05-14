@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import axios from 'axios';
-import { authApi } from '../../api/auth.ts';
-import { socialApi } from '../../api/social.ts';
-import Spinner from '../../component/common/Spinner.tsx';
-import { showError } from '../../utils/sweetAlert.ts';
+import React, { useEffect, useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import axios from "axios";
+import { authApi } from "../../api/auth.ts";
+import { socialApi } from "../../api/social.ts";
+import Spinner from "../../component/common/Spinner.tsx";
+import { showError } from "../../utils/sweetAlert.ts";
 
 interface TokenResponse {
   access_token: string;
@@ -33,48 +33,61 @@ interface SocialUserInfo {
 const SocialCallback = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [debug, setDebug] = useState('');
+  const [debug, setDebug] = useState("");
   const [errorDetails, setErrorDetails] = useState<string[]>([]);
   const [tokenInfo, setTokenInfo] = useState<TokenResponse | null>(null);
   const [userInfo, setUserInfo] = useState<SocialUserInfo | null>(null);
-  const [provider, setProvider] = useState<string>('');
+  const [provider, setProvider] = useState<string>("");
   const navigate = useNavigate();
   const location = useLocation();
 
   // 에러 정보 로깅 함수
   const logError = (message: string, details?: any) => {
     console.error(message, details);
-    setErrorDetails(prev => [...prev, `[${new Date().toISOString()}] ${message}${details ? '\n' + JSON.stringify(details, null, 2) : ''}`]);
+    setErrorDetails((prev) => [
+      ...prev,
+      `[${new Date().toISOString()}] ${message}${
+        details ? "\n" + JSON.stringify(details, null, 2) : ""
+      }`,
+    ]);
   };
 
   // 인가 코드로 액세스 토큰 발급받기
-  const getAccessToken = async (provider: string, code: string): Promise<TokenResponse> => {
+  const getAccessToken = async (
+    provider: string,
+    code: string
+  ): Promise<TokenResponse> => {
     try {
-      if (provider === 'kakao') {
+      if (provider === "kakao") {
         // 카카오 로그인 토큰 요청을 위한 데이터 준비
-        const redirectUri = process.env.REACT_APP_KAKAO_REDIRECT_URI || 'http://localhost:3000/login/oauth2/code/kakao';
-        const clientId = process.env.REACT_APP_KAKAO_CLIENT_ID || '';
-        const clientSecret = process.env.REACT_APP_KAKAO_CLIENT_SECRET || '';
+        const redirectUri =
+          process.env.REACT_APP_KAKAO_REDIRECT_URI ||
+          "http://localhost:3000/login/oauth2/code/kakao";
+        const clientId = process.env.REACT_APP_KAKAO_CLIENT_ID || "";
+        const clientSecret = process.env.REACT_APP_KAKAO_CLIENT_SECRET || "";
 
         // 디버깅을 위한 요청 정보 로깅
         const requestInfo = {
-          url: 'https://kauth.kakao.com/oauth/token',
+          url: "https://kauth.kakao.com/oauth/token",
           params: {
-            grant_type: 'authorization_code',
+            grant_type: "authorization_code",
             client_id: clientId,
             redirect_uri: redirectUri,
-            code: code.substring(0, 10) + '...', // 코드 일부만 표시 (보안)
-            ...(clientSecret ? { client_secret: '***' } : {}),
+            code: code.substring(0, 10) + "...", // 코드 일부만 표시 (보안)
+            ...(clientSecret ? { client_secret: "***" } : {}),
           },
           headers: {
-            'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8',
+            "Content-Type": "application/x-www-form-urlencoded;charset=utf-8",
           },
         };
-        setErrorDetails(prev => [...prev, `토큰 요청 정보:\n${JSON.stringify(requestInfo, null, 2)}`]);
+        setErrorDetails((prev) => [
+          ...prev,
+          `토큰 요청 정보:\n${JSON.stringify(requestInfo, null, 2)}`,
+        ]);
 
         // Content-Type을 application/x-www-form-urlencoded로 설정하여 CORS 이슈 해결
         const tokenData = await socialApi.getKakaoToken({
-          grant_type: 'authorization_code',
+          grant_type: "authorization_code",
           client_id: clientId,
           redirect_uri: redirectUri,
           code: code,
@@ -90,39 +103,54 @@ const SocialCallback = () => {
         status: error.response?.status,
         headers: error.response?.headers,
       });
-      throw new Error(error.response?.data?.error_description || error.message || `${provider} 액세스 토큰 발급 실패`);
+      throw new Error(
+        error.response?.data?.error_description ||
+          error.message ||
+          `${provider} 액세스 토큰 발급 실패`
+      );
     }
   };
 
   // 액세스 토큰으로 사용자 정보 가져오기
-  const getUserInfo = async (provider: string, accessToken: string): Promise<SocialUserInfo> => {
+  const getUserInfo = async (
+    provider: string,
+    accessToken: string
+  ): Promise<SocialUserInfo> => {
     try {
-      if (provider === 'kakao') {
+      if (provider === "kakao") {
         // 디버깅을 위한 요청 정보 로깅
         const requestInfo = {
-          url: 'https://kapi.kakao.com/v2/user/me',
+          url: "https://kapi.kakao.com/v2/user/me",
           headers: {
             Authorization: `Bearer ${accessToken.substring(0, 10)}...`, // 토큰 일부만 표시 (보안)
-            'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8',
+            "Content-Type": "application/x-www-form-urlencoded;charset=utf-8",
           },
         };
-        setErrorDetails(prev => [...prev, `사용자 정보 요청 정보:\n${JSON.stringify(requestInfo, null, 2)}`]);
+        setErrorDetails((prev) => [
+          ...prev,
+          `사용자 정보 요청 정보:\n${JSON.stringify(requestInfo, null, 2)}`,
+        ]);
 
         // 카카오 사용자 정보 요청
         const kakaoUserInfo = await socialApi.getKakaoUserInfo(accessToken);
 
         // UUID 생성 함수
         const generateUID = () => {
-          return 'user_' + Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
+          return (
+            "user_" +
+            Date.now().toString(36) +
+            Math.random().toString(36).substr(2, 5)
+          );
         };
 
         // 닉네임이 없는 경우를 대비한 기본값 설정
-        const userNickname = kakaoUserInfo.properties?.nickname || generateUID();
+        const userNickname =
+          kakaoUserInfo.properties?.nickname || generateUID();
 
         // 응답 데이터를 표준 형식으로 변환
         const standardUserInfo: SocialUserInfo = {
           id: kakaoUserInfo.id,
-          provider: 'kakao',
+          provider: "kakao",
           social_id: `kakao_${kakaoUserInfo.id}`,
           connected_at: kakaoUserInfo.connected_at,
           properties: kakaoUserInfo.properties,
@@ -143,21 +171,25 @@ const SocialCallback = () => {
         status: error.response?.status,
         headers: error.response?.headers,
       });
-      throw new Error(error.response?.data?.error_description || error.message || `${provider} 사용자 정보 가져오기 실패`);
+      throw new Error(
+        error.response?.data?.error_description ||
+          error.message ||
+          `${provider} 사용자 정보 가져오기 실패`
+      );
     }
   };
 
   // provider 값을 type 값으로 변환하는 함수
   const getSocialType = (provider: string) => {
     switch (provider.toLowerCase()) {
-      case 'kakao':
-        return 'KAKAO';
-      case 'github':
-        return 'GITHUB';
-      case 'google':
-        return 'GOOGLE';
+      case "kakao":
+        return "KAKAO";
+      case "github":
+        return "GITHUB";
+      case "google":
+        return "GOOGLE";
       default:
-        throw new Error('지원하지 않는 소셜 로그인 타입입니다.');
+        throw new Error("지원하지 않는 소셜 로그인 타입입니다.");
     }
   };
 
@@ -171,28 +203,31 @@ const SocialCallback = () => {
 
         // URL에서 code 파라미터 추출
         const searchParams = new URLSearchParams(location.search);
-        const code = searchParams.get('code');
-        const state = searchParams.get('state');
+        const code = searchParams.get("code");
+        const state = searchParams.get("state");
 
         // 프로바이더 결정
         let detectedProvider;
 
-        if (location.pathname.includes('/login/oauth2/code/')) {
+        if (location.pathname.includes("/login/oauth2/code/")) {
           // /login/oauth2/code/:provider 형식인 경우
-          const pathSegments = location.pathname.split('/');
+          const pathSegments = location.pathname.split("/");
           detectedProvider = pathSegments[pathSegments.length - 1];
-        } else if (location.pathname === '/auth') {
+        } else if (location.pathname === "/auth") {
           // /auth 경로로 리다이렉트된 경우, 쿼리 파라미터나 다른 정보로 프로바이더 판단
           // 예: 카카오의 경우 'scope' 파라미터 존재 여부로 판단 가능
-          if (searchParams.has('scope') && searchParams.get('scope')?.includes('profile')) {
-            detectedProvider = 'kakao';
+          if (
+            searchParams.has("scope") &&
+            searchParams.get("scope")?.includes("profile")
+          ) {
+            detectedProvider = "kakao";
           } else {
             // 기본값으로 kakao 설정 (실제로는 더 정확한 구분 로직이 필요할 수 있음)
-            detectedProvider = 'kakao';
+            detectedProvider = "kakao";
           }
         } else {
           // 알 수 없는 경로
-          const errorMsg = '지원되지 않는 소셜 로그인 경로입니다.';
+          const errorMsg = "지원되지 않는 소셜 로그인 경로입니다.";
           logError(errorMsg, { path: location.pathname });
           setError(errorMsg);
           setLoading(false);
@@ -202,10 +237,15 @@ const SocialCallback = () => {
         // 프로바이더 저장
         setProvider(detectedProvider);
 
-        setErrorDetails(prev => [...prev, `감지된 제공자: ${detectedProvider}`, `인증 코드: ${code ? `${code.substring(0, 10)}...` : '없음'}`, `상태 값: ${state || '없음'}`]);
+        setErrorDetails((prev) => [
+          ...prev,
+          `감지된 제공자: ${detectedProvider}`,
+          `인증 코드: ${code ? `${code.substring(0, 10)}...` : "없음"}`,
+          `상태 값: ${state || "없음"}`,
+        ]);
 
         if (!code) {
-          const errorMsg = '인증 코드를 찾을 수 없습니다.';
+          const errorMsg = "인증 코드를 찾을 수 없습니다.";
           logError(errorMsg);
           setError(errorMsg);
           setLoading(false);
@@ -218,51 +258,55 @@ const SocialCallback = () => {
           setTokenInfo(tokenData);
 
           // 2. 액세스 토큰으로 사용자 정보 가져오기
-          const retrievedUserInfo = await socialApi.getKakaoUserInfo(tokenData.access_token);
+          const retrievedUserInfo = await socialApi.getKakaoUserInfo(
+            tokenData.access_token
+          );
           setUserInfo(retrievedUserInfo);
 
           // 소셜 로그인 백엔드 인증 요청
           const socialLoginPayload = {
-            name: retrievedUserInfo.properties?.nickname || `user_${retrievedUserInfo.id}`,
+            name:
+              retrievedUserInfo.properties?.nickname ||
+              `user_${retrievedUserInfo.id}`,
             socialId: retrievedUserInfo.id.toString(),
             type: getSocialType(detectedProvider),
           };
-          const socialLoginRes = await socialApi.socialLogin(socialLoginPayload);
+          const socialLoginRes = await socialApi.socialLogin(
+            socialLoginPayload
+          );
           // JWT 토큰 저장 (응답에 토큰이 있다고 가정)
           const jwt = socialLoginRes.token;
           if (jwt) {
-            localStorage.setItem('token', jwt);
+            localStorage.setItem("token", jwt);
 
             // userId도 localStorage에 저장 (응답에 있는 경우)
             if (socialLoginRes.userId) {
-              localStorage.setItem('myUserId', String(socialLoginRes.userId));
-              console.log('소셜 로그인 성공: 사용자 ID 저장됨', socialLoginRes.userId);
+              localStorage.setItem("myUserId", String(socialLoginRes.userId));
             } else {
               // 토큰에서 사용자 정보 추출 시도
               try {
                 // authApi를 사용하여 토큰에서 사용자 정보 추출
                 const userInfo = authApi.getUserInfo();
                 if (userInfo && userInfo.id) {
-                  localStorage.setItem('myUserId', String(userInfo.id));
-                  console.log('소셜 로그인 성공: 토큰에서 사용자 ID 저장됨', userInfo.id);
+                  localStorage.setItem("myUserId", String(userInfo.id));
                 }
               } catch (err) {
-                console.error('토큰에서 사용자 정보 추출 실패:', err);
+                console.error("토큰에서 사용자 정보 추출 실패:", err);
               }
             }
           }
 
           // 홈으로 이동
-          window.location.href = '/';
+          window.location.href = "/";
           return;
         } catch (err) {
-          logError('소셜 로그인 백엔드 인증 오류:', err);
-          setError('소셜 로그인 백엔드 인증에 실패했습니다.');
+          logError("소셜 로그인 백엔드 인증 오류:", err);
+          setError("소셜 로그인 백엔드 인증에 실패했습니다.");
           setLoading(false);
           return;
         }
       } catch (err: any) {
-        logError('Error processing OAuth callback:', err);
+        logError("Error processing OAuth callback:", err);
         setError(`소셜 로그인 처리 중 오류가 발생했습니다: ${err.message}`);
         setLoading(false);
       }
@@ -274,7 +318,7 @@ const SocialCallback = () => {
   useEffect(() => {
     if (error) {
       showError(error);
-      navigate('/');
+      navigate("/");
     }
   }, [error, navigate]);
 
@@ -288,11 +332,11 @@ const SocialCallback = () => {
       <div
         className="social-callback-container"
         style={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          height: '100vh',
-          flexDirection: 'column',
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+          flexDirection: "column",
         }}
       >
         <h2>소셜 로그인 처리 중...</h2>
@@ -310,13 +354,13 @@ const SocialCallback = () => {
     <div
       className="social-callback-success"
       style={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        minHeight: '100vh',
-        flexDirection: 'column',
-        color: '#52c41a',
-        padding: '20px',
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        minHeight: "100vh",
+        flexDirection: "column",
+        color: "#52c41a",
+        padding: "20px",
       }}
     >
       <h2>로그인 성공! ({provider} 로그인)</h2>
@@ -324,86 +368,102 @@ const SocialCallback = () => {
       {userInfo && (
         <div
           style={{
-            marginTop: '20px',
-            padding: '15px',
-            background: '#e6f7ff',
-            borderRadius: '5px',
-            width: '100%',
-            maxWidth: '800px',
-            border: '1px solid #91d5ff',
+            marginTop: "20px",
+            padding: "15px",
+            background: "#e6f7ff",
+            borderRadius: "5px",
+            width: "100%",
+            maxWidth: "800px",
+            border: "1px solid #91d5ff",
           }}
         >
           <h3>사용자 정보</h3>
           <div
             style={{
-              padding: '10px',
-              borderRadius: '4px',
-              marginBottom: '15px',
-              background: '#fff',
-              border: '1px solid #d9d9d9',
+              padding: "10px",
+              borderRadius: "4px",
+              marginBottom: "15px",
+              background: "#fff",
+              border: "1px solid #d9d9d9",
             }}
           >
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <table style={{ width: "100%", borderCollapse: "collapse" }}>
               <tbody>
                 <tr>
                   <th
                     style={{
-                      textAlign: 'left',
-                      padding: '8px',
-                      borderBottom: '1px solid #eee',
+                      textAlign: "left",
+                      padding: "8px",
+                      borderBottom: "1px solid #eee",
                     }}
                   >
                     소셜 ID:
                   </th>
-                  <td style={{ padding: '8px', borderBottom: '1px solid #eee' }}>{userInfo.social_id}</td>
+                  <td
+                    style={{ padding: "8px", borderBottom: "1px solid #eee" }}
+                  >
+                    {userInfo.social_id}
+                  </td>
                 </tr>
                 <tr>
                   <th
                     style={{
-                      textAlign: 'left',
-                      padding: '8px',
-                      borderBottom: '1px solid #eee',
+                      textAlign: "left",
+                      padding: "8px",
+                      borderBottom: "1px solid #eee",
                     }}
                   >
                     제공자:
                   </th>
-                  <td style={{ padding: '8px', borderBottom: '1px solid #eee' }}>{userInfo.provider}</td>
+                  <td
+                    style={{ padding: "8px", borderBottom: "1px solid #eee" }}
+                  >
+                    {userInfo.provider}
+                  </td>
                 </tr>
                 <tr>
                   <th
                     style={{
-                      textAlign: 'left',
-                      padding: '8px',
-                      borderBottom: '1px solid #eee',
+                      textAlign: "left",
+                      padding: "8px",
+                      borderBottom: "1px solid #eee",
                     }}
                   >
                     이메일:
                   </th>
-                  <td style={{ padding: '8px', borderBottom: '1px solid #eee' }}>{userInfo.email}</td>
+                  <td
+                    style={{ padding: "8px", borderBottom: "1px solid #eee" }}
+                  >
+                    {userInfo.email}
+                  </td>
                 </tr>
                 <tr>
                   <th
                     style={{
-                      textAlign: 'left',
-                      padding: '8px',
-                      borderBottom: '1px solid #eee',
+                      textAlign: "left",
+                      padding: "8px",
+                      borderBottom: "1px solid #eee",
                     }}
                   >
                     이름:
                   </th>
-                  <td style={{ padding: '8px', borderBottom: '1px solid #eee' }}>{userInfo.name}</td>
+                  <td
+                    style={{ padding: "8px", borderBottom: "1px solid #eee" }}
+                  >
+                    {userInfo.name}
+                  </td>
                 </tr>
               </tbody>
             </table>
           </div>
           <div
             style={{
-              maxHeight: '300px',
-              overflowY: 'auto',
-              background: '#fff',
-              padding: '10px',
-              borderRadius: '4px',
-              border: '1px solid #d9d9d9',
+              maxHeight: "300px",
+              overflowY: "auto",
+              background: "#fff",
+              padding: "10px",
+              borderRadius: "4px",
+              border: "1px solid #d9d9d9",
             }}
           >
             <h4>전체 사용자 정보</h4>
@@ -415,24 +475,24 @@ const SocialCallback = () => {
       {tokenInfo && (
         <div
           style={{
-            marginTop: '20px',
-            padding: '15px',
-            background: '#f6ffed',
-            borderRadius: '5px',
-            width: '100%',
-            maxWidth: '800px',
-            border: '1px solid #b7eb8f',
+            marginTop: "20px",
+            padding: "15px",
+            background: "#f6ffed",
+            borderRadius: "5px",
+            width: "100%",
+            maxWidth: "800px",
+            border: "1px solid #b7eb8f",
           }}
         >
           <h3>액세스 토큰 정보</h3>
           <div
             style={{
-              maxHeight: '200px',
-              overflowY: 'auto',
-              background: '#fff',
-              padding: '10px',
-              borderRadius: '4px',
-              border: '1px solid #d9d9d9',
+              maxHeight: "200px",
+              overflowY: "auto",
+              background: "#fff",
+              padding: "10px",
+              borderRadius: "4px",
+              border: "1px solid #d9d9d9",
             }}
           >
             <pre>{formatJSON(tokenInfo)}</pre>
@@ -440,50 +500,54 @@ const SocialCallback = () => {
         </div>
       )}
 
-      {process.env.NODE_ENV === 'development' && errorDetails.length > 0 && (
+      {process.env.NODE_ENV === "development" && errorDetails.length > 0 && (
         <div
           style={{
-            marginTop: '20px',
-            padding: '15px',
-            background: '#fffbe6',
-            borderRadius: '5px',
-            width: '100%',
-            maxWidth: '800px',
-            border: '1px solid #ffe58f',
+            marginTop: "20px",
+            padding: "15px",
+            background: "#fffbe6",
+            borderRadius: "5px",
+            width: "100%",
+            maxWidth: "800px",
+            border: "1px solid #ffe58f",
           }}
         >
           <h3>디버깅 로그</h3>
           <div
             style={{
-              maxHeight: '300px',
-              overflowY: 'auto',
-              background: '#fff',
-              padding: '10px',
-              borderRadius: '4px',
-              border: '1px solid #d9d9d9',
+              maxHeight: "300px",
+              overflowY: "auto",
+              background: "#fff",
+              padding: "10px",
+              borderRadius: "4px",
+              border: "1px solid #d9d9d9",
             }}
           >
             {errorDetails.map((detail, index) => (
-              <div key={index} style={{ marginBottom: '10px' }}>
-                <pre style={{ whiteSpace: 'pre-wrap', fontSize: '12px' }}>{detail}</pre>
-                {index < errorDetails.length - 1 && <hr style={{ border: '0.5px dashed #d9d9d9' }} />}
+              <div key={index} style={{ marginBottom: "10px" }}>
+                <pre style={{ whiteSpace: "pre-wrap", fontSize: "12px" }}>
+                  {detail}
+                </pre>
+                {index < errorDetails.length - 1 && (
+                  <hr style={{ border: "0.5px dashed #d9d9d9" }} />
+                )}
               </div>
             ))}
           </div>
         </div>
       )}
 
-      <div style={{ marginTop: '30px' }}>
+      <div style={{ marginTop: "30px" }}>
         <button
-          onClick={() => navigate('/')}
+          onClick={() => navigate("/")}
           style={{
-            padding: '10px 20px',
-            background: '#1890ff',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer',
-            fontSize: '16px',
+            padding: "10px 20px",
+            background: "#1890ff",
+            color: "white",
+            border: "none",
+            borderRadius: "4px",
+            cursor: "pointer",
+            fontSize: "16px",
           }}
         >
           홈으로 돌아가기
