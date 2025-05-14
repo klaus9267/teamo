@@ -512,12 +512,7 @@ export default function PostDetail() {
                               <h4>자기소개</h4>
                               <p>
                                 {applicant.resume && applicant.resume.content
-                                  ? applicant.resume.content.length > 150
-                                    ? `${applicant.resume.content.substring(
-                                        0,
-                                        150
-                                      )}...`
-                                    : applicant.resume.content
+                                  ? applicant.resume.content
                                   : "자기소개 내용이 없습니다."}
                               </p>
                             </div>

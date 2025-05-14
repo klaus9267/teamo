@@ -847,6 +847,15 @@ div {
   border-left: 3px solid #28a745;
 }
 
+/* AI 요약 및 추천 이유 섹션의 단락 스타일 - 잘리지 않도록 설정 */
+.ai-summary-section p,
+.ai-reason-section p {
+  overflow: visible;
+  text-overflow: initial;
+  display: block;
+  -webkit-line-clamp: initial;
+}
+
 .portfolio-link {
   display: inline-block;
   color: #1976d2;
