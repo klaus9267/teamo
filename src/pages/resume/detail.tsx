@@ -94,7 +94,7 @@ export default function ResumeDetail() {
 
   // 줄바꿈을 처리하는 함수
   const formatContent = (text) => {
-    if (!text) return null;
+    if (!text) return "";
     return text.split("\n").map((line, idx) => (
       <React.Fragment key={idx}>
         {line || " "}
@@ -108,7 +108,7 @@ export default function ResumeDetail() {
       <div className="resume-detail-container">
         <div className="resume-detail-main">
           <div className="resume-header">
-            <Link to="/profile" className="back-link">
+            <Link to="/hub" className="back-link">
               <svg
                 width="24"
                 height="24"
@@ -144,12 +144,12 @@ export default function ResumeDetail() {
               }}
             >
               {" "}
-              {resume.title}{" "}
+              {resume?.title}{" "}
             </h1>
           </div>
 
           <div className="resume-detail-content">
-            {resume.skills && resume.skills.length > 0 ? (
+            {resume?.skills && resume.skills.length > 0 ? (
               <section className="resume-section">
                 {" "}
                 <h3>기술 스택</h3>{" "}
@@ -173,7 +173,7 @@ export default function ResumeDetail() {
               </section>
             )}
 
-            {resume.personality && (
+            {resume?.personality && (
               <section className="resume-section">
                 <h3>성향 및 성격</h3>
                 <div className="resume-personality">{resume.personality}</div>
@@ -190,17 +190,27 @@ export default function ResumeDetail() {
                   overflowWrap: "break-word",
                   maxWidth: "100%",
                   overflow: "visible",
+                  marginBottom: "50px",
+                  paddingBottom: "20px",
                 }}
               >
                 {" "}
-                {formatContent(resume.content)}{" "}
+                {formatContent(resume?.content)}{" "}
               </div>
             </section>
-
-            <section className="resume-section">
+            <br />
+            <section
+              className="resume-section"
+              style={{
+                marginTop: "50px",
+                paddingTop: "20px",
+                position: "relative",
+                clear: "both",
+              }}
+            >
               <h3>포트폴리오 파일</h3>
               <div className="resume-file">
-                {resume.portfolio ? (
+                {resume?.portfolio ? (
                   <a
                     href={resume.portfolio}
                     target="_blank"
@@ -247,14 +257,14 @@ export default function ResumeDetail() {
         <div
           className="profile-info"
           onClick={() =>
-            resume.profile?.userId &&
+            resume?.profile?.userId &&
             navigate(`/profile/${resume.profile.userId}`)
           }
-          style={{ cursor: resume.profile?.userId ? "pointer" : "default" }}
-          title={resume.profile?.userId ? "사용자 프로필로 이동" : ""}
+          style={{ cursor: resume?.profile?.userId ? "pointer" : "default" }}
+          title={resume?.profile?.userId ? "사용자 프로필로 이동" : ""}
         >
           <img
-            src={resume.profile?.image || "/profile.png"}
+            src={resume?.profile?.image || "/profile.png"}
             alt="프로필"
             className="profile-image"
             onError={(e) => {
@@ -263,15 +273,15 @@ export default function ResumeDetail() {
           />
           <div className="profile-text profile-text-center">
             <p className="profile-name">
-              {resume.profile?.name || resume.profile?.nickname || "개발자"}
+              {resume?.profile?.name || resume?.profile?.nickname || "개발자"}
             </p>
-            {resume.profile?.nickname && resume.profile?.name && (
+            {resume?.profile?.nickname && resume?.profile?.name && (
               <p className="profile-nickname">@{resume.profile.nickname}</p>
             )}
           </div>
         </div>
 
-        {resume.profile?.introduction && (
+        {resume?.profile?.introduction && (
           <>
             <div>
               <div className="aside-label">소개</div>
@@ -286,7 +296,7 @@ export default function ResumeDetail() {
           <div className="aside-actions">
             <button
               className="aside-edit-btn"
-              onClick={() => navigate(`/profile/resume/edit/${resume.id}`)}
+              onClick={() => navigate(`/profile/resume/edit/${resume?.id}`)}
             >
               수정하기
             </button>
